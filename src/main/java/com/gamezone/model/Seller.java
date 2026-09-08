@@ -15,14 +15,15 @@ public class Seller extends Person {
     /**
      * Creates a seller with its personal data, employee code and work shift.
      *
-     * @param name           the full name of the seller
-     * @param identification the government identification document
-     * @param phone          the contact phone number
-     * @param employeeCode   the employee code assigned by the store
-     * @param shift          the work shift assigned to the seller
+     * @param id           the identifier of the seller
+     * @param firstName    the first name of the seller
+     * @param lastName     the last name of the seller
+     * @param phone        the contact phone number
+     * @param employeeCode the employee code assigned by the store
+     * @param shift        the work shift assigned to the seller
      */
-    public Seller(String name, String identification, String phone, String employeeCode, String shift) {
-        super(name, identification, phone);
+    public Seller(String id, String firstName, String lastName, String phone, String employeeCode, String shift) {
+        super(id, firstName, lastName, phone);
         this.employeeCode = employeeCode;
         this.shift = shift;
     }
@@ -61,15 +62,5 @@ public class Seller extends Person {
      */
     public void setShift(String shift) {
         this.shift = shift;
-    }
-
-    /**
-     * Returns the role that this person plays in the store.
-     *
-     * @return the string {@code "Seller"}
-     */
-    @Override
-    public String getRole() {
-        return "Seller";
     }
 }
