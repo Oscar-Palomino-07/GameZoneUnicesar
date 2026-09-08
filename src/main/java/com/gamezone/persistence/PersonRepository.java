@@ -94,9 +94,6 @@ public class PersonRepository {
         if (!Files.exists(file)) {
             return new ArrayList<>();
         }
-        if (Files.getSize(file) == 0) {
-            return new ArrayList<>();
-        }
         try (BufferedReader reader = Files.newBufferedReader(file, StandardCharsets.UTF_8)) {
             List<T> result = gson.fromJson(reader, type);
             return result == null ? new ArrayList<>() : result;
