@@ -4,7 +4,7 @@
 
 ### Q1: What attributes are common to all people who interact with the store, and which are specific to each type of person? How is this distinction reflected in a class hierarchy?
 
-Common attributes: name, identification, and phone number. Specific attributes: customers have an email and a purchase history, while sellers have an employee code and a work shift. We reflect this using inheritance: we create a base class called `Person` for the common data, and two subclasses (`Customer` and `Seller`) that extend `Person` to add their specific data.
+Common attributes: id, first name, last name, and phone number. Specific attributes: customers have an email address, while sellers have an employee code and a work shift. (We initially considered storing a purchase history directly on `Customer`, but decided against it — the system already needs to query sales by customer as one of its required operations, so that history is derived from `SaleService` instead of being duplicated on `Customer`.) We reflect this using inheritance: we create a base class called `Person` for the common data, and two subclasses (`Customer` and `Seller`) that extend `Person` to add their specific data.
 
 ### Q2: Should there be a class representing a "generic person" without specifying its role? Why or why not? What implication does this decision have on the possibility of instantiating this class?
 
