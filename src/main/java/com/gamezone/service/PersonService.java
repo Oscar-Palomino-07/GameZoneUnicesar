@@ -14,8 +14,8 @@ import java.util.Optional;
  *
  * <p>It validates the rules that apply to customers and sellers, keeps the
  * in-memory registries synchronized with the persistence layer and provides
- * the queries required by the sales module, such as locating a customer by
- * identification or a seller by employee code.</p>
+ * the queries required by the sales module, such as locating a customer or
+ * a seller by its identifier.</p>
  *
  * <p>This class belongs to the service layer and is the only one allowed to
  * invoke the person repository.</p>
@@ -34,76 +34,77 @@ public class PersonService {
      */
     public PersonService(PersonRepository repository) {
         this.repository = repository;
-        this.customers = new ArrayList<>(repository.loadCustomers());
-        this.sellers = new ArrayList<>(repository.loadSellers());
+        this.customers = new ArrayList<>(repository.loadAllCustomers());
+        this.sellers = new ArrayList<>(repository.loadAllSellers());
     }
 
     /**
      * Registers a new customer in the system.
      *
      * <p>The data is validated before the customer is added: no field may
-     * be blank and the identification must be unique. Once registered, the
-     * customer registry is immediately persisted.</p>
+     * be blank and the id must be unique. Once registered, the customer
+     * registry is immediately persisted.</p>
      *
-     * @param name           the full name of the customer
-     * @param identification the government identification document
-     * @param phone          the contact phone number
-     * @param email          the email address of the customer
-     * @throws IllegalArgumentException when any field is blank or the
-     *         identification already belongs to another customer
+     * @param id        the identifier of the customer
+     * @param firstName the first name of the customer
+     * @param lastName  the last name of the customer
+     * @param phone     the contact phone number
+     * @param email     the email address of the customer
+     * @throws IllegalArgumentException when any field is blank or the id
+     *         already belongs to another customer
      */
-    public void registerCustomer(String name, String identification, String phone, String email) {
-        if (isBlank(name) || isBlank(identification) || isBlank(phone) || isBlank(email)) {
+    public void registerCustomer(String id, String firstName, String lastName, String phone, String email) {
+        if (isBlank(id) || isBlank(firstName) || isBlank(lastName) || isBlank(phone) || isBlank(email)) {
             throw new IllegalArgumentException("All customer fields are required.");
         }
-        if (findCustomerByIdentification(identification).isPresent()) {
-            throw new IllegalArgumentException("A customer with identification " + identification + " already exists.");
+        if (findCustomerById(id).isPresent()) {
+            throw new IllegalArgumentException("A customer with id " + id + " already exists.");
         }
-        customers.add(new Customer(name, identification, phone, email));
+        customers.add(new Customer(id, firstName, lastName, phone, email));
         save();
     }
 
     /**
-     * Returns the list of registered customers.
+     * Returns the list of all registered customers.
      *
      * @return an unmodifiable view of the customer registry
      */
-    public List<Customer> listCustomers() {
+    public List<Customer> listAllCustomers() {
         return Collections.unmodifiableList(customers);
     }
 
     /**
-     * Returns the list of registered sellers.
+     * Returns the list of all registered sellers.
      *
      * @return an unmodifiable view of the seller registry
      */
-    public List<Seller> listSellers() {
+    public List<Seller> listAllSellers() {
         return Collections.unmodifiableList(sellers);
     }
 
     /**
-     * Searches for a customer by its government identification document.
+     * Searches for a customer by its identifier.
      *
-     * @param identification the identification to look for
-     * @return the customer with the given identification, or an empty
+     * @param id the identifier to look for
+     * @return the customer with the given id, or an empty
      *         {@link Optional} when no customer matches
      */
-    public Optional<Customer> findCustomerByIdentification(String identification) {
+    public Optional<Customer> findCustomerById(String id) {
         return customers.stream()
-                .filter(customer -> customer.getIdentification().equals(identification))
+                .filter(customer -> customer.getId().equals(id))
                 .findFirst();
     }
 
     /**
-     * Searches for a seller by its employee code.
+     * Searches for a seller by its identifier.
      *
-     * @param employeeCode the employee code to look for
-     * @return the seller with the given employee code, or an empty
+     * @param id the identifier to look for
+     * @return the seller with the given id, or an empty
      *         {@link Optional} when no seller matches
      */
-    public Optional<Seller> findSellerByEmployeeCode(String employeeCode) {
+    public Optional<Seller> findSellerById(String id) {
         return sellers.stream()
-                .filter(seller -> seller.getEmployeeCode().equals(employeeCode))
+                .filter(seller -> seller.getId().equals(id))
                 .findFirst();
     }
 
@@ -115,8 +116,8 @@ public class PersonService {
      * conserved between executions.</p>
      */
     public void save() {
-        repository.saveCustomers(customers);
-        repository.saveSellers(sellers);
+        repository.saveAllCustomers(customers);
+        repository.saveAllSellers(sellers);
     }
 
     /**
