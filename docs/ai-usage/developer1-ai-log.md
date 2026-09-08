@@ -65,6 +65,23 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 03 — 2026-09-08
+
+| Field | Detail |
+|---|---|
+| Date | 08-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Align `ProductRepository` persistence with the leader's requirement to use JSON + Gson from the start |
+| Prompt summary | "Confirm you will use JSON with Gson from the start for ProductRepository; review diagram consistency" |
+| Legitimate-use category | Consultation on a specific Java library implementation (Gson serialization/deserialization); code review; error explanation |
+| What I did myself | Chose Gson 2.14.0 after checking Maven Central; kept the repository's four public methods exactly as in `docs/class-diagram.md`; re-ran `mvn -q compile` and the round-trip smoke test (two video games + one console: register → reload → findById → updateStock → reload); deleted temporary files |
+| What the AI provided | Confirmed how to serialize/deserialize `List<T>` with Gson (`TypeToken`), pretty-printing, and how to make the load methods return an empty list when the file is missing or malformed |
+| Output used? | Yes — used to rewrite `ProductRepository` to `data/videogames.json` and `data/consoles.json` |
+| Fully understood? | Yes — I can explain why Gson needs the `TypeToken` for generic lists and why a missing file must load an empty list |
+| Decision | Deviation from `docs/analysis.md` Q9 wording ("text files"): JSON is a text-based format, so the class diagram stays valid; I recommended the team update Q9 to mention JSON explicitly for coherence |
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
