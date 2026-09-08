@@ -1,67 +1,89 @@
 package com.gamezone.model;
 
 /**
- * Represents a person interacting with GameZone Unicesar.
+ * Represents a person interacting with GameZone Unicesar, either as a
+ * customer or as a seller.
  *
- * <p>Stores the attributes shared by every type of person in the system,
- * such as the full name, the government identification document and the
- * contact phone number. This class is abstract because a generic person
- * without a specific role cannot exist in the domain: every person must
- * either be a customer or a seller.</p>
+ * <p>Stores the attributes shared by every person in the system: the
+ * identifier, the first name, the last name and the contact phone number.
+ * This class is abstract because a generic person without a specific role
+ * cannot exist in the domain; every person must be either a customer or
+ * a seller.</p>
  */
 public abstract class Person {
 
-    private String name;
-    private String identification;
+    private String id;
+    private String firstName;
+    private String lastName;
     private String phone;
 
     /**
-     * Creates a person with the common attributes shared by all roles.
+     * Creates a person with the attributes shared by all roles.
      *
-     * @param name           the full name of the person
-     * @param identification the government identification document
-     * @param phone          the contact phone number
+     * @param id        the identifier of the person
+     * @param firstName the first name of the person
+     * @param lastName  the last name of the person
+     * @param phone     the contact phone number
      */
-    public Person(String name, String identification, String phone) {
-        this.name = name;
-        this.identification = identification;
+    public Person(String id, String firstName, String lastName, String phone) {
+        this.id = id;
+        this.firstName = firstName;
+        this.lastName = lastName;
         this.phone = phone;
     }
 
     /**
-     * Returns the full name of the person.
+     * Returns the identifier of the person.
      *
-     * @return the person's name
+     * @return the person's id
      */
-    public String getName() {
-        return name;
+    public String getId() {
+        return id;
     }
 
     /**
-     * Updates the full name of the person.
+     * Updates the identifier of the person.
      *
-     * @param name the new name
+     * @param id the new id
      */
-    public void setName(String name) {
-        this.name = name;
+    public void setId(String id) {
+        this.id = id;
     }
 
     /**
-     * Returns the government identification document of the person.
+     * Returns the first name of the person.
      *
-     * @return the person's identification
+     * @return the person's first name
      */
-    public String getIdentification() {
-        return identification;
+    public String getFirstName() {
+        return firstName;
     }
 
     /**
-     * Updates the government identification document of the person.
+     * Updates the first name of the person.
      *
-     * @param identification the new identification
+     * @param firstName the new first name
      */
-    public void setIdentification(String identification) {
-        this.identification = identification;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    /**
+     * Returns the last name of the person.
+     *
+     * @return the person's last name
+     */
+    public String getLastName() {
+        return lastName;
+    }
+
+    /**
+     * Updates the last name of the person.
+     *
+     * @param lastName the new last name
+     */
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     /**
@@ -81,14 +103,4 @@ public abstract class Person {
     public void setPhone(String phone) {
         this.phone = phone;
     }
-
-    /**
-     * Returns the role that the person plays in the store.
-     *
-     * <p>Each concrete subclass defines the role it represents, which is
-     * how the system distinguishes customers from sellers.</p>
-     *
-     * @return a string identifying the role of the person
-     */
-    public abstract String getRole();
 }
