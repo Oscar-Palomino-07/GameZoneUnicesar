@@ -16,13 +16,14 @@ public class Customer extends Person {
     /**
      * Creates a customer with its personal data and email address.
      *
-     * @param name           the full name of the customer
-     * @param identification the government identification document
-     * @param phone          the contact phone number
-     * @param email          the email address of the customer
+     * @param id        the identifier of the customer
+     * @param firstName the first name of the customer
+     * @param lastName  the last name of the customer
+     * @param phone     the contact phone number
+     * @param email     the email address of the customer
      */
-    public Customer(String name, String identification, String phone, String email) {
-        super(name, identification, phone);
+    public Customer(String id, String firstName, String lastName, String phone, String email) {
+        super(id, firstName, lastName, phone);
         this.email = email;
     }
 
@@ -42,15 +43,5 @@ public class Customer extends Person {
      */
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    /**
-     * Returns the role that this person plays in the store.
-     *
-     * @return the string {@code "Customer"}
-     */
-    @Override
-    public String getRole() {
-        return "Customer";
     }
 }
