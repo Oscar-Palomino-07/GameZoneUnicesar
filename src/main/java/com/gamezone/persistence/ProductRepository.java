@@ -2,10 +2,15 @@ package com.gamezone.persistence;
 
 import com.gamezone.model.Console;
 import com.gamezone.model.VideoGame;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -15,108 +20,77 @@ import java.util.List;
 
 /**
  * Handles file-based persistence for the product module of GameZone Unicesar.
- * Video games and consoles are stored separately in two plain text files under
- * the {@code data} directory, using tab-separated fields and one product per
- * line. If a file does not exist yet, the repository loads an empty list.
+ * Video games and consoles are stored separately in two JSON files under the
+ * {@code data} directory, serialized with Gson. If a file does not exist yet,
+ * the repository loads an empty list.
  */
 public class ProductRepository {
 
     private static final String DATA_DIRECTORY = "data";
-    private static final String VIDEO_GAMES_FILE = "data/videogames.txt";
-    private static final String CONSOLES_FILE = "data/consoles.txt";
+    private static final String VIDEO_GAMES_FILE = "data/videogames.json";
+    private static final String CONSOLES_FILE = "data/consoles.json";
+
+    private static final Type VIDEO_GAMES_TYPE = new TypeToken<List<VideoGame>>() {
+    }.getType();
+    private static final Type CONSOLES_TYPE = new TypeToken<List<Console>>() {
+    }.getType();
+
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     /**
-     * Saves all video games to the video games text file, overwriting its
+     * Saves all video games to the video games JSON file, overwriting its
      * previous contents.
      *
      * @param videoGames the list of video games to persist
      */
     public void saveAllVideoGames(List<VideoGame> videoGames) {
-        List<String> lines = new ArrayList<>();
-        for (VideoGame game : videoGames) {
-            lines.add(String.join("\t",
-                    game.getId(), game.getTitle(),
-                    String.valueOf(game.getPrice()),
-                    String.valueOf(game.getStock()),
-                    game.getPlatform(), game.getGenre(), game.getAgeRating()));
-        }
-        writeLines(VIDEO_GAMES_FILE, lines);
+        writeList(VIDEO_GAMES_FILE, videoGames, VIDEO_GAMES_TYPE);
     }
 
     /**
-     * Loads all video games from the video games text file.
+     * Loads all video games from the video games JSON file.
      *
      * @return the list of stored video games, or an empty list if the file
      *         does not exist
      */
     public List<VideoGame> loadAllVideoGames() {
-        List<VideoGame> videoGames = new ArrayList<>();
-        for (String[] fields : readLines(VIDEO_GAMES_FILE)) {
-            if (fields.length == 7) {
-                videoGames.add(new VideoGame(
-                        fields[0], fields[1],
-                        Double.parseDouble(fields[2]),
-                        Integer.parseInt(fields[3]),
-                        fields[4], fields[5], fields[6]));
-            }
-        }
-        return videoGames;
+        return readList(VIDEO_GAMES_FILE, VIDEO_GAMES_TYPE);
     }
 
     /**
-     * Saves all consoles to the consoles text file, overwriting its previous
+     * Saves all consoles to the consoles JSON file, overwriting its previous
      * contents.
      *
      * @param consoles the list of consoles to persist
      */
     public void saveAllConsoles(List<Console> consoles) {
-        List<String> lines = new ArrayList<>();
-        for (Console console : consoles) {
-            lines.add(String.join("\t",
-                    console.getId(), console.getTitle(),
-                    String.valueOf(console.getPrice()),
-                    String.valueOf(console.getStock()),
-                    console.getBrand(), console.getModel(), console.getGeneration()));
-        }
-        writeLines(CONSOLES_FILE, lines);
+        writeList(CONSOLES_FILE, consoles, CONSOLES_TYPE);
     }
 
     /**
-     * Loads all consoles from the consoles text file.
+     * Loads all consoles from the consoles JSON file.
      *
      * @return the list of stored consoles, or an empty list if the file does
      *         not exist
      */
     public List<Console> loadAllConsoles() {
-        List<Console> consoles = new ArrayList<>();
-        for (String[] fields : readLines(CONSOLES_FILE)) {
-            if (fields.length == 7) {
-                consoles.add(new Console(
-                        fields[0], fields[1],
-                        Double.parseDouble(fields[2]),
-                        Integer.parseInt(fields[3]),
-                        fields[4], fields[5], fields[6]));
-            }
-        }
-        return consoles;
+        return readList(CONSOLES_FILE, CONSOLES_TYPE);
     }
 
     /**
-     * Writes the given lines to the given file, one line per product. Creates
-     * the data directory and the file when they do not exist yet.
+     * Serializes the given list to the given JSON file, creating the data
+     * directory and the file when they do not exist yet.
      *
      * @param fileName the path of the destination file
-     * @param lines    the text lines to persist
+     * @param items    the list of products to persist
+     * @param type     the Gson type of the generic list
      */
-    private void writeLines(String fileName, List<String> lines) {
+    private void writeList(String fileName, List<?> items, Type type) {
         try {
             Path path = Paths.get(fileName);
             Files.createDirectories(Paths.get(DATA_DIRECTORY));
             try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                for (String line : lines) {
-                    writer.write(line);
-                    writer.newLine();
-                }
+                gson.toJson(items, type, writer);
             }
         } catch (IOException e) {
             System.err.println("Error saving products to " + fileName + ": " + e.getMessage());
@@ -124,28 +98,25 @@ public class ProductRepository {
     }
 
     /**
-     * Reads every non-empty line of the given file as a tab-separated array
-     * of fields.
+     * Deserializes a list of products from the given JSON file.
      *
      * @param fileName the path of the source file
-     * @return the parsed lines, or an empty list if the file does not exist
+     * @param type     the Gson type of the generic list
+     * @param <T>      the concrete product type stored in the file
+     * @return the stored products, or an empty list if the file does not
+     *         exist or cannot be parsed
      */
-    private List<String[]> readLines(String fileName) {
-        List<String[]> lines = new ArrayList<>();
+    private <T> List<T> readList(String fileName, Type type) {
         Path path = Paths.get(fileName);
         if (!Files.exists(path)) {
-            return lines;
+            return new ArrayList<>();
         }
         try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            String line;
-            while ((line = reader.readLine()) != null) {
-                if (!line.isBlank()) {
-                    lines.add(line.split("\t", -1));
-                }
-            }
-        } catch (IOException e) {
+            List<T> items = gson.fromJson(reader, type);
+            return items != null ? items : new ArrayList<>();
+        } catch (IOException | JsonSyntaxException e) {
             System.err.println("Error loading products from " + fileName + ": " + e.getMessage());
+            return new ArrayList<>();
         }
-        return lines;
     }
 }
