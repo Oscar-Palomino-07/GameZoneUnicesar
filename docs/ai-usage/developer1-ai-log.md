@@ -37,6 +37,34 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 <div style="page-break-after: always;"></div>
 
+## Entry 02 — 2026-09-08
+
+| Field | Detail |
+|---|---|
+| Date | 08-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Implement the product module classes following the team's approved design |
+| Prompt summary | "Proceed with Phase 3: implement Product, VideoGame, Console, ProductRepository, ProductService, commit + push per class" |
+| Legitimate-use category | Java/Maven guidance; code review of my own module; error explanation |
+| What I did myself | Synced `develop` and merged it into `feature/product-module`; reviewed `docs/analysis.md` and `docs/class-diagram.md` to extract the agreed signatures; compiled with `mvn -q compile`; ran a persistence round-trip smoke test; created one atomic commit per class and pushed each immediately |
+| What the AI provided | First-draft code aligned strictly to the signatures in `docs/class-diagram.md` (fields, methods, multiplicities), JavaDoc templates, and a smoke test to verify save/load/stock; also caught an extra `ProductLine` type I had introduced and removed it to honor the "no unnecessary classes" rule |
+| Output used? | Yes — used as the working basis for my PR, then verified with compile + smoke test |
+| Fully understood? | Yes — I can explain each class: inheritance, `abstract getDescription()`, `@Override`, the repository's text-file format (tab-separated, 7 fields), and the service validations and auto-save |
+
+### Notes / decisions
+
+- Persistence went with **plain text files** (`data/videogames.txt`, `data/consoles.txt`),
+  as already decided by the team in `docs/analysis.md` Q9. My earlier JSON/Gson
+  proposal was not adopted; logged here for transparency.
+- `Product.updateStock(int)` follows the class diagram (sets the new quantity).
+  The sales module will call `ProductService.updateStock(productId, quantity)`
+  to reduce inventory; semantics must be synchronized with the Technical Lead.
+- Two leftover Git issues reported to the leader: `feature/maven-project-setup`
+  still exists on the remote after being merged, and several docs feature
+  branches are pending cleanup.
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
