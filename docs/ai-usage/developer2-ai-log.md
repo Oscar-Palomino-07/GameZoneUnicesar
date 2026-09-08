@@ -40,3 +40,42 @@ the question or doubt raised, and how the AI answer supported the work.
    I used the AI to confirm the order of the atomic commits (one per logical
    change, pushed immediately to `feature/person-module`) as required by the
    Git Flow rules of the workshop.
+
+## 2026-09-08 — opencode (JSON migration)
+
+**Topic:** Aligning the person module with the final `class-diagram.md`.
+
+**Questions raised & how AI helped:**
+
+1. **Reading the remote repository.**
+   I asked the AI to review the remote `develop` branch on GitHub. It read
+   the actual files (`docs/analysis.md`, `docs/class-diagram.md`,
+   `hierarchy-diagram.md`, `layers-diagram.md`, `TEAM.md`) through the public
+   GitHub API and confirmed that the authoritative diagram uses `Person(id,
+   firstName, lastName, phone)` without `getRole()`, and that
+   `PersonService` declares `findCustomerById`/`findSellerById`.
+
+2. **Migrating persistence to JSON with Gson.**
+   The team decided to switch the person files from plain text to JSON. I
+   asked how to serialize the two subclasses with Gson without adding a
+   type discriminator; the AI explained that, since `PersonRepository`
+   loads each concrete type in its own list
+   (`TypeToken<List<Customer>>`, `TypeToken<List<Seller>>`), Gson does not
+   need polymorphic serialization, so the files stay clean.
+
+3. **Maven/Gson setup.**
+   I asked how to declare the Gson dependency in `pom.xml` and the AI
+   confirmed the coordinates (`com.google.code.gson:gson:2.10.1`) and that
+   the `maven-compiler-plugin` target 17 does not require extra config.
+
+4. **Alignment of method names.**
+   I used the AI to rename the service and repository methods so they match
+   the class diagram exactly (`listAllCustomers`, `listAllSellers`,
+   `findCustomerById`, `findSellerById`, `saveAllCustomers`,
+   `loadAllCustomers`, etc.).
+
+5. **Git Flow integration.**
+   I confirmed that merging `develop` into the feature branch (instead of
+   rebasing) is the compliant way to integrate the new documentation,
+   because a rebase would require a forced push, which the workshop
+   forbids.
