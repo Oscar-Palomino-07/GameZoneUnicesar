@@ -79,3 +79,38 @@ the question or doubt raised, and how the AI answer supported the work.
    rebasing) is the compliant way to integrate the new documentation,
    because a rebase would require a forced push, which the workshop
    forbids.
+
+## 2026-09-08 — opencode (sync with develop after product PR)
+
+**Topic:** Integrating the product module and unifying the persistence style.
+
+**Questions raised & how AI helped:**
+
+1. **Checking when to pull `develop`.**
+   The team confirmed Option A and told me to merge `develop` into
+   `feature/person-module` only after the product module PR (Manuel) was
+   merged, so the Gson dependency is inherited from `develop`. The AI helped
+   me verify the remote state first (`git fetch` + `git log
+   origin/develop`), confirming PR #11 was already merged before doing the
+   merge.
+
+2. **Resolving merge conflicts.**
+   The merge produced two conflicts: `.gitignore` (both branches added an
+   IntelliJ comment) and `pom.xml` (Gson `2.10.1` vs `2.14.0`). The AI
+   suggested resolving them by keeping a single `.gitignore` comment and
+   unifying on the `develop` version `2.14.0`, so person and product modules
+   share the same Gson version.
+
+3. **Unifying the repository style.**
+   The leader recommended using Manuel's `ProductRepository` as the style
+   reference for `PersonRepository`. I asked the AI to refactor mine to the
+   same pattern (string file constants, static `TypeToken` constants,
+   private `writeList`/`readList` helpers, graceful fallback to an empty
+   list) while keeping the method names defined in the class diagram
+   (`saveAllCustomers`, `loadAllCustomers`, `saveAllSellers`,
+   `loadAllSellers`).
+
+4. **Regression check.**
+   Since Gson was bumped to `2.14.0`, the AI compiled the module with the
+   new jar and reran the previous smoke test, confirming the JSON files and
+   the service operations still work.
