@@ -151,17 +151,6 @@ public class ReturnService {
         return result;
     }
 
-    /**
-     * Calcula el balance mensual (ventas − devoluciones).
-     *
-     * @param month mes (1–12)
-     * @param year  año (≥ 2000)
-     * @return balance del mes; nunca negativo
-     * @throws IllegalArgumentException si los parámetros son inválidos
-     * @throws IllegalStateException    si el total de devoluciones supera las
-     *                                  ventas (balance negativo), lo que indicaría
-     *                                  devoluciones inconsistentes en los datos
-     */
     public double generateMonthlyBalance(int month, int year) {
         if (month < 1 || month > 12) {
             throw new IllegalArgumentException(
