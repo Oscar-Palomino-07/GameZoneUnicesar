@@ -1,6 +1,8 @@
 package com.gamezone.model;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -88,4 +90,12 @@ public class Sale {
         }
         return total;
     }
+
+    public boolean canBeReturned() {
+        LocalDate today = LocalDate.now();
+        long daysBetween = ChronoUnit.DAYS.between(this.saleDate, today);
+
+        return daysBetween >= 0 && daysBetween <= 30;
+    }
+
 }
