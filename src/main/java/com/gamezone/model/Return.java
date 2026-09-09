@@ -51,11 +51,28 @@ public class Return {
     }
 
 
-    public double calculateTotal() {
+    public double calculateRefundAmount() {
         double total = 0.0;
         for (Product product : products) {
             total += product.getPrice();
         }
         return total;
     }
+    
+    public String generateReturnReceipt() {
+        StringBuilder receipt = new StringBuilder();
+        receipt.append("Return Receipt\n");
+        receipt.append("================\n");
+        receipt.append("ID: " + id + "\n");
+        receipt.append("Date: " + date + "\n");
+        receipt.append("Customer: " + customer.getId() + "\n");
+        receipt.append("Seller: " + seller.getId() + "\n");
+        receipt.append("Products:\n");
+        for (Product product : products) {
+            receipt.append("- " + product.getTitle() + " " + product.getPrice() + "\n");
+        }
+        receipt.append("Total: " + calculateRefundAmount() + "\n");
+        return receipt.toString();
+    }
+
 }

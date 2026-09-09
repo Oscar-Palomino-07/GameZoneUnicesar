@@ -2,7 +2,6 @@ package com.gamezone.service;
 
 import com.gamezone.model.*;
 import com.gamezone.persistence.ReturnRepository;
-import com.gamezone.persistence.SaleRepository;
 
 import java.util.*;
 
@@ -16,7 +15,8 @@ public class ReturnService {
 
     public ReturnService(ReturnRepository returnRepository, SaleService saleService, PersonService personService,
             ProductService productService) {
-        this.returnRepository = new ReturnRepository();
+        this.saleService = saleService;
+        this.returnRepository = returnRepository;
         this.personService = personService;
         this.productService = productService;
         this.returns = new ArrayList<>(returnRepository.loadAll());
@@ -27,17 +27,18 @@ public class ReturnService {
             throw new IllegalArgumentException("A return must include at least one product.");
         }
 
-        // 1. Buscar la venta original usando el JSON/Objeto del paso anterior
-        Venta ventaOriginal = saleService.findById(saleId);
+        Sale ventaOriginal = saleService.findById(saleId);
         if (ventaOriginal == null) {
             throw new IllegalArgumentException("Original sale not found: " + saleId);
         }
+        if (!ventaOriginal.canBeReturned()) {
+            throw new IllegalArgumentException(
+                    "Return period expired. Returns are only accepted within 30 days of the sale.");
+        }
 
-        // 2. Obtener el cliente y vendedor directamente de la venta original
-        Customer customer = ventaOriginal.customer;
-        Seller seller = ventaOriginal.seller;
+        Customer customer = ventaOriginal.getCustomer();
+        Seller seller = ventaOriginal.getSeller();
 
-        // 3. Validar productos y contar cantidades a devolver
         Map<String, Integer> quantities = new HashMap<>();
         for (String productId : productIds) {
             quantities.merge(productId, 1, Integer::sum);
@@ -56,8 +57,8 @@ public class ReturnService {
             }
 
             // Validar que el producto pertenecía a la venta y verificar cantidad comprada
-            long qtyBought = ventaOriginal.products.stream()
-                    .filter(p -> p.id.equals(prodId))
+            long qtyBought = ventaOriginal.getProducts().stream()
+                    .filter(p -> p.getId().equals(prodId))
                     .count();
 
             if (qtyBought < qtyToReturn) {
@@ -68,7 +69,7 @@ public class ReturnService {
             for (int i = 0; i < qtyToReturn; i++) {
                 productsToReturn.add(systemProduct);
             }
-            productService.updateStock(prodId, systemProduct.getStock() + qtyToReturn);
+            productService.restoreStock(prodId, qtyToReturn);
         }
 
         // 4. Crear la devolución (Cambiamos el nombre de la variable 'return' por
@@ -87,21 +88,40 @@ public class ReturnService {
     public List<Return> viewReturnsByCustomer(String customerId) {
             List<Return> result = new ArrayList<>();
             for (Return re : returns) {
-                if (return.getCustomer().getId().equals(customerId)) {
-                    result.add(return);
+                if (re.getCustomer().getId().equals(customerId)) {
+                    result.add(re);
                 }
             }
             return result;
         }
 
-    public List<Return> viewReturnsBySale(String sellerId) {
-            List<Return> result = new ArrayList<>();
-            for (Return re : returns) {
-                if (return.getSale().getId().equals(sellerId)) {
-                    result.add(return);
+    public List<Return> viewReturnsBySeller(String sellerId) {
+        List<Return> result = new ArrayList<>();
+        for (Return re : returns) {
+            if (re.getSeller().getId().equals(sellerId)) {
+                result.add(re);
+            }
+        }
+        return result;
+    }
+    
+    public double generateMonthlyBalance(int month, int year) {
+            double totalSales = 0;
+            double totalReturns = 0;
+
+            for (Sale sale : saleService.viewAllSales()) {
+                if (sale.getDate().getMonthValue() == month && sale.getDate().getYear() == year) {
+                    totalSales += sale.calculateTotal();
                 }
             }
-            return result;
+
+            for (Return returnObj : returns) {
+                if (returnObj.getDate().getMonthValue() == month && returnObj.getDate().getYear() == year) {
+                    totalReturns += returnObj.calculateRefundAmount();
+                }
+            }
+
+            return totalSales - totalReturns;
         }
 
     public void save() {
@@ -111,7 +131,7 @@ public class ReturnService {
     private String nextReturnId() {
             int max = 0;
             for (Return re :returns) {
-                String id = return.getId();
+                String id = re.getId();
                 if (id.startsWith("V-")) {
                     try {
                         max = Math.max(max, Integer.parseInt(id.substring(2)));

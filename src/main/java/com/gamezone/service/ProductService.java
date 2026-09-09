@@ -134,6 +134,30 @@ public class ProductService {
     }
 
     /**
+     * Increments the stock of the product with the given identifier by the
+     * specified quantity and persists the change immediately.
+     *
+     * <p>This method is intended to be called when a return is processed, so
+     * that the returned units are put back into the available inventory.</p>
+     *
+     * @param productId the identifier of the product whose stock is restored
+     * @param quantity  the number of units to add back to the stock
+     * @throws IllegalArgumentException when no product matches the given id or
+     *         the quantity is negative
+     */
+    public void restoreStock(String productId, int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("Quantity to restore cannot be negative.");
+        }
+        Product product = findById(productId);
+        if (product == null) {
+            throw new IllegalArgumentException("Product not found: " + productId);
+        }
+        product.updateStock(product.getStock() + quantity);
+        saveAll();
+    }
+
+    /**
      * Validates that the identifier is not already registered and that the
      * price and stock are not negative.
      *
