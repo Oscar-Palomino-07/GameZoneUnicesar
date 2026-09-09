@@ -1,5 +1,9 @@
 # AI Usage Log — Technical Lead
 
+**Name:** Oscar Palomino
+**Role:** Leader (System-wide Architecture & Module Integration)
+**Branch:** `feature/sale-module` (primary branch for coordination)
+
 This log records AI-assisted decisions taken by the Technical Lead role during the development of GameZone Unicesar reference implementation.
 
 ### Entry 1
