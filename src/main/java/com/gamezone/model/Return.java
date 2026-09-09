@@ -15,7 +15,7 @@ import java.util.List;
  * <p>The total amount of the sale is derived from the prices of the included
  * products through {@link #calculateTotal()}.</p>
  */
-public class Sale {
+public class Return {
 
     private String id;
     private LocalDate date;
@@ -32,7 +32,7 @@ public class Sale {
      * @param seller   the seller who attended the customer
      * @param products the products included in the sale
      */
-    public Sale(String id, Customer customer, Seller seller, List<Product> products) {
+    public Return(String id, Customer customer, Seller seller, List<Product> products) {
         this.id = id;
         this.date = LocalDate.now();
         this.customer = customer;
