@@ -3,7 +3,6 @@ package com.gamezone.persistence;
 import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
-import com.gamezone.model.Sale;
 import com.gamezone.model.VideoGame;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
@@ -45,11 +44,9 @@ public class ReturnRepository {
             writeList(RETURN_FILE, returns, RETURN_TYPE);
         }
 
-        
-        public List<Sale> loadAll() {
+        public List<Return> loadAll() {
             return readList(RETURN_FILE, RETURN_TYPE);
         }
-
         
         private void writeList(String fileName, List<?> items, Type type) {
             try {

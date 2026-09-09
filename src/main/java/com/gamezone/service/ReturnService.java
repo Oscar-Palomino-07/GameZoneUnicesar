@@ -1,51 +1,22 @@
-[
-  {
-    "id": "V-1",
-    "date": "2026-09-09",
-    "customer": {
-      "email": "palominofontalvo",
-      "id": "1",
-      "firstName": "oscar",
-      "lastName": "palomino",
-      "phone": "3136888265"
-    },
-    "seller": {
-      "employeeCode": "EMP001",
-      "shift": "MORNING",
-      "id": "P-100",
-      "firstName": "Carlos",
-      "lastName": "Mendoza",
-      "phone": "3001234567"
-    },
-    "products": [
-      {
-        "brand": "xbox",
-        "model": "one x",
-        "generation": "2020",
-        "id": "1",
-        "title": "ll",
-        "price": 10.0,
-        "stock": 9
-      }
-    ]
-  }
-]
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+package com.gamezone.service;
+
+import com.gamezone.model.*;
+import com.gamezone.persistence.ReturnRepository;
+import com.gamezone.persistence.SaleRepository;
+
+import java.util.*;
 
 public class ReturnService {
-    private final ReturnRepository returnRepository;
-    private final SaleService saleService; // Lo agregamos correctamente
+
+    private final SaleService saleService;
     private final PersonService personService;
     private final ProductService productService;
+    private final ReturnRepository returnRepository;
     private final List<Return> returns;
 
-    public ReturnService(ReturnRepository returnRepository, SaleService saleService, 
-                         PersonService personService, ProductService productService) {
-        this.returnRepository = returnRepository; // Corregido: Usar el parámetro inyectado
-        this.saleService = saleService;
+    public ReturnService(ReturnRepository returnRepository, SaleService saleService, PersonService personService,
+            ProductService productService) {
+        this.returnRepository = new ReturnRepository();
         this.personService = personService;
         this.productService = productService;
         this.returns = new ArrayList<>(returnRepository.loadAll());
@@ -100,7 +71,8 @@ public class ReturnService {
             productService.updateStock(prodId, systemProduct.getStock() + qtyToReturn);
         }
 
-        // 4. Crear la devolución (Cambiamos el nombre de la variable 'return' por 'returnObj')
+        // 4. Crear la devolución (Cambiamos el nombre de la variable 'return' por
+        // 'returnObj')
         Return returnObj = new Return(nextReturnId(), customer, seller, productsToReturn);
         returns.add(returnObj);
         save(); // Recuerda tener este método implementado para persistir en tu repositorio
@@ -108,7 +80,46 @@ public class ReturnService {
         return returnObj;
     }
 
-    // Métodos auxiliares que debes tener implementados
-    private String nextReturnId() { return "RET-" + (returns.size() + 1); }
-    private void save() { returnRepository.saveAll(returns); }
+    public List<Return> viewAllReturns() {
+        return Collections.unmodifiableList(returns);
+    }
+
+    public List<Return> viewReturnsByCustomer(String customerId) {
+            List<Return> result = new ArrayList<>();
+            for (Return re : returns) {
+                if (return.getCustomer().getId().equals(customerId)) {
+                    result.add(return);
+                }
+            }
+            return result;
+        }
+
+    public List<Return> viewReturnsBySale(String sellerId) {
+            List<Return> result = new ArrayList<>();
+            for (Return re : returns) {
+                if (return.getSale().getId().equals(sellerId)) {
+                    result.add(return);
+                }
+            }
+            return result;
+        }
+
+    public void save() {
+        returnRepository.saveAll(returns);
+    }
+
+    private String nextReturnId() {
+            int max = 0;
+            for (Return re :returns) {
+                String id = return.getId();
+                if (id.startsWith("V-")) {
+                    try {
+                        max = Math.max(max, Integer.parseInt(id.substring(2)));
+                    } catch (NumberFormatException ignored) {
+                    }
+                }
+            }
+            return "V-" + (max + 1);
+        }
+
 }
