@@ -1,0 +1,62 @@
+[
+  {
+    "id": "V-1",
+    "date": "2026-09-09",
+    "customer": {
+      "email": "palominofontalvo",
+      "id": "1",
+      "firstName": "oscar",
+      "lastName": "palomino",
+      "phone": "3136888265"
+    },
+    "seller": {
+      "employeeCode": "EMP001",
+      "shift": "MORNING",
+      "id": "P-100",
+      "firstName": "Carlos",
+      "lastName": "Mendoza",
+      "phone": "3001234567"
+    },
+    "products": [
+      {
+        "brand": "xbox",
+        "model": "one x",
+        "generation": "2020",
+        "id": "1",
+        "title": "ll",
+        "price": 10.0,
+        "stock": 11
+      }
+    ]
+  },
+  {
+    "id": "V-2",
+    "date": "2026-09-09",
+    "customer": {
+      "email": "palominofontalvo",
+      "id": "1",
+      "firstName": "oscar",
+      "lastName": "palomino",
+      "phone": "3136888265"
+    },
+    "seller": {
+      "employeeCode": "EMP001",
+      "shift": "MORNING",
+      "id": "P-100",
+      "firstName": "Carlos",
+      "lastName": "Mendoza",
+      "phone": "3001234567"
+    },
+    "products": [
+      {
+        "brand": "xbox",
+        "model": "one x",
+        "generation": "2020",
+        "id": "1",
+        "title": "ll",
+        "price": 10.0,
+        "stock": 11
+      }
+    ]
+  }
+]

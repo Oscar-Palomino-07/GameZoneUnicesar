@@ -130,16 +130,16 @@ public class ReturnService {
 
     private String nextReturnId() {
             int max = 0;
-            for (Return re :returns) {
+            for (Return re : returns) {
                 String id = re.getId();
-                if (id.startsWith("V-")) {
+                if (id.startsWith("D-")) {
                     try {
                         max = Math.max(max, Integer.parseInt(id.substring(2)));
                     } catch (NumberFormatException ignored) {
                     }
                 }
             }
-            return "V-" + (max + 1);
+            return "D-" + (max + 1);
         }
 
 }
