@@ -53,11 +53,9 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ### Notes / decisions
 
-- Persistence went with **JSON files** (`data/videogames.json`, `data/consoles.json`)
-  using Gson, as required by the Technical Lead. This updates the earlier note:
-  although `docs/analysis.md` Q9 initially said "text files", JSON is a text-based
-  format, so the class diagram stays valid; the recommended update to Q9 was
-  applied for coherence.
+- Persistence went with **plain text files** (`data/videogames.txt`, `data/consoles.txt`),
+  as already decided by the team in `docs/analysis.md` Q9. My earlier JSON/Gson
+  proposal was not adopted; logged here for transparency.
 - `Product.updateStock(int)` follows the class diagram (sets the new quantity).
   The sales module will call `ProductService.updateStock(productId, quantity)`
   to reduce inventory; semantics must be synchronized with the Technical Lead.
@@ -89,16 +87,14 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 | Field | Detail |
 |---|---|
 | Date | 09-09-2026 |
-| AI tool | OpenAI-compatible assistant (opencode CLI) |
-| Task | Implement exception-based error handling requested by the Technical Lead |
-| Prompt summary | "Change `ProductService` so it also throws exceptions, consistent with the other two services." |
-| Legitimate-use category | Error explanation; code review of my own module |
-| What I did myself | Replaced the silent `isValid()` (boolean + `System.err` prints) with a `validate()` method that throws; updated the JavaDoc with `@throws` clauses; compiled with `mvn -q compile`; ran a 7-case smoke test asserting the exact error messages; pushed commit `7471200` |
-| What the AI provided | Explained how `PersonService` and `SaleService` already throw `IllegalArgumentException` and how to make `ProductService` consistent without changing the class diagram signatures |
-| Reason | The Technical Lead reported an inconsistency: `PersonService` and `SaleService` throw `IllegalArgumentException`, while `ProductService` only printed to `System.err` and returned without notifying the caller. The future `ConsoleMenu` must know whether a registration or a stock update failed; error messages had to match the wording used in `PersonService`; the diagram signatures must not change |
-| Solution obtained and decision taken | `registerVideoGame`/`registerConsole` now throw `IllegalArgumentException` for blank fields, duplicate id, and negative price/stock; `updateStock` throws for unknown id and negative quantity |
-| Output used? | Yes — used to align `ProductService` with the other two services |
-| Fully understood? | Yes — I can explain each validation and why throwing is required so the UI can catch and display the error |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Sync the local repository after the person module was merged, verify the full build, and clean up leftover placeholders |
+| Prompt summary | "Check if a new pull is needed" / "I need two more atomic commits" |
+| Legitimate-use category | Git command help; repository state inspection; error explanation |
+| What I did myself | Confirmed remote `develop` had advanced (`cf4cb84` → `0b6029d`, PR #12 person module); fast-forwarded `develop` and `feature/product-module`; ran `mvn -q compile` (passed); reviewed what the pull brought in before merging |
+| What the AI provided | Walked me through the git fast-forward/pull sequence, explained the merge conflict resolution that Veronica had done on `.gitignore`/`pom.xml`, and suggested safe cleanup commits (removing `.gitkeep` placeholders, logging this session) |
+| Output used? | Yes — used to sync and to prepare the two atomic commits |
+| Fully understood? | Yes — I can explain fast-forward vs merge and why the `.gitkeep` placeholders are no longer needed in packages that already contain classes |
 
 ---
 
@@ -107,18 +103,32 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 | Field | Detail |
 |---|---|
 | Date | 09-09-2026 |
-| AI tool | OpenAI-compatible assistant (opencode CLI) |
-| Task | Repository sync, cleanup, and reaching the 12-commit minimum |
-| Prompt summary | "Revisa si hay que hacer pull de nuevo" / "Me faltan dos commits, ¿los puedes hacer?" |
-| Legitimate-use category | Git command help; repository maintenance |
-| What I did myself | Checked the remote state with `git fetch` and `git log origin/develop`; fast-forwarded `develop` and `feature/product-module` after the person module merge; verified the nested clone held no unique work before deleting it; created two atomic commits: `chore: remove gitkeep placeholders from filled packages` and `docs: log AI usage for development sync and cleanup` |
-| What the AI provided | Confirmed whether a pull was needed, spotted the stray nested clone inside the project, and explained how to reach the workshop's minimum commit count with atomic commits |
-| Reason | `develop` advanced after PR #11 (product module) and PR #12 (person module); a nested clone appeared inside the project; I was two commits short of the minimum |
-| Solution obtained and decision taken | Fast-forwarded `develop` and `feature/product-module` (person module merged cleanly), deleted the nested clone after verifying it held no unique work, and added the two atomic commits |
-| Output used? | Yes |
-| Fully understood? | Yes — I can explain the fast-forward, why the nested clone was safe to remove, and what each commit represents |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Align `ProductService` error handling with the other services, as requested by the Technical Lead |
+| Prompt summary | "Make ProductService throw IllegalArgumentException like PersonService and SaleService so ConsoleMenu can know when registration or stock update fails" |
+| Legitimate-use category | Code review of my own module; conceptual doubt on error handling patterns; error explanation |
+| What I did myself | Compared `PersonService.registerCustomer` with my `ProductService`; planned validation ordering (blank fields, duplicate id, negative price/stock); rewrote `validate()` to throw instead of printing to `System.err`; applied the same exception-based reporting to `updateStock`; ran `mvn -q compile` and a smoke test asserting the exact exception messages for 7 invalid scenarios; updated the JavaDoc `@throws` clauses; pushed commit `7471200` immediately |
+| What the AI provided | Explained the value of unchecked exceptions for the future `ConsoleMenu` (the caller catches and displays the message), and suggested keeping the exception messages consistent with `PersonService` (e.g. "A product with id X already exists.") |
+| Output used? | Yes — used the resulting behavior in `ProductService`; already committed and pushed |
+| Fully understood? | Yes — I can defend why services throw and the UI catches, and why signatures did not change. I still need the leader to approve this change in the PR |
 
 ---
+
+## Future entries
+
+(Template to keep filling throughout the project.)
+
+| Field | Detail |
+|---|---|
+| Date | _dd-mm-yyyy_ |
+| AI tool | _name_ |
+| Task | _what I asked for_ |
+| Prompt summary | _short description of the request_ |
+| Legitimate-use category | _one of the allowed uses from the policy_ |
+| What I did myself | _the action I performed with my own understanding_ |
+| What the AI provided | _result used_ |
+| Output used? | _yes/no and where_ |
+| Fully understood? | _yes/no — I can defend this in the oral defense_ |
 
 ## Compliance checklist
 
