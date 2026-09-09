@@ -82,6 +82,38 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 04 — 2026-09-09
+
+| Field | Detail |
+|---|---|
+| Date | 09-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Sync the local repository after the person module was merged, verify the full build, and clean up leftover placeholders |
+| Prompt summary | "Check if a new pull is needed" / "I need two more atomic commits" |
+| Legitimate-use category | Git command help; repository state inspection; error explanation |
+| What I did myself | Confirmed remote `develop` had advanced (`cf4cb84` → `0b6029d`, PR #12 person module); fast-forwarded `develop` and `feature/product-module`; ran `mvn -q compile` (passed); reviewed what the pull brought in before merging |
+| What the AI provided | Walked me through the git fast-forward/pull sequence, explained the merge conflict resolution that Veronica had done on `.gitignore`/`pom.xml`, and suggested safe cleanup commits (removing `.gitkeep` placeholders, logging this session) |
+| Output used? | Yes — used to sync and to prepare the two atomic commits |
+| Fully understood? | Yes — I can explain fast-forward vs merge and why the `.gitkeep` placeholders are no longer needed in packages that already contain classes |
+
+---
+
+## Entry 05 — 2026-09-09
+
+| Field | Detail |
+|---|---|
+| Date | 09-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Align `ProductService` error handling with the other services, as requested by the Technical Lead |
+| Prompt summary | "Make ProductService throw IllegalArgumentException like PersonService and SaleService so ConsoleMenu can know when registration or stock update fails" |
+| Legitimate-use category | Code review of my own module; conceptual doubt on error handling patterns; error explanation |
+| What I did myself | Compared `PersonService.registerCustomer` with my `ProductService`; planned validation ordering (blank fields, duplicate id, negative price/stock); rewrote `validate()` to throw instead of printing to `System.err`; applied the same exception-based reporting to `updateStock`; ran `mvn -q compile` and a smoke test asserting the exact exception messages for 7 invalid scenarios; updated the JavaDoc `@throws` clauses; pushed commit `7471200` immediately |
+| What the AI provided | Explained the value of unchecked exceptions for the future `ConsoleMenu` (the caller catches and displays the message), and suggested keeping the exception messages consistent with `PersonService` (e.g. "A product with id X already exists.") |
+| Output used? | Yes — used the resulting behavior in `ProductService`; already committed and pushed |
+| Fully understood? | Yes — I can defend why services throw and the UI catches, and why signatures did not change. I still need the leader to approve this change in the PR |
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
