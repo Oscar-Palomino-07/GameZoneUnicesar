@@ -2,10 +2,12 @@ package com.gamezone.ui;
 
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
+import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
+import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 
 import java.util.ArrayList;
@@ -26,19 +28,23 @@ public class ConsoleMenu {
     private final ProductService productService;
     private final PersonService personService;
     private final SaleService saleService;
+    private final ReturnService returnService;
     private final Scanner scanner = new Scanner(System.in);
 
     /**
-     * Creates the console menu with the three services of the application.
+     * Creates the console menu with all four services of the application.
      *
      * @param productService the service used for product operations
      * @param personService  the service used for person operations
      * @param saleService    the service used for sale operations
+     * @param returnService  the service used for return operations
      */
-    public ConsoleMenu(ProductService productService, PersonService personService, SaleService saleService) {
+    public ConsoleMenu(ProductService productService, PersonService personService,
+                       SaleService saleService, ReturnService returnService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
+        this.returnService = returnService;
     }
 
     /**
@@ -51,6 +57,8 @@ public class ConsoleMenu {
             System.out.println("1. Products");
             System.out.println("2. People");
             System.out.println("3. Sales");
+            System.out.println("4. Returns");
+            System.out.println("5. Reports");
             System.out.println("0. Exit");
             int option = readInt("Choose an option: ");
             switch (option) {
@@ -62,6 +70,12 @@ public class ConsoleMenu {
                     break;
                 case 3:
                     saleMenu();
+                    break;
+                case 4:
+                    returnMenu();
+                    break;
+                case 5:
+                    reportsMenu();
                     break;
                 case 0:
                     running = false;
@@ -306,7 +320,119 @@ public class ConsoleMenu {
                 + " | customer: " + sale.getCustomer().getFirstName() + " " + sale.getCustomer().getLastName()
                 + " | seller: " + sale.getSeller().getFirstName() + " " + sale.getSeller().getLastName()
                 + " | items: " + sale.getProducts().size()
-                + " | total: $" + sale.calculateTotal());
+                + " | total: $" + sale.calculateTotal()
+                + (sale.canBeReturned() ? " [returnable]" : " [return expired]"));
+    }
+
+    // -------------------------------------------------------------------------
+    // Returns submenu
+    // -------------------------------------------------------------------------
+
+    private void returnMenu() {
+        boolean running = true;
+        while (running) {
+            System.out.println("=== RETURNS ===");
+            System.out.println("1. Register return");
+            System.out.println("2. View all returns");
+            System.out.println("3. View returns by customer");
+            System.out.println("0. Back");
+            int option = readInt("Choose an option: ");
+            switch (option) {
+                case 1:
+                    registerReturn();
+                    break;
+                case 2:
+                    viewAllReturns();
+                    break;
+                case 3:
+                    viewReturnsByCustomer();
+                    break;
+                case 0:
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Invalid option. Try again.");
+            }
+        }
+    }
+
+    private void registerReturn() {
+        String saleId = readText("Sale id to return: ");
+        String productIdsInput = readText("Product ids to return (comma separated): ");
+        List<String> productIds = new ArrayList<>();
+        for (String item : productIdsInput.split(",")) {
+            if (!item.trim().isEmpty()) {
+                productIds.add(item.trim());
+            }
+        }
+        try {
+            Return ret = returnService.registerReturn(saleId, productIds);
+            System.out.println("Return " + ret.getId() + " registered. Refund: $" + ret.calculateRefundAmount());
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void viewAllReturns() {
+        List<Return> returns = returnService.viewAllReturns();
+        if (returns.isEmpty()) {
+            System.out.println("No returns registered.");
+            return;
+        }
+        for (Return ret : returns) {
+            printReturn(ret);
+        }
+    }
+
+    private void viewReturnsByCustomer() {
+        String customerId = readText("Customer id: ");
+        List<Return> returns = returnService.viewReturnsByCustomer(customerId);
+        if (returns.isEmpty()) {
+            System.out.println("No returns found for customer " + customerId + ".");
+            return;
+        }
+        for (Return ret : returns) {
+            printReturn(ret);
+        }
+    }
+
+    private void printReturn(Return ret) {
+        System.out.println("Return " + ret.getId()
+                + " | date: " + ret.getDate()
+                + " | customer: " + ret.getCustomer().getFirstName() + " " + ret.getCustomer().getLastName()
+                + " | items: " + ret.getProducts().size()
+                + " | refund: $" + ret.calculateRefundAmount());
+    }
+
+    // -------------------------------------------------------------------------
+    // Reports submenu
+    // -------------------------------------------------------------------------
+
+    private void reportsMenu() {
+        boolean running = true;
+        while (running) {
+            System.out.println("=== REPORTS ===");
+            System.out.println("1. Monthly balance (sales - returns)");
+            System.out.println("0. Back");
+            int option = readInt("Choose an option: ");
+            switch (option) {
+                case 1:
+                    monthlyBalance();
+                    break;
+                case 0:
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Invalid option. Try again.");
+            }
+        }
+    }
+
+    private void monthlyBalance() {
+        int month = readInt("Month (1-12): ");
+        int year  = readInt("Year (e.g. 2026): ");
+        double balance = returnService.generateMonthlyBalance(month, year);
+        System.out.printf("Monthly balance for %02d/%d: $%.2f%n", month, year, balance);
     }
 
     private String readText(String prompt) {

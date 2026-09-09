@@ -171,4 +171,13 @@ public class SaleService {
         }
         return "V-" + (max + 1);
     }
+
+    public Sale findById(String saleId) {
+        for (Sale sale : sales) {
+            if (sale.getId().equals(saleId)) {
+                return sale;
+            }
+        }
+        return null;
+    }
 }
