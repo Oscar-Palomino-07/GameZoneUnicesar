@@ -93,7 +93,7 @@ public class Sale {
 
     public boolean canBeReturned() {
         LocalDate today = LocalDate.now();
-        long daysBetween = ChronoUnit.DAYS.between(this.saleDate, today);
+        long daysBetween = ChronoUnit.DAYS.between(this.date, today);
 
         return daysBetween >= 0 && daysBetween <= 30;
     }
