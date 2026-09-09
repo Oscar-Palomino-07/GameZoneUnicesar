@@ -53,9 +53,11 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ### Notes / decisions
 
-- Persistence went with **plain text files** (`data/videogames.txt`, `data/consoles.txt`),
-  as already decided by the team in `docs/analysis.md` Q9. My earlier JSON/Gson
-  proposal was not adopted; logged here for transparency.
+- Persistence went with **JSON files** (`data/videogames.json`, `data/consoles.json`)
+  using Gson, as required by the Technical Lead. This updates the earlier note:
+  although `docs/analysis.md` Q9 initially said "text files", JSON is a text-based
+  format, so the class diagram stays valid; the recommended update to Q9 was
+  applied for coherence.
 - `Product.updateStock(int)` follows the class diagram (sets the new quantity).
   The sales module will call `ProductService.updateStock(productId, quantity)`
   to reduce inventory; semantics must be synchronized with the Technical Lead.
@@ -82,21 +84,41 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
-## Future entries
-
-(Template to keep filling throughout the project.)
+## Entry 04 — 2026-09-09
 
 | Field | Detail |
 |---|---|
-| Date | _dd-mm-yyyy_ |
-| AI tool | _name_ |
-| Task | _what I asked for_ |
-| Prompt summary | _short description of the request_ |
-| Legitimate-use category | _one of the allowed uses from the policy_ |
-| What I did myself | _the action I performed with my own understanding_ |
-| What the AI provided | _result used_ |
-| Output used? | _yes/no and where_ |
-| Fully understood? | _yes/no — I can defend this in the oral defense_ |
+| Date | 09-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI) |
+| Task | Implement exception-based error handling requested by the Technical Lead |
+| Prompt summary | "Change `ProductService` so it also throws exceptions, consistent with the other two services." |
+| Legitimate-use category | Error explanation; code review of my own module |
+| What I did myself | Replaced the silent `isValid()` (boolean + `System.err` prints) with a `validate()` method that throws; updated the JavaDoc with `@throws` clauses; compiled with `mvn -q compile`; ran a 7-case smoke test asserting the exact error messages; pushed commit `7471200` |
+| What the AI provided | Explained how `PersonService` and `SaleService` already throw `IllegalArgumentException` and how to make `ProductService` consistent without changing the class diagram signatures |
+| Reason | The Technical Lead reported an inconsistency: `PersonService` and `SaleService` throw `IllegalArgumentException`, while `ProductService` only printed to `System.err` and returned without notifying the caller. The future `ConsoleMenu` must know whether a registration or a stock update failed; error messages had to match the wording used in `PersonService`; the diagram signatures must not change |
+| Solution obtained and decision taken | `registerVideoGame`/`registerConsole` now throw `IllegalArgumentException` for blank fields, duplicate id, and negative price/stock; `updateStock` throws for unknown id and negative quantity |
+| Output used? | Yes — used to align `ProductService` with the other two services |
+| Fully understood? | Yes — I can explain each validation and why throwing is required so the UI can catch and display the error |
+
+---
+
+## Entry 05 — 2026-09-09
+
+| Field | Detail |
+|---|---|
+| Date | 09-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI) |
+| Task | Repository sync, cleanup, and reaching the 12-commit minimum |
+| Prompt summary | "Revisa si hay que hacer pull de nuevo" / "Me faltan dos commits, ¿los puedes hacer?" |
+| Legitimate-use category | Git command help; repository maintenance |
+| What I did myself | Checked the remote state with `git fetch` and `git log origin/develop`; fast-forwarded `develop` and `feature/product-module` after the person module merge; verified the nested clone held no unique work before deleting it; created two atomic commits: `chore: remove gitkeep placeholders from filled packages` and `docs: log AI usage for development sync and cleanup` |
+| What the AI provided | Confirmed whether a pull was needed, spotted the stray nested clone inside the project, and explained how to reach the workshop's minimum commit count with atomic commits |
+| Reason | `develop` advanced after PR #11 (product module) and PR #12 (person module); a nested clone appeared inside the project; I was two commits short of the minimum |
+| Solution obtained and decision taken | Fast-forwarded `develop` and `feature/product-module` (person module merged cleanly), deleted the nested clone after verifying it held no unique work, and added the two atomic commits |
+| Output used? | Yes |
+| Fully understood? | Yes — I can explain the fast-forward, why the nested clone was safe to remove, and what each commit represents |
+
+---
 
 ## Compliance checklist
 
