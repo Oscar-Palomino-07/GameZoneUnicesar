@@ -1,0 +1,26 @@
+[
+  {
+    "id": "P-100",
+    "firstName": "Carlos",
+    "lastName": "Mendoza",
+    "phone": "3001234567",
+    "employeeCode": "EMP001",
+    "shift": "MORNING"
+  },
+  {
+    "id": "P-101",
+    "firstName": "Laura",
+    "lastName": "Gomez",
+    "phone": "3019876543",
+    "employeeCode": "EMP002",
+    "shift": "AFTERNOON"
+  },
+  {
+    "id": "P-102",
+    "firstName": "Andres",
+    "lastName": "Guerrero",
+    "phone": "3026541234",
+    "employeeCode": "EMP003",
+    "shift": "NIGHT"
+  }
+]
