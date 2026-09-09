@@ -98,6 +98,22 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 05 — 2026-09-09
+
+| Field | Detail |
+|---|---|
+| Date | 09-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Align `ProductService` error handling with the other services, as requested by the Technical Lead |
+| Prompt summary | "Make ProductService throw IllegalArgumentException like PersonService and SaleService so ConsoleMenu can know when registration or stock update fails" |
+| Legitimate-use category | Code review of my own module; conceptual doubt on error handling patterns; error explanation |
+| What I did myself | Compared `PersonService.registerCustomer` with my `ProductService`; planned validation ordering (blank fields, duplicate id, negative price/stock); rewrote `validate()` to throw instead of printing to `System.err`; applied the same exception-based reporting to `updateStock`; ran `mvn -q compile` and a smoke test asserting the exact exception messages for 7 invalid scenarios; updated the JavaDoc `@throws` clauses; pushed commit `7471200` immediately |
+| What the AI provided | Explained the value of unchecked exceptions for the future `ConsoleMenu` (the caller catches and displays the message), and suggested keeping the exception messages consistent with `PersonService` (e.g. "A product with id X already exists.") |
+| Output used? | Yes — used the resulting behavior in `ProductService`; already committed and pushed |
+| Fully understood? | Yes — I can defend why services throw and the UI catches, and why signatures did not change. I still need the leader to approve this change in the PR |
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
