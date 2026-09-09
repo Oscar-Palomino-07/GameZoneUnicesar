@@ -1,5 +1,9 @@
 # Developer 2 — AI Usage Log
 
+**Name:** Veronica Padilla
+**Role:** Developer 2 (Person Module)
+**Branch:** `feature/person-module`
+
 Personal log of the artificial intelligence tools used during the development
 of the GameZone Unicesar workshop. Each entry records the date, the tool used,
 the question or doubt raised, and how the AI answer supported the work.
@@ -10,36 +14,50 @@ the question or doubt raised, and how the AI answer supported the work.
 
 **Questions raised & how AI helped:**
 
-1. **Design of the person hierarchy.**
-   I asked how to distribute the common attributes (name, identification,
-   phone) and the specific attributes of `Customer` (email) and `Seller`
-   (employee code, shift) using inheritance. The AI confirmed the design:
-   an abstract base class `Person` holding the shared attributes and an
-   abstract `getRole()` method implemented by each subclass. This matches
-   the class diagram agreed by the team.
+1. **Abstract class in Java and `super()` constructors.**
+   I was designing `Person` as the base class but was not sure if declaring
+   it abstract was the right way to prevent direct instantiation while still
+   sharing attributes between `Customer` and `Seller`. I asked: "If I declare
+   a class as abstract in Java, can it still have a constructor that
+   subclasses call with super()?" The AI confirmed that abstract classes can
+   have constructors called via `super()`. This allowed me to write a single
+   constructor in `Person` for the shared fields (id, firstName, lastName,
+   phone) and call it from `Customer` and `Seller` without duplicating code.
 
-2. **Java syntax and API doubts.**
-   - Confirmed the `instanceof` pattern matching syntax introduced in
-     Java 16 (`person instanceof Customer customer`) is compatible with the
-     project's Java 17 target.
-   - Confirmed how to read/write UTF-8 files with `Files.newBufferedReader`
-     and `Files.newBufferedWriter` instead of the older `FileReader`/`FileWriter`.
-   - Confirmed that `Optional` is returned by the find methods so the sales
-     module can handle the "not found" case without null checks.
+2. **Java 17 syntax for `instanceof` pattern matching.**
+   I wanted to use `person instanceof Customer customer` in the service layer
+   but was not sure if this syntax was available in Java 17 or required a
+   preview flag. The AI confirmed it works natively in Java 17 (stable since
+   Java 16). I used it in `PersonService` to cast and access the `email`
+   field without an explicit `(Customer)` cast.
 
-3. **Compilation errors.**
-   No compilation errors appeared in this session. I used the AI to review
-   the written classes and identify possible improvements before committing.
+3. **Choosing the right file I/O API.**
+   I was using `FileReader`/`FileWriter` but had read that
+   `Files.newBufferedReader`/`newBufferedWriter` is preferred for UTF-8. The
+   AI explained the difference and confirmed that the `Files` API defaults to
+   UTF-8 and is the modern alternative. I switched to it in
+   `PersonRepository` for both reading and writing.
 
-4. **Identifier naming.**
-   I asked for suggestions in English for method names (`registerCustomer`,
-   `listCustomers`, `findCustomerByIdentification`, `findSellerByEmployeeCode`)
-   following Java naming conventions.
+4. **Return type for the find methods.**
+   I needed `findCustomerById` and `findSellerById` but was not sure whether
+   to return `null` or `Optional` when the person is not found. The AI
+   recommended `Optional<Customer>` / `Optional<Seller>`: the sales module
+   can handle `.isPresent()` without null checks, and it signals at the API
+   level that the result might be absent.
 
-5. **Git workflow support.**
-   I used the AI to confirm the order of the atomic commits (one per logical
-   change, pushed immediately to `feature/person-module`) as required by the
-   Git Flow rules of the workshop.
+5. **English method names following Java conventions.**
+   I had method names in Spanish and needed proper English camelCase names. I
+   asked for suggestions for methods that register a customer, list all
+   customers, and find a customer by ID. I adopted `registerCustomer`,
+   `listAllCustomers`, `findCustomerById`, `listAllSellers`,
+   `findSellerById` — matching the class diagram.
+
+6. **Commit strategy for the feature branch.**
+   The workshop requires one atomic commit per logical change. I asked
+   whether to commit after each class or batch them. The AI confirmed one
+   commit per class, pushed immediately. I committed `Person`, then
+   `Customer`, then `Seller`, then `PersonRepository`, then `PersonService`
+   — each as a separate atomic commit on `feature/person-module`.
 
 ## 2026-09-08 — opencode (JSON migration)
 
@@ -47,38 +65,37 @@ the question or doubt raised, and how the AI answer supported the work.
 
 **Questions raised & how AI helped:**
 
-1. **Reading the remote repository.**
-   I asked the AI to review the remote `develop` branch on GitHub. It read
-   the actual files (`docs/analysis.md`, `docs/class-diagram.md`,
-   `hierarchy-diagram.md`, `layers-diagram.md`, `TEAM.md`) through the public
-   GitHub API and confirmed that the authoritative diagram uses `Person(id,
-   firstName, lastName, phone)` without `getRole()`, and that
-   `PersonService` declares `findCustomerById`/`findSellerById`.
+1. **Verifying the final design from `docs/class-diagram.md`.**
+   The class diagram on `develop` had been updated and I needed to confirm
+   the final method signatures for `Person` and `PersonService` before
+   writing code. I asked the AI to read the latest diagram and tell me if
+   `Person` has a `getRole()` method or not. It does NOT have `getRole()` in
+   the final diagram, so I removed it from my implementation. I also
+   confirmed `PersonService` uses `findCustomerById` and `findSellerById`.
 
-2. **Migrating persistence to JSON with Gson.**
-   The team decided to switch the person files from plain text to JSON. I
-   asked how to serialize the two subclasses with Gson without adding a
-   type discriminator; the AI explained that, since `PersonRepository`
-   loads each concrete type in its own list
-   (`TypeToken<List<Customer>>`, `TypeToken<List<Seller>>`), Gson does not
-   need polymorphic serialization, so the files stay clean.
+2. **Serializing `Customer` and `Seller` lists to JSON without a type
+   discriminator.**
+   The team decided to migrate from plain text to JSON using Gson. I had two
+   separate lists (`List<Customer>` and `List<Seller>`) and was not sure if
+   Gson needed a type field to distinguish them. The AI confirmed no
+   discriminator is needed: each list goes to its own file
+   (`data/customers.json`, `data/sellers.json`) and
+   `TypeToken<List<Customer>>` handles the deserialization directly.
 
-3. **Maven/Gson setup.**
-   I asked how to declare the Gson dependency in `pom.xml` and the AI
-   confirmed the coordinates (`com.google.code.gson:gson:2.10.1`) and that
-   the `maven-compiler-plugin` target 17 does not require extra config.
+3. **Adding the Gson dependency to `pom.xml`.**
+   I had never added Gson to a Maven project before and needed the correct
+   coordinates. The AI provided `com.google.code.gson:gson:2.14.0` and
+   confirmed no additional compiler configuration was needed.
 
-4. **Alignment of method names.**
-   I used the AI to rename the service and repository methods so they match
-   the class diagram exactly (`listAllCustomers`, `listAllSellers`,
-   `findCustomerById`, `findSellerById`, `saveAllCustomers`,
-   `loadAllCustomers`, etc.).
-
-5. **Git Flow integration.**
-   I confirmed that merging `develop` into the feature branch (instead of
-   rebasing) is the compliant way to integrate the new documentation,
-   because a rebase would require a forced push, which the workshop
-   forbids.
+4. **Renaming methods after the diagram update.**
+   I had named my methods `findCustomerByIdentification` and
+   `findSellerByEmployeeCode`, but the updated diagram uses
+   `findCustomerById` and `findSellerById`, and I also needed to align the
+   repository method names. To integrate the updated documentation without
+   rewriting history, I asked about merge vs. rebase: merge is safe (no
+   force-push needed), while rebase would rewrite history and require
+   `--force`. I used `git merge develop` to integrate the updated
+   documentation into the feature branch.
 
 ## 2026-09-08 — opencode (sync with develop after product PR)
 
@@ -86,31 +103,16 @@ the question or doubt raised, and how the AI answer supported the work.
 
 **Questions raised & how AI helped:**
 
-1. **Checking when to pull `develop`.**
-   The team confirmed Option A and told me to merge `develop` into
-   `feature/person-module` only after the product module PR (Manuel) was
-   merged, so the Gson dependency is inherited from `develop`. The AI helped
-   me verify the remote state first (`git fetch` + `git log
-   origin/develop`), confirming PR #11 was already merged before doing the
-   merge.
+1. **Checking the remote state before merging.**
+   I needed to verify that Manuel's product module PR had been merged into
+   `develop` before pulling, so I would inherit the Gson dependency. The AI
+   showed me how to check without opening GitHub in the browser:
+   `git fetch` + `git log origin/develop --oneline` confirmed PR #11 was
+   merged, and I proceeded with the merge.
 
-2. **Resolving merge conflicts.**
-   The merge produced two conflicts: `.gitignore` (both branches added an
-   IntelliJ comment) and `pom.xml` (Gson `2.10.1` vs `2.14.0`). The AI
-   suggested resolving them by keeping a single `.gitignore` comment and
-   unifying on the `develop` version `2.14.0`, so person and product modules
-   share the same Gson version.
-
-3. **Unifying the repository style.**
-   The leader recommended using Manuel's `ProductRepository` as the style
-   reference for `PersonRepository`. I asked the AI to refactor mine to the
-   same pattern (string file constants, static `TypeToken` constants,
-   private `writeList`/`readList` helpers, graceful fallback to an empty
-   list) while keeping the method names defined in the class diagram
-   (`saveAllCustomers`, `loadAllCustomers`, `saveAllSellers`,
-   `loadAllSellers`).
-
-4. **Regression check.**
-   Since Gson was bumped to `2.14.0`, the AI compiled the module with the
-   new jar and reran the previous smoke test, confirming the JSON files and
-   the service operations still work.
+2. **Resolving merge conflicts after integrating develop.**
+   The merge produced two conflicts: `.gitignore` had duplicate IntelliJ
+   comments, and `pom.xml` had different Gson versions (2.10.1 vs 2.14.0). I
+   asked which version to keep; the decision was to keep 2.14.0 (the
+   `develop` version) because it is the newer one and both modules should use
+   the same version. For `.gitignore` I kept a single IntelliJ comment block.
