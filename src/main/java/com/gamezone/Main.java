@@ -20,11 +20,6 @@ import com.gamezone.ui.ConsoleMenu;
  */
 public class Main {
 
-    /**
-     * Starts the application.
-     *
-     * @param args the command line arguments (not used)
-     */
     public static void main(String[] args) {
         PersonRepository personRepository = new PersonRepository();
         ProductRepository productRepository = new ProductRepository();
