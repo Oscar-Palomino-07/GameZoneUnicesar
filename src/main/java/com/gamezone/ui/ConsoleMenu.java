@@ -169,10 +169,14 @@ public class ConsoleMenu {
         String platform = readText("Platform: ");
         String genre = readText("Genre: ");
         String ageRating = readText("Age rating: ");
-        productService.registerVideoGame(id, title, price, stock, platform, genre, ageRating);
-        System.out.println(productService.findById(id) != null
-                ? "Video game registered."
-                : "Video game could not be registered.");
+        try {
+            productService.registerVideoGame(id, title, price, stock, platform, genre, ageRating);
+            System.out.println(productService.findById(id) != null
+                    ? "Video game registered."
+                    : "Video game could not be registered.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void registerConsole() {
@@ -183,10 +187,14 @@ public class ConsoleMenu {
         String brand = readText("Brand: ");
         String model = readText("Model: ");
         String generation = readText("Generation: ");
-        productService.registerConsole(id, title, price, stock, brand, model, generation);
-        System.out.println(productService.findById(id) != null
-                ? "Console registered."
-                : "Console could not be registered.");
+        try {
+            productService.registerConsole(id, title, price, stock, brand, model, generation);
+            System.out.println(productService.findById(id) != null
+                    ? "Console registered."
+                    : "Console could not be registered.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private void listAllProducts() {
