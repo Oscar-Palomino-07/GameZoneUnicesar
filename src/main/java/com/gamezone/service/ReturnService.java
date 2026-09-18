@@ -93,7 +93,7 @@ public class ReturnService {
             productService.restoreStock(prodId, qtyToReturn);
         }
 
-        Return returnObj = new Return(nextReturnId(), customer, seller, productsToReturn);
+        Return returnObj = new Return(nextReturnId(), saleId, customer, seller, productsToReturn);
         returns.add(returnObj);
         save();
 
@@ -109,8 +109,18 @@ public class ReturnService {
         Map<String, Integer> countMap = new HashMap<>();
 
         for (Return ret : returns) {
-            if (!ret.getCustomer().getId().equals(sale.getCustomer().getId())) continue;
-            if (!ret.getSeller().getId().equals(sale.getSeller().getId())) continue;
+            if (ret.getSaleId() != null) {
+                if (!ret.getSaleId().equals(sale.getId())) {
+                    continue;
+                }
+            } else {
+                if (!ret.getCustomer().getId().equals(sale.getCustomer().getId())) {
+                    continue;
+                }
+                if (!ret.getSeller().getId().equals(sale.getSeller().getId())) {
+                    continue;
+                }
+            }
 
             for (Product p : ret.getProducts()) {
                 if (saleProductIds.contains(p.getId())) {
@@ -131,20 +141,20 @@ public class ReturnService {
         }
         List<Return> result = new ArrayList<>();
         for (Return re : returns) {
-            if (re.getCustomer().getId().equals(customerId)) {
+            if (re.getCustomer() != null && re.getCustomer().getId().equals(customerId)) {
                 result.add(re);
             }
         }
         return result;
     }
 
-    public List<Return> viewReturnsBySeller(String sellerId) {
-        if (sellerId == null || sellerId.isBlank()) {
-            throw new IllegalArgumentException("Seller ID must not be null or empty.");
+    public List<Return> viewReturnsBySale(String saleId) {
+        if (saleId == null || saleId.isBlank()) {
+            throw new IllegalArgumentException("Sale ID must not be null or empty.");
         }
         List<Return> result = new ArrayList<>();
         for (Return re : returns) {
-            if (re.getSeller().getId().equals(sellerId)) {
+            if (saleId.equals(re.getSaleId())) {
                 result.add(re);
             }
         }
