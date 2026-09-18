@@ -1,11 +1,16 @@
 package com.gamezone.persistence;
 
+import com.gamezone.model.BasicWarranty;
 import com.gamezone.model.ExtendedWarranty;
+import com.gamezone.model.Product;
+import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
+import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
@@ -13,6 +18,7 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -73,6 +79,80 @@ public class WarrantyRepository {
         } catch (IOException e) {
             System.err.println("Error saving warranties to " + WARRANTIES_FILE + ": " + e.getMessage());
         }
+    }
+
+    /**
+     * Loads all warranties from the warranties JSON file. Warranties whose
+     * sale or product can no longer be found are skipped.
+     *
+     * @return the list of stored warranties, or an empty list if the file
+     *         does not exist or cannot be parsed
+     */
+    public List<Warranty> loadAll() {
+        List<Warranty> warranties = new ArrayList<>();
+        Path path = Paths.get(WARRANTIES_FILE);
+        if (!Files.exists(path)) {
+            return warranties;
+        }
+        List<WarrantyRecord> records;
+        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            records = gson.fromJson(reader, RECORDS_TYPE);
+        } catch (IOException | JsonSyntaxException e) {
+            System.err.println("Error loading warranties from " + WARRANTIES_FILE + ": " + e.getMessage());
+            return warranties;
+        }
+        if (records == null) {
+            return warranties;
+        }
+
+        List<Sale> sales = saleRepository.loadAll();
+        for (WarrantyRecord record : records) {
+            Sale sale = findSale(sales, record.saleId);
+            Product product = sale != null ? findProduct(sale, record.productId) : null;
+            if (product == null) {
+                System.err.println("Skipping warranty " + record.id + ": sale or product not found.");
+                continue;
+            }
+            LocalDate startDate = LocalDate.parse(record.startDate);
+            if (EXTENDED.equals(record.type)) {
+                warranties.add(new ExtendedWarranty(record.id, product, sale, startDate));
+            } else {
+                warranties.add(new BasicWarranty(record.id, product, sale, startDate));
+            }
+        }
+        return warranties;
+    }
+
+    /**
+     * Finds a sale by its identifier.
+     *
+     * @param sales  the stored sales
+     * @param saleId the identifier to look for
+     * @return the matching sale, or {@code null} if it does not exist
+     */
+    private Sale findSale(List<Sale> sales, String saleId) {
+        for (Sale sale : sales) {
+            if (sale.getId().equals(saleId)) {
+                return sale;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Finds a product by its identifier among the products of a sale.
+     *
+     * @param sale      the sale to search in
+     * @param productId the identifier to look for
+     * @return the matching product, or {@code null} if the sale does not include it
+     */
+    private Product findProduct(Sale sale, String productId) {
+        for (Product product : sale.getProducts()) {
+            if (product.getId().equals(productId)) {
+                return product;
+            }
+        }
+        return null;
     }
 
     /**
