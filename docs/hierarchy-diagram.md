@@ -28,4 +28,14 @@ classDiagram
     Accessory <|-- Controller
     Accessory <|-- Cable
     Accessory <|-- Memory
+
+    class Promotion {
+        <<abstract>>
+    }
+    class PercentageDiscount
+    class CategoryDiscount
+    class BulkPurchaseDiscount
+    Promotion <|-- PercentageDiscount
+    Promotion <|-- CategoryDiscount
+    Promotion <|-- BulkPurchaseDiscount
 ```
