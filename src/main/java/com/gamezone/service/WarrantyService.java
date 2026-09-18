@@ -112,6 +112,23 @@ public class WarrantyService {
         return Collections.unmodifiableList(warranties);
     }
 
+    /**
+     * Returns the warranties that are active on the current date.
+     *
+     * @return the active warranties, or an empty list when none is active
+     */
+    public List<Warranty> listActiveWarranties() {
+        LocalDate today = LocalDate.now();
+        List<Warranty> result = new ArrayList<>();
+        for (Warranty warranty : warranties) {
+            // The date rule belongs to the model; the service only supplies today's date.
+            if (warranty.isActive(today)) {
+                result.add(warranty);
+            }
+        }
+        return result;
+    }
+
     // Checks the data needed to create a warranty: nothing missing, the product
     // is a console and the product belongs to the sale.
     private void validateWarrantyRequest(Product product, Sale sale, LocalDate startDate) {
