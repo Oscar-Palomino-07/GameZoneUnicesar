@@ -52,6 +52,14 @@ public class VideoGame extends Product {
     }
 
     /**
+     * @return the product category constant {@code VIDEOGAME}
+     */
+    @Override
+    public String getCategory() {
+        return "VIDEOGAME";
+    }
+
+    /**
      * Builds a description that integrates the common attributes with the
      * attributes particular to video games.
      *

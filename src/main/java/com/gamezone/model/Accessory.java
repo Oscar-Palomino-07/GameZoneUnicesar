@@ -84,6 +84,14 @@ public abstract class Accessory extends Product {
     }
 
     /**
+     * @return the product category constant {@code ACCESSORY}
+     */
+    @Override
+    public String getCategory() {
+        return "ACCESSORY";
+    }
+
+    /**
      * Builds the part of the description shared by every accessory. Concrete
      * accessories should override this method, prefix their type and append
      * their particular attributes to this text.

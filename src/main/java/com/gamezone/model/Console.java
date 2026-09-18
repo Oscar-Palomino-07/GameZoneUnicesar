@@ -52,6 +52,14 @@ public class Console extends Product {
     }
 
     /**
+     * @return the product category constant {@code CONSOLE}
+     */
+    @Override
+    public String getCategory() {
+        return "CONSOLE";
+    }
+
+    /**
      * Builds a description that integrates the common attributes with the
      * attributes particular to consoles.
      *
