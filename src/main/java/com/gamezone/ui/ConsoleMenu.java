@@ -1,10 +1,12 @@
 package com.gamezone.ui;
 
+import com.gamezone.model.Accessory;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.ReturnService;
@@ -29,22 +31,25 @@ public class ConsoleMenu {
     private final PersonService personService;
     private final SaleService saleService;
     private final ReturnService returnService;
+    private final AccessoryService accessoryService;
     private final Scanner scanner = new Scanner(System.in);
 
     /**
-     * Creates the console menu with all four services of the application.
+     * Creates the console menu with all five services of the application.
      *
-     * @param productService the service used for product operations
-     * @param personService  the service used for person operations
-     * @param saleService    the service used for sale operations
-     * @param returnService  the service used for return operations
+     * @param productService  the service used for product operations
+     * @param personService   the service used for person operations
+     * @param saleService     the service used for sale operations
+     * @param returnService   the service used for return operations
+     * @param accessoryService the service used for accessory operations
      */
     public ConsoleMenu(ProductService productService, PersonService personService,
-                       SaleService saleService, ReturnService returnService) {
+                       SaleService saleService, ReturnService returnService, AccessoryService accessoryService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.returnService = returnService;
+        this.accessoryService = accessoryService;
     }
 
     /**
@@ -58,7 +63,8 @@ public class ConsoleMenu {
             System.out.println("2. People");
             System.out.println("3. Sales");
             System.out.println("4. Returns");
-            System.out.println("5. Reports");
+            System.out.println("5. Accessories");
+            System.out.println("6. Reports");
             System.out.println("0. Exit");
             int option = readInt("Choose an option: ");
             switch (option) {
@@ -75,6 +81,9 @@ public class ConsoleMenu {
                     returnMenu();
                     break;
                 case 5:
+                    accessoryMenu();
+                    break;
+                case 6:
                     reportsMenu();
                     break;
                 case 0:
@@ -265,12 +274,9 @@ public class ConsoleMenu {
         String customerId = readText("Customer id: ");
         String sellerId = readText("Seller id: ");
         String productIdsInput = readText("Product ids (comma separated): ");
-        List<String> productIds = new ArrayList<>();
-        for (String item : productIdsInput.split(",")) {
-            if (!item.trim().isEmpty()) {
-                productIds.add(item.trim());
-            }
-        }
+        List<String> productIds = parseIds(productIdsInput);
+        String accessoryIdsInput = readText("Accessory ids (comma separated, optional): ");
+        productIds.addAll(parseIds(accessoryIdsInput));
         try {
             Sale sale = saleService.registerSale(customerId, sellerId, productIds);
             System.out.println("Sale " + sale.getId() + " registered. Total: $" + sale.calculateTotal());
@@ -449,6 +455,146 @@ public class ConsoleMenu {
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private void accessoryMenu() {
+        boolean running = true;
+        while (running) {
+            System.out.println("=== ACCESSORIES ===");
+            System.out.println("1. Register controller");
+            System.out.println("2. Register cable");
+            System.out.println("3. Register memory");
+            System.out.println("4. List all accessories");
+            System.out.println("5. List accessories by type");
+            System.out.println("6. View accessories compatible with a console");
+            System.out.println("0. Back");
+            int option = readInt("Choose an option: ");
+            switch (option) {
+                case 1:
+                    registerController();
+                    break;
+                case 2:
+                    registerCable();
+                    break;
+                case 3:
+                    registerMemory();
+                    break;
+                case 4:
+                    listAllAccessories();
+                    break;
+                case 5:
+                    listAccessoriesByType();
+                    break;
+                case 6:
+                    listAccessoriesCompatibleWith();
+                    break;
+                case 0:
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Invalid option. Try again.");
+            }
+        }
+    }
+
+    private void registerController() {
+        String title = readText("Title: ");
+        double price = readDouble("Price: ");
+        int stock = readInt("Stock: ");
+        String connectionType = readText("Connection type (WIRELESS/WIRED): ");
+        String consoleIdsInput = readText("Compatible console ids (comma separated): ");
+        List<String> consoleIds = parseIds(consoleIdsInput);
+        try {
+            Accessory controller = accessoryService.registerController(title, price, stock, connectionType, consoleIds);
+            System.out.println("Controller " + controller.getId() + " registered.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void registerCable() {
+        String title = readText("Title: ");
+        double price = readDouble("Price: ");
+        int stock = readInt("Stock: ");
+        double lengthInMeters = readDouble("Length in meters: ");
+        String connectorType = readText("Connector type: ");
+        String consoleIdsInput = readText("Compatible console ids (comma separated): ");
+        List<String> consoleIds = parseIds(consoleIdsInput);
+        try {
+            Accessory cable = accessoryService.registerCable(title, price, stock, lengthInMeters, connectorType, consoleIds);
+            System.out.println("Cable " + cable.getId() + " registered.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void registerMemory() {
+        String title = readText("Title: ");
+        double price = readDouble("Price: ");
+        int stock = readInt("Stock: ");
+        int capacityInGb = readInt("Capacity in GB: ");
+        String memoryType = readText("Memory type: ");
+        String consoleIdsInput = readText("Compatible console ids (comma separated): ");
+        List<String> consoleIds = parseIds(consoleIdsInput);
+        try {
+            Accessory memory = accessoryService.registerMemory(title, price, stock, capacityInGb, memoryType, consoleIds);
+            System.out.println("Memory " + memory.getId() + " registered.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void listAllAccessories() {
+        List<Accessory> accessories = accessoryService.listAllAccessories();
+        if (accessories.isEmpty()) {
+            System.out.println("No accessories registered.");
+            return;
+        }
+        for (Accessory accessory : accessories) {
+            System.out.println(accessory.getDescription());
+        }
+    }
+
+    private void listAccessoriesByType() {
+        String type = readText("Type (CONTROLLER/CABLE/MEMORY): ");
+        try {
+            List<Accessory> accessories = accessoryService.listAccessoriesByType(type);
+            if (accessories.isEmpty()) {
+                System.out.println("No accessories of type " + type + " registered.");
+                return;
+            }
+            for (Accessory accessory : accessories) {
+                System.out.println(accessory.getDescription());
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void listAccessoriesCompatibleWith() {
+        String consoleId = readText("Console id: ");
+        try {
+            List<Accessory> accessories = accessoryService.findAccessoriesCompatibleWith(consoleId);
+            if (accessories.isEmpty()) {
+                System.out.println("No accessories compatible with console " + consoleId + ".");
+                return;
+            }
+            for (Accessory accessory : accessories) {
+                System.out.println(accessory.getDescription());
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private List<String> parseIds(String input) {
+        List<String> ids = new ArrayList<>();
+        for (String item : input.split(",")) {
+            if (!item.trim().isEmpty()) {
+                ids.add(item.trim());
+            }
+        }
+        return ids;
     }
 
     private String readText(String prompt) {
