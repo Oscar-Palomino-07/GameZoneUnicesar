@@ -1,6 +1,7 @@
 package com.gamezone.ui;
 
 import com.gamezone.model.Accessory;
+import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
@@ -13,6 +14,7 @@ import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -277,12 +279,40 @@ public class ConsoleMenu {
         List<String> productIds = parseIds(productIdsInput);
         String accessoryIdsInput = readText("Accessory ids (comma separated, optional): ");
         productIds.addAll(parseIds(accessoryIdsInput));
+        List<String> extendedWarrantyIds = askExtendedWarranties(productIds);
         try {
-            Sale sale = saleService.registerSale(customerId, sellerId, productIds);
+            Sale sale = saleService.registerSale(customerId, sellerId, productIds, extendedWarrantyIds);
             System.out.println("Sale " + sale.getId() + " registered. Total: $" + sale.calculateTotal());
+            if (sale.getWarrantyExtraCost() > 0) {
+                System.out.println("El total incluye $" + sale.getWarrantyExtraCost()
+                        + " por garantía extendida.");
+            }
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    /**
+     * Asks the user, for every distinct console included in the sale, whether
+     * the extended warranty must be added.
+     *
+     * @param itemIds the identifiers of the items entered for the sale
+     * @return the identifiers of the consoles for which the user accepted the
+     *         extended warranty
+     */
+    private List<String> askExtendedWarranties(List<String> itemIds) {
+        List<String> extendedWarrantyIds = new ArrayList<>();
+        for (String itemId : new LinkedHashSet<>(itemIds)) {
+            Product item = productService.findById(itemId);
+            if (item instanceof Console) {
+                String answer = readText("¿Desea garantía extendida para la consola " + item.getTitle()
+                        + " (" + itemId + ")? (s/n): ");
+                if (answer.equalsIgnoreCase("s")) {
+                    extendedWarrantyIds.add(itemId);
+                }
+            }
+        }
+        return extendedWarrantyIds;
     }
 
     private void viewAllSales() {
