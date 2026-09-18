@@ -1,13 +1,13 @@
 [
   {
-    "percentage": 15.0,
+    "discountPercentage": 15.0,
     "id": "PR-1",
     "name": "Descuento general 15%",
     "startDate": "2026-09-01",
     "endDate": "2026-12-31"
   },
   {
-    "percentage": 20.0,
+    "discountPercentage": 20.0,
     "targetCategory": "VIDEOGAME",
     "id": "PR-2",
     "name": "20% en videojuegos",
@@ -16,7 +16,7 @@
   },
   {
     "minimumQuantity": 3,
-    "percentage": 10.0,
+    "discountPercentage": 10.0,
     "id": "PR-3",
     "name": "10% llevando 3 o más",
     "startDate": "2026-09-01",
