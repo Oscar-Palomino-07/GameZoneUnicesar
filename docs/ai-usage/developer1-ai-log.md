@@ -136,6 +136,28 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 07 — 2026-09-18
+
+| Field | Detail |
+|---|---|
+| Date | 18-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Implement the promotion model hierarchy — `Promotion`, `PercentageDiscount`, `CategoryDiscount`, `BulkPurchaseDiscount` — and the `Product.getCategory()` discriminator, then update the hierarchy diagram |
+| Prompt summary | "Proceed with Developer 1's promotion model per docs/promotion-development-guide.md, one atomic commit per class" |
+| Legitimate-use category | Java/Maven guidance; code review of my own module; explanation of abstract methods, polymorphism and defensive null handling |
+| What I did myself | Connected to the shared `feature/promotion-module` branch (created by the leader) and pulled the guide, the analysis scaffold and the preloaded `data/promotions.json`; read `docs/promotion-development-guide.md` (the module contract) and the class diagram to align field names and signatures; fixed a pre-existing compile error in `AccessoryService` (constructor calls used the wrong argument order against the model hierarchy); ran `mvn -q compile` after every commit; wrote the Mermaid branch of `docs/hierarchy-diagram.md`; created and pushed one atomic commit per class |
+| What the AI provided | First-draft source code for the four promotion classes and the `getCategory()` additions, following the exact signatures in the leader's development guide (`calculateDiscount(List<Product>)`, shared `discountPercentage`, `minimumQuantity`), plus explanations of the inclusive `isActive` window and the null-safe discount calculations |
+| Output used? | Yes — used as the working basis for the promotion classes, then verified by compilation and my own review of each segment |
+| Fully understood? | Yes — I can explain the hierarchy, why `calculateDiscount` is abstract, how `isActive` checks the inclusive window, and why each concrete promotion turns the shared percentage into money differently |
+
+### Notes / decisions
+
+- The contract in `docs/promotion-development-guide.md` deviates from the exam wording — `calculateDiscount(Sale)` became `calculateDiscount(List<Product>)`, `discountPercentage` moved up to `Promotion`, `minimumQuantity` replaces `minQuantity`, and category filtering uses a new `Product.getCategory()` (`VIDEOGAME`/`CONSOLE`/`ACCESSORY`) instead of `instanceof`. I followed the guide as the agreed module contract and flagged the differences in this log.
+- Commits produced in this session: `fix(accessory): align constructor calls with the model hierarchy`, `feat(model): add abstract Promotion class with shared discount attributes`, `feat(model): add category discriminator to the Product hierarchy`, `feat(model): add PercentageDiscount promotion`, `feat(model): add CategoryDiscount promotion`, `feat(model): add BulkPurchaseDiscount promotion`, `docs: update hierarchy diagram with promotion classes`.
+- Field names the service and deserializer can rely on: `Promotion.{id,name,startDate,endDate,discountPercentage}`, `CategoryDiscount.targetCategory`, `BulkPurchaseDiscount.minimumQuantity`.
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
