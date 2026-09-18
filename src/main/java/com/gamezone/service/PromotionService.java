@@ -3,6 +3,7 @@ package com.gamezone.service;
 import com.gamezone.model.BulkPurchaseDiscount;
 import com.gamezone.model.CategoryDiscount;
 import com.gamezone.model.PercentageDiscount;
+import com.gamezone.model.Product;
 import com.gamezone.model.Promotion;
 import com.gamezone.persistence.PromotionRepository;
 
@@ -10,6 +11,7 @@ import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
 /**
  * Provides the business operations for the promotion module of GameZone
@@ -151,6 +153,35 @@ public class PromotionService {
             }
         }
         return null;
+    }
+
+    /**
+     * Chooses, among the active promotions, the one that gives the greatest
+     * discount to the given set of products. Promotions are not cumulative, so
+     * only one promotion is returned.
+     *
+     * @param products the products of the sale to evaluate
+     * @return the promotion with the greatest discount, or an empty
+     *         {@link Optional} when no promotion applies or the greatest
+     *         discount is zero
+     * @throws IllegalArgumentException when the product list is {@code null}
+     */
+    public Optional<Promotion> bestPromotionFor(List<Product> products) {
+        if (products == null) {
+            throw new IllegalArgumentException("La lista de productos es obligatoria para buscar promociones.");
+        }
+        Promotion bestPromotion = null;
+        double maxDiscount = 0.0;
+        for (Promotion promotion : listActivePromotions(LocalDate.now())) {
+            // Polymorphism: each promotion type calculates its own discount.
+            double discount = promotion.calculateDiscount(products);
+            // Strictly greater, so a zero discount never becomes the best promotion.
+            if (discount > maxDiscount) {
+                maxDiscount = discount;
+                bestPromotion = promotion;
+            }
+        }
+        return Optional.ofNullable(bestPromotion);
     }
 
     // Validates the attributes shared by every promotion.
