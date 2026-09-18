@@ -1,6 +1,7 @@
 [
   {
     "id": "D-1",
+    "saleId": "V-1",
     "date": "2026-09-09",
     "customer": {
       "email": "palominofontalvo",

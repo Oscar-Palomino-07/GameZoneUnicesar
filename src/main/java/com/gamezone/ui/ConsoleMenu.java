@@ -335,6 +335,7 @@ public class ConsoleMenu {
             System.out.println("1. Register return");
             System.out.println("2. View all returns");
             System.out.println("3. View returns by customer");
+            System.out.println("4. View returns by sale");
             System.out.println("0. Back");
             int option = readInt("Choose an option: ");
             switch (option) {
@@ -346,6 +347,9 @@ public class ConsoleMenu {
                     break;
                 case 3:
                     viewReturnsByCustomer();
+                    break;
+                case 4:
+                    viewReturnsBySale();
                     break;
                 case 0:
                     running = false;
@@ -368,7 +372,7 @@ public class ConsoleMenu {
         try {
             Return ret = returnService.registerReturn(saleId, productIds);
             System.out.println("Return " + ret.getId() + " registered. Refund: $" + ret.calculateRefundAmount());
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
     }
@@ -396,6 +400,18 @@ public class ConsoleMenu {
         }
     }
 
+    private void viewReturnsBySale() {
+        String saleId = readText("Sale id: ");
+        List<Return> returns = returnService.viewReturnsBySale(saleId);
+        if (returns.isEmpty()) {
+            System.out.println("No returns found for sale " + saleId + ".");
+            return;
+        }
+        for (Return ret : returns) {
+            printReturn(ret);
+        }
+    }
+
     private void printReturn(Return ret) {
         System.out.println("Return " + ret.getId()
                 + " | date: " + ret.getDate()
@@ -403,10 +419,6 @@ public class ConsoleMenu {
                 + " | items: " + ret.getProducts().size()
                 + " | refund: $" + ret.calculateRefundAmount());
     }
-
-    // -------------------------------------------------------------------------
-    // Reports submenu
-    // -------------------------------------------------------------------------
 
     private void reportsMenu() {
         boolean running = true;
@@ -431,8 +443,12 @@ public class ConsoleMenu {
     private void monthlyBalance() {
         int month = readInt("Month (1-12): ");
         int year  = readInt("Year (e.g. 2026): ");
-        double balance = returnService.generateMonthlyBalance(month, year);
-        System.out.printf("Monthly balance for %02d/%d: $%.2f%n", month, year, balance);
+        try {
+            double balance = returnService.generateMonthlyBalance(month, year);
+            System.out.printf("Monthly balance for %02d/%d: $%.2f%n", month, year, balance);
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println(e.getMessage());
+        }
     }
 
     private String readText(String prompt) {
