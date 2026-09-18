@@ -136,6 +136,28 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 07 — 2026-09-18
+
+| Field | Detail |
+|---|---|
+| Date | 18-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Implement the warranty model hierarchy — `Warranty`, `BasicWarranty` and `ExtendedWarranty` — in `com.gamezone.model`, and update the hierarchy diagram |
+| Prompt summary | "Proceed with requirement 4 as Developer 1: the warranty hierarchy per the assignment guide, one atomic commit per class" |
+| Legitimate-use category | Java/Maven guidance; code review of my own module; explanation of abstract classes, constructor-time polymorphism and date arithmetic |
+| What I did myself | Connected to the shared `feature/warranty-module` branch (created by the leader from `develop`) and created my sub-branch `feature/warranty-model`; verified there was no leader warranty guide yet and that the base compiles; ran `mvn -q compile` after each class; wrote the Mermaid branch of `docs/hierarchy-diagram.md`; created and pushed the commits stated below |
+| What the AI provided | First-draft source code for the three classes and explanations of the design points: why `endDate` must be computed inside the constructor via the abstract `getDurationInMonths()` (polymorphism at construction time), the null-safe inclusive range in `isActive`, and that `ExtendedWarranty`'s cost derives from `getProduct().getPrice()` |
+| Output used? | Yes — used as the working basis for the warranty classes, then verified by compilation and my own review of each class |
+| Fully understood? | Yes — I can explain each class without the guide: the `super(id, product, sale, startDate)` chaining, when the `@Override` methods are invoked, the `startDate.plusMonths(...)` arithmetic, and why the certificate is a user-facing string hence written in Spanish |
+
+### Notes / decisions
+
+- The commits produced in this session, one per deliverable: `feat(model): add abstract Warranty class with automatic expiration`, `feat(model): add BasicWarranty`, `feat(model): add ExtendedWarranty`, `docs: update hierarchy diagram with warranty classes`, `docs: add AI usage entry for warranty model`.
+- The assignment states the warranty certificate must be formatted in Spanish, so its content is Spanish even though identifiers, comments and commit messages stay in English.
+- Only files in the model package and the hierarchy diagram were touched; persistence, service and integration belong to the other two developers.
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
