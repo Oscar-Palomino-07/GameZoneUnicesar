@@ -40,7 +40,8 @@ public class Main {
                 warrantyService);
         ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService);
 
-        ConsoleMenu menu = new ConsoleMenu(productService, personService, saleService, returnService, accessoryService);
+        ConsoleMenu menu = new ConsoleMenu(productService, personService, saleService, returnService,
+                accessoryService, warrantyService);
         menu.start();
     }
 }
