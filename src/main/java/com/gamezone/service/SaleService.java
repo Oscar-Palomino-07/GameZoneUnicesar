@@ -1,5 +1,6 @@
 package com.gamezone.service;
 
+import com.gamezone.model.Accessory;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
@@ -30,21 +31,26 @@ public class SaleService {
     private final SaleRepository saleRepository;
     private final PersonService personService;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
     private final List<Sale> sales;
 
     /**
      * Creates the sale service, loading the stored sales from the repository
      * into memory.
      *
-     * @param saleRepository the repository used to persist sales
-     * @param personService  the service used to locate customers and sellers
-     * @param productService the service used to locate products and update
-     *                       their stock
+     * @param saleRepository  the repository used to persist sales
+     * @param personService   the service used to locate customers and sellers
+     * @param productService  the service used to locate products and update
+     *                        their stock
+     * @param accessoryService the service used to locate accessories and
+     *                        update their stock
      */
-    public SaleService(SaleRepository saleRepository, PersonService personService, ProductService productService) {
+    public SaleService(SaleRepository saleRepository, PersonService personService, ProductService productService,
+            AccessoryService accessoryService) {
         this.saleRepository = saleRepository;
         this.personService = personService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
         this.sales = new ArrayList<>(saleRepository.loadAll());
     }
 
@@ -79,26 +85,58 @@ public class SaleService {
             quantities.merge(productId, 1, Integer::sum);
         }
         for (Map.Entry<String, Integer> entry : quantities.entrySet()) {
-            Product product = productService.findById(entry.getKey());
-            if (product == null) {
+            Product item = resolveItem(entry.getKey());
+            if (item == null) {
                 throw new IllegalArgumentException("Product not found: " + entry.getKey());
             }
-            if (product.getStock() < entry.getValue()) {
+            if (item.getStock() < entry.getValue()) {
                 throw new IllegalArgumentException("Not enough stock for product: " + entry.getKey());
             }
         }
 
         List<Product> products = new ArrayList<>();
         for (String productId : productIds) {
-            Product product = productService.findById(productId);
-            products.add(product);
-            productService.updateStock(product.getId(), product.getStock() - 1);
+            Product item = resolveItem(productId);
+            products.add(item);
+            discountStock(item);
         }
 
         Sale sale = new Sale(nextSaleId(), customer, seller, products);
         sales.add(sale);
         save();
         return sale;
+    }
+
+    /**
+     * Resolves a sale item either from the product inventory or from the
+     * accessory inventory, so a single sale can include video games, consoles
+     * and accessories.
+     *
+     * @param itemIdthe identifier of the item to resolve
+     * @return the matching item, or {@code null} when no product or accessory
+     *         matches the identifier
+     */
+    private Product resolveItem(String itemId) {
+        Product item = productService.findById(itemId);
+        if (item == null) {
+            item = accessoryService.findById(itemId);
+        }
+        return item;
+    }
+
+    /**
+     * Discounts one unit of stock from a sold item, delegating to the
+     * inventory service that owns the item (products or accessories).
+     *
+     * @param item the sold item whose stock must be decreased
+     */
+    private void discountStock(Product item) {
+        int newStock = item.getStock() - 1;
+        if (item instanceof Accessory) {
+            accessoryService.updateStock(item.getId(), newStock);
+        } else {
+            productService.updateStock(item.getId(), newStock);
+        }
     }
 
     /**

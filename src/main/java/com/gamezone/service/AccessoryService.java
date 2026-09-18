@@ -61,7 +61,7 @@ public class AccessoryService {
         String connection = normalizeConnectionType(connectionType);
 
         Controller controller = new Controller(nextAccessoryId(), title.trim(), price, stock,
-                connection, cleanConsoleIds(compatibleConsoleIds));
+                cleanConsoleIds(compatibleConsoleIds), connection);
         accessories.add(controller);
         save();
         // Returned so the menu can show the generated identifier.
@@ -89,8 +89,8 @@ public class AccessoryService {
         if (isBlank(connectorType)) {
             throw new IllegalArgumentException("El tipo de conector es obligatorio.");
         }
-        Cable cable = new Cable(nextAccessoryId(), title.trim(), price, stock, lengthInMeters,
-                connectorType.trim(), cleanConsoleIds(compatibleConsoleIds));
+        Cable cable = new Cable(nextAccessoryId(), title.trim(), price, stock,
+                cleanConsoleIds(compatibleConsoleIds), lengthInMeters, connectorType.trim());
         accessories.add(cable);
         save();
         return cable;
@@ -117,8 +117,8 @@ public class AccessoryService {
         if (isBlank(memoryType)) {
             throw new IllegalArgumentException("El tipo de memoria es obligatorio.");
         }
-        Memory memory = new Memory(nextAccessoryId(), title.trim(), price, stock, capacityInGb,
-                memoryType.trim(), cleanConsoleIds(compatibleConsoleIds));
+        Memory memory = new Memory(nextAccessoryId(), title.trim(), price, stock,
+                cleanConsoleIds(compatibleConsoleIds), capacityInGb, memoryType.trim());
         accessories.add(memory);
         save();
         return memory;
