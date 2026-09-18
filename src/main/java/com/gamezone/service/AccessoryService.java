@@ -181,6 +181,44 @@ public class AccessoryService {
         return result;
     }
 
+    /**
+     * Finds an accessory by its identifier.
+     *
+     * @param id the identifier to look for
+     * @return the matching accessory, or {@code null} if it is not registered
+     */
+    public Accessory findById(String id) {
+        for (Accessory accessory : accessories) {
+            if (accessory.getId().equals(id)) {
+                return accessory;
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Sets the stock of the given accessory to the given quantity and persists
+     * the change. As in ProductService, the quantity is the new stock value,
+     * not an amount to add or subtract.
+     *
+     * @param accessoryId the identifier of the accessory to update
+     * @param quantity    the new quantity available in inventory
+     * @throws IllegalArgumentException when the accessory does not exist or the
+     *         quantity is negative
+     */
+    public void updateStock(String accessoryId, int quantity) {
+        Accessory accessory = findById(accessoryId);
+        if (accessory == null) {
+            throw new IllegalArgumentException("Accesorio no encontrado: " + accessoryId);
+        }
+        if (quantity < 0) {
+            throw new IllegalArgumentException("El stock no puede ser negativo.");
+        }
+        // updateStock is inherited from Product.
+        accessory.updateStock(quantity);
+        save();
+    }
+
     // Validates the attributes shared by every accessory.
     private void validateCommonFields(String title, double price, int stock) {
         if (isBlank(title)) {
