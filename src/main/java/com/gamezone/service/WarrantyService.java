@@ -129,6 +129,32 @@ public class WarrantyService {
         return result;
     }
 
+    /**
+     * Returns the warranties whose end date falls between today and the given
+     * number of days ahead, both inclusive. Warranties that already expired
+     * are not included.
+     *
+     * @param daysAhead how many days ahead to look, zero or greater
+     * @return the warranties that expire soon, or an empty list when none match
+     * @throws IllegalArgumentException when {@code daysAhead} is negative
+     */
+    public List<Warranty> listWarrantiesExpiringSoon(int daysAhead) {
+        if (daysAhead < 0) {
+            throw new IllegalArgumentException("El número de días no puede ser negativo.");
+        }
+        LocalDate today = LocalDate.now();
+        LocalDate limit = today.plusDays(daysAhead);
+        List<Warranty> result = new ArrayList<>();
+        for (Warranty warranty : warranties) {
+            LocalDate endDate = warranty.getEndDate();
+            // Included when today <= endDate <= limit.
+            if (!endDate.isBefore(today) && !endDate.isAfter(limit)) {
+                result.add(warranty);
+            }
+        }
+        return result;
+    }
+
     // Checks the data needed to create a warranty: nothing missing, the product
     // is a console and the product belongs to the sale.
     private void validateWarrantyRequest(Product product, Sale sale, LocalDate startDate) {
