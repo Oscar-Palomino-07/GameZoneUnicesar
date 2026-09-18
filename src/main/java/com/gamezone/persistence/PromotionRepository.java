@@ -1,11 +1,15 @@
 package com.gamezone.persistence;
 
+import com.gamezone.model.BulkPurchaseDiscount;
+import com.gamezone.model.CategoryDiscount;
+import com.gamezone.model.PercentageDiscount;
 import com.gamezone.model.Promotion;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
@@ -30,8 +34,10 @@ import java.util.List;
  * serialized with Gson. If the file does not exist yet, the repository loads
  * an empty list.
  *
- * <p>The repository registers a custom adapter so that {@link LocalDate}
- * values are written as ISO-8601 strings.</p>
+ * <p>The repository registers custom adapters because the default Gson
+ * behavior is not enough for this module: {@link LocalDate} values are
+ * written as ISO-8601 strings and every {@link Promotion} is rebuilt as its
+ * concrete subtype when the file is loaded.</p>
  */
 public class PromotionRepository {
 
@@ -45,10 +51,11 @@ public class PromotionRepository {
 
     /**
      * Creates the promotion repository and configures the Gson instance with
-     * the adapter required for {@link LocalDate}.
+     * the adapters required for {@link LocalDate} and {@link Promotion}.
      */
     public PromotionRepository() {
         GsonBuilder builder = new GsonBuilder().setPrettyPrinting();
+        builder.registerTypeAdapter(Promotion.class, new PromotionDeserializer());
         builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
         this.gson = builder.create();
     }
@@ -113,6 +120,25 @@ public class PromotionRepository {
         } catch (IOException | JsonSyntaxException e) {
             System.err.println("Error loading promotions from " + fileName + ": " + e.getMessage());
             return new ArrayList<>();
+        }
+    }
+
+    /**
+     * Rebuilds a {@link Promotion} from its JSON representation, choosing the
+     * concrete subtype based on the attributes present in the serialized object.
+     */
+    private static class PromotionDeserializer implements JsonDeserializer<Promotion> {
+
+        @Override
+        public Promotion deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
+            JsonObject object = json.getAsJsonObject();
+            if (object.has("targetCategory")) {
+                return context.deserialize(json, CategoryDiscount.class);
+            }
+            if (object.has("minimumQuantity")) {
+                return context.deserialize(json, BulkPurchaseDiscount.class);
+            }
+            return context.deserialize(json, PercentageDiscount.class);
         }
     }
 
