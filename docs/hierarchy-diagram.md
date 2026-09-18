@@ -28,4 +28,12 @@ classDiagram
     Accessory <|-- Controller
     Accessory <|-- Cable
     Accessory <|-- Memory
+
+    class Warranty {
+        <<abstract>>
+    }
+    class BasicWarranty
+    class ExtendedWarranty
+    Warranty <|-- BasicWarranty
+    Warranty <|-- ExtendedWarranty
 ```
