@@ -5,15 +5,10 @@ import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonSyntaxException;
-import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
-import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -24,27 +19,25 @@ import java.util.List;
 
 /**
  * Handles file-based persistence for the warranty module of GameZone Unicesar.
- * Warranties are stored in a JSON file under the {@code data} directory,
- * serialized with Gson. If the file does not exist yet, the repository loads
- * an empty list.
+ * Warranties are stored in a CSV file under the {@code data} directory. If the
+ * file does not exist yet, the repository loads an empty list.
  *
- * <p>A warranty holds a full {@link Sale} and {@link Product}, so the file only
- * keeps their identifiers through the {@link WarrantyRecord} class. When the
- * file is loaded, the sale is found through the {@link SaleRepository} and the
- * product is found inside that sale. The end date is not stored because every
- * warranty calculates it from its start date and duration.</p>
+ * <p>Each row stores a discriminator ({@code BASIC} or {@code EXTENDED}) that
+ * lets the repository rebuild the concrete warranty subtype when the file is
+ * loaded. Because a warranty holds a full {@link Sale} and {@link Product},
+ * the CSV only keeps their identifiers: when the file is loaded, the sale is
+ * found through the {@link SaleRepository} and the product is found inside
+ * that sale. The end date is not stored because every warranty calculates it
+ * from its start date and duration.</p>
  */
 public class WarrantyRepository {
 
     private static final String DATA_DIRECTORY = "data";
-    private static final String WARRANTIES_FILE = "data/warranties.json";
+    private static final String WARRANTIES_FILE = "data/warranties.csv";
+    private static final String CSV_HEADER = "type,id,productId,saleId,startDate";
     private static final String BASIC = "BASIC";
     private static final String EXTENDED = "EXTENDED";
 
-    private static final Type RECORDS_TYPE = new TypeToken<List<WarrantyRecord>>() {
-    }.getType();
-
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
     private final SaleRepository saleRepository;
 
     /**
@@ -58,23 +51,26 @@ public class WarrantyRepository {
     }
 
     /**
-     * Saves all warranties to the warranties JSON file, overwriting its
-     * previous contents.
+     * Saves all warranties to the warranties CSV file, overwriting its
+     * previous contents. Each warranty is written as one row: the type
+     * discriminator, the warranty identifier, the product and sale
+     * identifiers and the start date.
      *
      * @param warranties the list of warranties to persist
      */
     public void saveAll(List<Warranty> warranties) {
-        List<WarrantyRecord> records = new ArrayList<>();
-        for (Warranty warranty : warranties) {
-            String type = warranty instanceof ExtendedWarranty ? EXTENDED : BASIC;
-            records.add(new WarrantyRecord(type, warranty.getId(), warranty.getProduct().getId(),
-                    warranty.getSale().getId(), warranty.getStartDate().toString()));
-        }
         try {
             Path path = Paths.get(WARRANTIES_FILE);
             Files.createDirectories(Paths.get(DATA_DIRECTORY));
             try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                gson.toJson(records, RECORDS_TYPE, writer);
+                writer.write(CSV_HEADER);
+                writer.newLine();
+                for (Warranty warranty : warranties) {
+                    String type = warranty instanceof ExtendedWarranty ? EXTENDED : BASIC;
+                    writer.write(String.join(",", type, warranty.getId(), warranty.getProduct().getId(),
+                            warranty.getSale().getId(), warranty.getStartDate().toString()));
+                    writer.newLine();
+                }
             }
         } catch (IOException e) {
             System.err.println("Error saving warranties to " + WARRANTIES_FILE + ": " + e.getMessage());
@@ -82,11 +78,12 @@ public class WarrantyRepository {
     }
 
     /**
-     * Loads all warranties from the warranties JSON file. Warranties whose
+     * Loads all warranties from the warranties CSV file, rebuilding every row
+     * as its concrete subtype through the type discriminator. Warranties whose
      * sale or product can no longer be found are skipped.
      *
      * @return the list of stored warranties, or an empty list if the file
-     *         does not exist or cannot be parsed
+     *         does not exist or cannot be read
      */
     public List<Warranty> loadAll() {
         List<Warranty> warranties = new ArrayList<>();
@@ -94,31 +91,42 @@ public class WarrantyRepository {
         if (!Files.exists(path)) {
             return warranties;
         }
-        List<WarrantyRecord> records;
-        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            records = gson.fromJson(reader, RECORDS_TYPE);
-        } catch (IOException | JsonSyntaxException e) {
-            System.err.println("Error loading warranties from " + WARRANTIES_FILE + ": " + e.getMessage());
-            return warranties;
-        }
-        if (records == null) {
-            return warranties;
-        }
-
         List<Sale> sales = saleRepository.loadAll();
-        for (WarrantyRecord record : records) {
-            Sale sale = findSale(sales, record.saleId);
-            Product product = sale != null ? findProduct(sale, record.productId) : null;
-            if (product == null) {
-                System.err.println("Skipping warranty " + record.id + ": sale or product not found.");
-                continue;
+        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
+            String line = reader.readLine();
+            // Skips the header row.
+            while ((line = reader.readLine()) != null) {
+                if (line.isBlank()) {
+                    continue;
+                }
+                String[] fields = line.split(",", -1);
+                if (fields.length < 5) {
+                    System.err.println("Skipping warranty row with invalid format: " + line);
+                    continue;
+                }
+                String type = fields[0];
+                String id = fields[1];
+                String productId = fields[2];
+                String saleId = fields[3];
+                Sale sale = findSale(sales, saleId);
+                Product product = sale != null ? findProduct(sale, productId) : null;
+                if (product == null) {
+                    System.err.println("Skipping warranty " + id + ": sale or product not found.");
+                    continue;
+                }
+                try {
+                    LocalDate startDate = LocalDate.parse(fields[4]);
+                    if (EXTENDED.equals(type)) {
+                        warranties.add(new ExtendedWarranty(id, product, sale, startDate));
+                    } else {
+                        warranties.add(new BasicWarranty(id, product, sale, startDate));
+                    }
+                } catch (java.time.format.DateTimeParseException e) {
+                    System.err.println("Skipping warranty " + id + ": invalid start date " + fields[4] + ".");
+                }
             }
-            LocalDate startDate = LocalDate.parse(record.startDate);
-            if (EXTENDED.equals(record.type)) {
-                warranties.add(new ExtendedWarranty(record.id, product, sale, startDate));
-            } else {
-                warranties.add(new BasicWarranty(record.id, product, sale, startDate));
-            }
+        } catch (IOException e) {
+            System.err.println("Error loading warranties from " + WARRANTIES_FILE + ": " + e.getMessage());
         }
         return warranties;
     }
