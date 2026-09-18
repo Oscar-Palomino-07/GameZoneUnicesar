@@ -114,6 +114,28 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 06 — 2026-09-18
+
+| Field | Detail |
+|---|---|
+| Date | 18-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Implement the accessory model hierarchy — `Accessory`, `Controller`, `Cable` and `Memory` — in `com.gamezone.model`, and update the hierarchy diagram |
+| Prompt summary | "Implement Developer 1's accessory hierarchy per the assignment guide, with one atomic commit per class" |
+| Legitimate-use category | Java/Maven guidance; code review of my own module; explanation of inheritance, polymorphism and defensive setters |
+| What I did myself | Pulled the shared `feature/accessory-module` branch (created by the leader) with Veronica's `data/accessories.json` already merged; reviewed the guide and `Product` to align field names and constructor order; ran `mvn -q compile` after each class; wrote the Mermaid branch of `docs/hierarchy-diagram.md`; created and pushed the six commits stated below |
+| What the AI provided | First-draft source code for the four classes and the explanations in the assignment guide (why `Accessory` is abstract, the ternary `null` guard, `String.join` in `getDescription()`, and why compatibility is stored as console ids instead of `Console` objects) |
+| Output used? | Yes — used as the working basis for the accessory classes, then verified by compilation and my own review of each segment |
+| Fully understood? | Yes — I can explain every class without the guide: inheritance chain, `super` chaining, the `@Override getDescription()` polymorphism, and the null-safe list handling |
+
+### Notes / decisions
+
+- The commits produced in this session, one per deliverable: `feat(model): add abstract Accessory class with console compatibility`, `feat(model): add Controller accessory`, `feat(model): add Cable accessory`, `feat(model): add Memory accessory`, `docs: update hierarchy diagram with accessory classes`, `docs: add AI usage entry for accessory model`.
+- `data/accessories.json` was added by a teammate before my commits; I kept it and did not touch it, since persistence is another developer's responsibility.
+- Named the exact fields of the subclasses (`connectionType`, `lengthInMeters`, `connectorType`, `capacityInGb`, `memoryType`) so the sales deserializer and the CSV format can rely on them.
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
