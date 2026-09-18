@@ -10,6 +10,7 @@ import com.gamezone.persistence.WarrantyRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -74,6 +75,41 @@ public class WarrantyService {
         warranties.add(warranty);
         save();
         return warranty;
+    }
+
+    /**
+     * Finds the warranty of a product within a specific sale. When the product
+     * has both a basic and an extended warranty in that sale, the extended one
+     * is returned because it offers the widest coverage.
+     *
+     * @param productId the identifier of the product
+     * @param saleId    the identifier of the sale
+     * @return the matching warranty, or {@code null} if none exists
+     */
+    public Warranty findWarrantyByProduct(String productId, String saleId) {
+        Warranty found = null;
+        for (Warranty warranty : warranties) {
+            boolean sameProduct = warranty.getProduct().getId().equals(productId);
+            boolean sameSale = warranty.getSale().getId().equals(saleId);
+            if (sameProduct && sameSale) {
+                if (warranty instanceof ExtendedWarranty) {
+                    return warranty;
+                }
+                if (found == null) {
+                    found = warranty;
+                }
+            }
+        }
+        return found;
+    }
+
+    /**
+     * Returns all registered warranties.
+     *
+     * @return an unmodifiable view of all registered warranties
+     */
+    public List<Warranty> listAllWarranties() {
+        return Collections.unmodifiableList(warranties);
     }
 
     // Checks the data needed to create a warranty: nothing missing, the product
