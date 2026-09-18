@@ -17,4 +17,15 @@ classDiagram
     class Console
     Product <|-- VideoGame
     Product <|-- Console
+
+    class Accessory {
+        <<abstract>>
+    }
+    class Controller
+    class Cable
+    class Memory
+    Product <|-- Accessory
+    Accessory <|-- Controller
+    Accessory <|-- Cable
+    Accessory <|-- Memory
 ```
