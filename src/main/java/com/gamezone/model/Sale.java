@@ -24,6 +24,7 @@ public class Sale {
     private Customer customer;
     private Seller seller;
     private List<Product> products;
+    private double warrantyExtraCost = 0.0;
 
     /**
      * Creates a sale with the given data, capturing the current date
@@ -78,13 +79,29 @@ public class Sale {
     }
 
     /**
+     * @return the extra cost added to the sale by extended warranties
+     */
+    public double getWarrantyExtraCost() {
+        return warrantyExtraCost;
+    }
+
+    /**
+     * Sets the extra cost that extended warranties add to the sale.
+     *
+     * @param warrantyExtraCost the new extra cost of the extended warranties
+     */
+    public void setWarrantyExtraCost(double warrantyExtraCost) {
+        this.warrantyExtraCost = warrantyExtraCost;
+    }
+
+    /**
      * Calculates the total amount of the sale by adding the price of every
-     * included product.
+     * included product plus the extra cost of the extended warranties.
      *
      * @return the total amount of the sale
      */
     public double calculateTotal() {
-        double total = 0.0;
+        double total = warrantyExtraCost;
         for (Product product : products) {
             total += product.getPrice();
         }
