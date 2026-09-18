@@ -1,6 +1,7 @@
 package com.gamezone.service;
 
 import com.gamezone.model.Accessory;
+import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
@@ -10,8 +11,10 @@ import com.gamezone.persistence.SaleRepository;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Exposes the business operations related to the sales of the store.
@@ -21,7 +24,9 @@ import java.util.Map;
  * product must be registered, and the available stock must cover the quantity
  * requested for each product. When a sale is accepted, the stock of the
  * purchased products is discounted through the {@link ProductService} and the
- * sale is persisted immediately.</p>
+ * sale is persisted immediately. Every console in the sale also receives an
+ * automatic basic warranty, and the extended warranty can be requested for it
+ * through the {@link WarrantyService}.</p>
  *
  * <p>This class belongs to the service layer and is the only one allowed to
  * invoke the sale repository.</p>
@@ -32,6 +37,7 @@ public class SaleService {
     private final PersonService personService;
     private final ProductService productService;
     private final AccessoryService accessoryService;
+    private final WarrantyService warrantyService;
     private final List<Sale> sales;
 
     /**
@@ -44,13 +50,16 @@ public class SaleService {
      *                        their stock
      * @param accessoryService the service used to locate accessories and
      *                        update their stock
+     * @param warrantyService the service used to assign the warranties of the
+     *                        consoles included in a sale
      */
     public SaleService(SaleRepository saleRepository, PersonService personService, ProductService productService,
-            AccessoryService accessoryService) {
+            AccessoryService accessoryService, WarrantyService warrantyService) {
         this.saleRepository = saleRepository;
         this.personService = personService;
         this.productService = productService;
         this.accessoryService = accessoryService;
+        this.warrantyService = warrantyService;
         this.sales = new ArrayList<>(saleRepository.loadAll());
     }
 
@@ -72,6 +81,40 @@ public class SaleService {
      *         the available stock of a product cannot cover the sale
      */
     public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
+        return registerSale(customerId, sellerId, productIds, Collections.emptyList());
+    }
+
+    /**
+     * Registers a new sale for the given customer, seller and products,
+     * managing the warranties of the consoles it includes.
+     *
+     * <p>Every console in the sale receives an automatic basic warranty at no
+     * cost. When the identifier of a console is also listed in
+     * {@code productIdsWithExtendedWarranty}, an extended warranty is assigned
+     * to each unit of that console and its additional cost is added to the
+     * total of the sale. All the validations (including the ones about the
+     * extended warranty request) run before any stock is discounted, so a
+     * rejected sale leaves the inventory untouched.</p>
+     *
+     * @param customerId                    the identifier of the purchasing
+     *                                      customer
+     * @param sellerId                      the identifier of the seller
+     *                                      attending the customer
+     * @param productIds                    the identifiers of the purchased
+     *                                      items, repeated once per unit
+     * @param productIdsWithExtendedWarranty the identifiers of the consoles
+     *                                      for which the extended warranty was
+     *                                      requested; {@code null} or empty
+     *                                      when none was requested
+     * @return the created sale
+     * @throws IllegalArgumentException when the product list is empty, when
+     *         the customer, the seller or a product cannot be found, when the
+     *         available stock cannot cover the sale, or when the extended
+     *         warranty is requested for an item that is not a console of the
+     *         sale
+     */
+    public Sale registerSale(String customerId, String sellerId, List<String> productIds,
+            List<String> productIdsWithExtendedWarranty) {
         if (productIds == null || productIds.isEmpty()) {
             throw new IllegalArgumentException("A sale must include at least one product.");
         }
@@ -93,6 +136,7 @@ public class SaleService {
                 throw new IllegalArgumentException("Not enough stock for product: " + entry.getKey());
             }
         }
+        Set<String> extendedWarrantyIds = validateExtendedWarrantyRequest(productIds, productIdsWithExtendedWarranty);
 
         List<Product> products = new ArrayList<>();
         for (String productId : productIds) {
@@ -103,8 +147,67 @@ public class SaleService {
 
         Sale sale = new Sale(nextSaleId(), customer, seller, products);
         sales.add(sale);
+        // The sale is saved first because the warranty repository rebuilds
+        // its references by looking the sale up in the stored sales.
         save();
+        assignWarranties(sale, extendedWarrantyIds);
         return sale;
+    }
+
+    /**
+     * Checks that every item with an extended warranty request is a console
+     * that belongs to the sale.
+     *
+     * @param productIds     the identifiers of the items in the sale
+     * @param requestedIds   the identifiers with an extended warranty request,
+     *                       possibly {@code null}
+     * @return the distinct identifiers that will receive an extended warranty
+     * @throws IllegalArgumentException when a requested item is not part of
+     *         the sale or is not a console
+     */
+    private Set<String> validateExtendedWarrantyRequest(List<String> productIds, List<String> requestedIds) {
+        Set<String> extendedWarrantyIds = new HashSet<>();
+        if (requestedIds == null) {
+            return extendedWarrantyIds;
+        }
+        for (String requestedId : requestedIds) {
+            if (!productIds.contains(requestedId)) {
+                throw new IllegalArgumentException(
+                        "La garantía extendida solo aplica a productos incluidos en la venta: " + requestedId);
+            }
+            if (!(resolveItem(requestedId) instanceof Console)) {
+                throw new IllegalArgumentException("Solo las consolas admiten garantía extendida: " + requestedId);
+            }
+            extendedWarrantyIds.add(requestedId);
+        }
+        return extendedWarrantyIds;
+    }
+
+    /**
+     * Assigns the warranties of a freshly created sale: an automatic basic
+     * warranty for every console and an extended warranty for the consoles
+     * that requested it. The additional cost of the extended warranties is
+     * added to the total of the sale.
+     *
+     * @param sale               the sale that was just registered
+     * @param extendedWarrantyIds the identifiers of the consoles that must
+     *                           receive an extended warranty
+     */
+    private void assignWarranties(Sale sale, Set<String> extendedWarrantyIds) {
+        double extraCost = 0.0;
+        for (Product product : sale.getProducts()) {
+            if (product instanceof Console) {
+                warrantyService.assignBasicWarranty(product, sale, sale.getDate());
+                if (extendedWarrantyIds.contains(product.getId())) {
+                    extraCost += warrantyService.assignExtendedWarranty(product, sale, sale.getDate())
+                            .getAdditionalCost();
+                }
+            }
+        }
+        if (!extendedWarrantyIds.isEmpty()) {
+            sale.setWarrantyExtraCost(extraCost);
+            save();
+        }
     }
 
     /**
