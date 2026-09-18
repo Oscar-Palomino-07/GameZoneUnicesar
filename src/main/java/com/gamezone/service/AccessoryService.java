@@ -8,6 +8,7 @@ import com.gamezone.persistence.AccessoryRepository;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Collections;
 
 /**
  * Provides the business operations for the accessory module of GameZone
@@ -23,6 +24,11 @@ public class AccessoryService {
     // Allowed values for the connection type of a controller.
     private static final String WIRELESS = "WIRELESS";
     private static final String WIRED = "WIRED";
+
+    // Accessory types accepted by listAccessoriesByType.
+    private static final String CONTROLLER_TYPE = "CONTROLLER";
+    private static final String CABLE_TYPE = "CABLE";
+    private static final String MEMORY_TYPE = "MEMORY";
 
     private final AccessoryRepository repository;
     // In-memory list of accessories, loaded once when the service is created.
@@ -118,6 +124,63 @@ public class AccessoryService {
         return memory;
     }
 
+    /**
+     * Returns all registered accessories.
+     *
+     * @return an unmodifiable view of all registered accessories
+     */
+    public List<Accessory> listAllAccessories() {
+        // Read-only view: callers cannot add or remove accessories without this service.
+        return Collections.unmodifiableList(accessories);
+    }
+
+    /**
+     * Returns the accessories of the given type.
+     *
+     * @param type CONTROLLER, CABLE or MEMORY, case insensitive
+     * @return the accessories of that type, or an empty list when none match
+     * @throws IllegalArgumentException when the type is blank or not recognized
+     */
+    public List<Accessory> listAccessoriesByType(String type) {
+        if (isBlank(type)) {
+            throw new IllegalArgumentException("Debe indicar el tipo de accesorio.");
+        }
+        String normalizedType = type.trim().toUpperCase();
+        if (!normalizedType.equals(CONTROLLER_TYPE) && !normalizedType.equals(CABLE_TYPE)
+                && !normalizedType.equals(MEMORY_TYPE)) {
+            throw new IllegalArgumentException("Tipo de accesorio no válido: " + type
+                    + ". Use CONTROLLER, CABLE o MEMORY.");
+        }
+        List<Accessory> result = new ArrayList<>();
+        for (Accessory accessory : accessories) {
+            if (matchesType(accessory, normalizedType)) {
+                result.add(accessory);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Returns the accessories that are compatible with the given console.
+     *
+     * @param consoleId the identifier of the console
+     * @return the compatible accessories, or an empty list when none match
+     * @throws IllegalArgumentException when the console identifier is blank
+     */
+    public List<Accessory> findAccessoriesCompatibleWith(String consoleId) {
+        if (isBlank(consoleId)) {
+            throw new IllegalArgumentException("Debe indicar el identificador de la consola.");
+        }
+        List<Accessory> result = new ArrayList<>();
+        for (Accessory accessory : accessories) {
+            // The compatibility rule belongs to the model; the service only filters.
+            if (accessory.isCompatibleWith(consoleId.trim())) {
+                result.add(accessory);
+            }
+        }
+        return result;
+    }
+
     // Validates the attributes shared by every accessory.
     private void validateCommonFields(String title, double price, int stock) {
         if (isBlank(title)) {
@@ -138,6 +201,20 @@ public class AccessoryService {
             throw new IllegalArgumentException("El tipo de conexión debe ser WIRELESS o WIRED.");
         }
         return value;
+    }
+
+    // Tells whether an accessory belongs to the given type using its real class.
+    private boolean matchesType(Accessory accessory, String type) {
+        switch (type) {
+            case CONTROLLER_TYPE:
+                return accessory instanceof Controller;
+            case CABLE_TYPE:
+                return accessory instanceof Cable;
+            case MEMORY_TYPE:
+                return accessory instanceof Memory;
+            default:
+                return false;
+        }
     }
 
     // Removes blank and repeated console identifiers, keeping the original order.
