@@ -8,6 +8,7 @@ import com.gamezone.persistence.PromotionRepository;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -108,6 +109,48 @@ public class PromotionService {
         promotions.add(promotion);
         save();
         return promotion;
+    }
+
+    /**
+     * Returns all registered promotions, active or not.
+     *
+     * @return an unmodifiable view of all registered promotions
+     */
+    public List<Promotion> listAllPromotions() {
+        return Collections.unmodifiableList(promotions);
+    }
+
+    /**
+     * Returns the promotions that are active on the given date, that is, the
+     * promotions whose validity window contains that date.
+     *
+     * @param date the date to check
+     * @return the active promotions, or an empty list when none is active
+     */
+    public List<Promotion> listActivePromotions(LocalDate date) {
+        List<Promotion> result = new ArrayList<>();
+        for (Promotion promotion : promotions) {
+            // The date rule belongs to the model; the service only supplies the date.
+            if (promotion.isActive(date)) {
+                result.add(promotion);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Finds a promotion by its identifier.
+     *
+     * @param id the identifier to look for
+     * @return the matching promotion, or {@code null} if it is not registered
+     */
+    public Promotion findById(String id) {
+        for (Promotion promotion : promotions) {
+            if (promotion.getId().equals(id)) {
+                return promotion;
+            }
+        }
+        return null;
     }
 
     // Validates the attributes shared by every promotion.
