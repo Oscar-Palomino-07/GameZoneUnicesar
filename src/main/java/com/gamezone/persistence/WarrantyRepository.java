@@ -1,76 +1,70 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.BasicWarranty;
-import com.gamezone.model.ExtendedWarranty;
-import com.gamezone.model.Product;
-import com.gamezone.model.Sale;
-import com.gamezone.model.Warranty;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonSyntaxException;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
 /**
  * Handles file-based persistence for the warranty module of GameZone Unicesar.
- * Warranties are stored in a CSV file under the {@code data} directory. If the
- * file does not exist yet, the repository loads an empty list.
+ * Warranties are stored in a JSON file under the {@code data} directory,
+ * serialized with Gson. If the file does not exist yet, the repository loads
+ * an empty list.
  *
- * <p>Each row stores a discriminator ({@code BASIC} or {@code EXTENDED}) that
- * lets the repository rebuild the concrete warranty subtype when the file is
- * loaded. Because a warranty holds a full {@link Sale} and {@link Product},
- * the CSV only keeps their identifiers: when the file is loaded, the sale is
- * found through the {@link SaleRepository} and the product is found inside
- * that sale. The end date is not stored because every warranty calculates it
- * from its start date and duration.</p>
+ * <p>This repository only moves identifiers in and out of the file: a stored
+ * warranty is described by its type, its own identifier, the identifiers of
+ * the covered product and of the sale, and its start date. It does not know
+ * what a {@code Sale} or a {@code Product} is, and it does not resolve those
+ * references; that work belongs to
+ * {@link com.gamezone.service.WarrantyService}, which injects the sale and
+ * product dependencies it needs. Keeping the resolution out of the
+ * persistence layer is what allows the whole object graph to be built with
+ * constructor injection, because the repositories no longer depend on any
+ * service and therefore cannot form a cycle with them.</p>
  */
 public class WarrantyRepository {
 
     private static final String DATA_DIRECTORY = "data";
-    private static final String WARRANTIES_FILE = "data/warranties.csv";
-    private static final String CSV_HEADER = "type,id,productId,saleId,startDate";
+    private static final String WARRANTIES_FILE = "data/warranties.json";
     private static final String BASIC = "BASIC";
     private static final String EXTENDED = "EXTENDED";
 
-    private final SaleRepository saleRepository;
+    private static final Type RECORDS_TYPE = new TypeToken<List<WarrantyRecord>>() {
+    }.getType();
+
+    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     /**
-     * Creates the warranty repository.
-     *
-     * @param saleRepository the repository used to find the sale, and the
-     *                       product inside it, referenced by each warranty
+     * Creates the warranty repository. It has no dependencies on purpose: the
+     * only thing it needs to do is read and write {@link WarrantyRecord}
+     * entries.
      */
-    public WarrantyRepository(SaleRepository saleRepository) {
-        this.saleRepository = saleRepository;
+    public WarrantyRepository() {
     }
 
     /**
-     * Saves all warranties to the warranties CSV file, overwriting its
-     * previous contents. Each warranty is written as one row: the type
-     * discriminator, the warranty identifier, the product and sale
-     * identifiers and the start date.
+     * Saves all the warranty records to the warranties JSON file, overwriting
+     * its previous contents.
      *
-     * @param warranties the list of warranties to persist
+     * @param records the records to persist
      */
-    public void saveAll(List<Warranty> warranties) {
+    public void saveAll(List<WarrantyRecord> records) {
         try {
             Path path = Paths.get(WARRANTIES_FILE);
             Files.createDirectories(Paths.get(DATA_DIRECTORY));
             try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                writer.write(CSV_HEADER);
-                writer.newLine();
-                for (Warranty warranty : warranties) {
-                    String type = warranty instanceof ExtendedWarranty ? EXTENDED : BASIC;
-                    writer.write(String.join(",", type, warranty.getId(), warranty.getProduct().getId(),
-                            warranty.getSale().getId(), warranty.getStartDate().toString()));
-                    writer.newLine();
-                }
+                gson.toJson(records, RECORDS_TYPE, writer);
             }
         } catch (IOException e) {
             System.err.println("Error saving warranties to " + WARRANTIES_FILE + ": " + e.getMessage());
@@ -78,97 +72,63 @@ public class WarrantyRepository {
     }
 
     /**
-     * Loads all warranties from the warranties CSV file, rebuilding every row
-     * as its concrete subtype through the type discriminator. Warranties whose
-     * sale or product can no longer be found are skipped.
+     * Loads all the warranty records from the warranties JSON file. The records
+     * are returned exactly as they are stored, without resolving the sale or
+     * the product they reference.
      *
-     * @return the list of stored warranties, or an empty list if the file
-     *         does not exist or cannot be read
+     * @return the stored records, or an empty list if the file does not exist
+     *         or cannot be parsed
      */
-    public List<Warranty> loadAll() {
-        List<Warranty> warranties = new ArrayList<>();
+    public List<WarrantyRecord> loadAll() {
         Path path = Paths.get(WARRANTIES_FILE);
         if (!Files.exists(path)) {
-            return warranties;
+            return new ArrayList<>();
         }
-        List<Sale> sales = saleRepository.loadAll();
         try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            String line = reader.readLine();
-            // Skips the header row.
-            while ((line = reader.readLine()) != null) {
-                if (line.isBlank()) {
-                    continue;
-                }
-                String[] fields = line.split(",", -1);
-                if (fields.length < 5) {
-                    System.err.println("Skipping warranty row with invalid format: " + line);
-                    continue;
-                }
-                String type = fields[0];
-                String id = fields[1];
-                String productId = fields[2];
-                String saleId = fields[3];
-                Sale sale = findSale(sales, saleId);
-                Product product = sale != null ? findProduct(sale, productId) : null;
-                if (product == null) {
-                    System.err.println("Skipping warranty " + id + ": sale or product not found.");
-                    continue;
-                }
-                try {
-                    LocalDate startDate = LocalDate.parse(fields[4]);
-                    if (EXTENDED.equals(type)) {
-                        warranties.add(new ExtendedWarranty(id, product, sale, startDate));
-                    } else {
-                        warranties.add(new BasicWarranty(id, product, sale, startDate));
-                    }
-                } catch (java.time.format.DateTimeParseException e) {
-                    System.err.println("Skipping warranty " + id + ": invalid start date " + fields[4] + ".");
-                }
-            }
-        } catch (IOException e) {
+            List<WarrantyRecord> records = gson.fromJson(reader, RECORDS_TYPE);
+            return records != null ? records : new ArrayList<>();
+        } catch (IOException | JsonSyntaxException e) {
             System.err.println("Error loading warranties from " + WARRANTIES_FILE + ": " + e.getMessage());
+            return new ArrayList<>();
         }
-        return warranties;
     }
 
     /**
-     * Finds a sale by its identifier.
+     * Tells whether the given discriminator represents an extended warranty.
      *
-     * @param sales  the stored sales
-     * @param saleId the identifier to look for
-     * @return the matching sale, or {@code null} if it does not exist
+     * @param type the stored warranty type
+     * @return {@code true} when the record describes an extended warranty
      */
-    private Sale findSale(List<Sale> sales, String saleId) {
-        for (Sale sale : sales) {
-            if (sale.getId().equals(saleId)) {
-                return sale;
-            }
-        }
-        return null;
+    public static boolean isExtended(String type) {
+        return EXTENDED.equals(type);
     }
 
     /**
-     * Finds a product by its identifier among the products of a sale.
+     * The value stored in the file for the basic warranty type.
      *
-     * @param sale      the sale to search in
-     * @param productId the identifier to look for
-     * @return the matching product, or {@code null} if the sale does not include it
+     * @return the basic warranty discriminator
      */
-    private Product findProduct(Sale sale, String productId) {
-        for (Product product : sale.getProducts()) {
-            if (product.getId().equals(productId)) {
-                return product;
-            }
-        }
-        return null;
+    public static String basicType() {
+        return BASIC;
     }
 
     /**
-     * Simple structure written to the JSON file for each warranty. It keeps
-     * only the warranty type, its identifier, the identifiers of the product
-     * and the sale, and the start date.
+     * The value stored in the file for the extended warranty type.
+     *
+     * @return the extended warranty discriminator
      */
-    private static class WarrantyRecord {
+    public static String extendedType() {
+        return EXTENDED;
+    }
+
+    /**
+     * Plain data structure written to the JSON file for each warranty. It
+     * keeps only the warranty type, the warranty identifier, the identifiers
+     * of the product and of the sale, and the start date. The end date is not
+     * stored because every warranty derives it from its start date and its
+     * duration.
+     */
+    public static final class WarrantyRecord {
 
         private final String type;
         private final String id;
@@ -176,12 +136,56 @@ public class WarrantyRepository {
         private final String saleId;
         private final String startDate;
 
-        WarrantyRecord(String type, String id, String productId, String saleId, String startDate) {
+        /**
+         * Creates a warranty record with its stored fields.
+         *
+         * @param type      the warranty type discriminator, BASIC or EXTENDED
+         * @param id        the warranty identifier
+         * @param productId the identifier of the covered product
+         * @param saleId    the identifier of the sale that covers the product
+         * @param startDate the start date of the coverage
+         */
+        public WarrantyRecord(String type, String id, String productId, String saleId, String startDate) {
             this.type = type;
             this.id = id;
             this.productId = productId;
             this.saleId = saleId;
             this.startDate = startDate;
+        }
+
+        /**
+         * @return the warranty type discriminator
+         */
+        public String getType() {
+            return type;
+        }
+
+        /**
+         * @return the warranty identifier
+         */
+        public String getId() {
+            return id;
+        }
+
+        /**
+         * @return the identifier of the covered product
+         */
+        public String getProductId() {
+            return productId;
+        }
+
+        /**
+         * @return the identifier of the sale that covers the product
+         */
+        public String getSaleId() {
+            return saleId;
+        }
+
+        /**
+         * @return the start date of the coverage, as text
+         */
+        public String getStartDate() {
+            return startDate;
         }
     }
 }
