@@ -6,7 +6,9 @@ import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Warranty;
+import com.gamezone.persistence.SaleRepository;
 import com.gamezone.persistence.WarrantyRepository;
+import com.gamezone.persistence.WarrantyRepository.WarrantyRecord;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -18,24 +20,95 @@ import java.util.List;
  * Unicesar. Warranty identifiers are generated automatically following the
  * W-N sequence, and every new warranty is persisted immediately through the
  * {@link WarrantyRepository}.
+ *
+ * <p>Stored warranties only keep the identifiers of the sale and of the
+ * covered product, so this service is the one that rebuilds those references:
+ * the sale is located with the {@link SaleRepository} and the product with
+ * the {@link ProductService}. Resolving them here, and not in the repository,
+ * keeps the dependency direction {@code ui → service → persistence → model}:
+ * the repositories know nothing about the sales flow, therefore they cannot
+ * depend on a service and no cycle can be formed between them. This is also
+ * why this service must be built before {@link SaleService}, which needs it
+ * to assign the warranties of the consoles it sells.</p>
  */
 public class WarrantyService {
 
     // Prefix of the warranty identifiers: W-1, W-2, W-3...
     private static final String ID_PREFIX = "W-";
 
-    private final WarrantyRepository repository;
+    private final WarrantyRepository warrantyRepository;
+    private final SaleRepository saleRepository;
+    private final ProductService productService;
     // In-memory list of warranties, loaded once when the service is created.
     private final List<Warranty> warranties;
 
     /**
-     * Creates the warranty service and loads the stored warranties.
+     * Creates the warranty service and rebuilds the stored warranties from
+     * their identifiers.
      *
-     * @param repository the repository used to persist and load warranties
+     * @param warrantyRepository the repository used to persist and load the
+     *                           stored warranty records
+     * @param saleRepository    the repository used to locate the sale each
+     *                           warranty refers to
+     * @param productService    the service used to locate the covered product,
+     *                           whether it is a video game, a console or an
+     *                           accessory
      */
-    public WarrantyService(WarrantyRepository repository) {
-        this.repository = repository;
-        this.warranties = new ArrayList<>(repository.loadAll());
+    public WarrantyService(WarrantyRepository warrantyRepository, SaleRepository saleRepository,
+            ProductService productService) {
+        this.warrantyRepository = warrantyRepository;
+        this.saleRepository = saleRepository;
+        this.productService = productService;
+        this.warranties = rebuildWarranties();
+    }
+
+    /**
+     * Rebuilds the stored warranties, resolving the sale and the product of
+     * every record. A record whose sale or product can no longer be found is
+     * skipped, because a warranty cannot exist without both of them.
+     *
+     * @return the warranties that could be rebuilt
+     */
+    private List<Warranty> rebuildWarranties() {
+        List<Warranty> rebuilt = new ArrayList<>();
+        List<WarrantyRecord> records = warrantyRepository.loadAll();
+        if (records.isEmpty()) {
+            return rebuilt;
+        }
+        List<Sale> sales = saleRepository.loadAll();
+        for (WarrantyRecord record : records) {
+            Sale sale = findSale(sales, record.getSaleId());
+            Product product = productService.findById(record.getProductId());
+            if (sale == null || product == null) {
+                System.err.println("Skipping warranty " + record.getId()
+                        + ": sale or product not found (sale=" + record.getSaleId()
+                        + ", product=" + record.getProductId() + ").");
+                continue;
+            }
+            LocalDate startDate = LocalDate.parse(record.getStartDate());
+            if (WarrantyRepository.isExtended(record.getType())) {
+                rebuilt.add(new ExtendedWarranty(record.getId(), product, sale, startDate));
+            } else {
+                rebuilt.add(new BasicWarranty(record.getId(), product, sale, startDate));
+            }
+        }
+        return rebuilt;
+    }
+
+    /**
+     * Finds a sale by its identifier among the stored sales.
+     *
+     * @param sales  the stored sales
+     * @param saleId the identifier to look for
+     * @return the matching sale, or {@code null} when it does not exist
+     */
+    private Sale findSale(List<Sale> sales, String saleId) {
+        for (Sale sale : sales) {
+            if (sale.getId().equals(saleId)) {
+                return sale;
+            }
+        }
+        return null;
     }
 
     /**
@@ -193,8 +266,17 @@ public class WarrantyService {
         return ID_PREFIX + (max + 1);
     }
 
-    // Persists the current list of warranties.
+    // Persists the current list of warranties, extracting only the identifiers
+    // and the start date of each one.
     private void save() {
-        repository.saveAll(warranties);
+        List<WarrantyRecord> records = new ArrayList<>();
+        for (Warranty warranty : warranties) {
+            String type = warranty instanceof ExtendedWarranty
+                    ? WarrantyRepository.extendedType()
+                    : WarrantyRepository.basicType();
+            records.add(new WarrantyRecord(type, warranty.getId(), warranty.getProduct().getId(),
+                    warranty.getSale().getId(), warranty.getStartDate().toString()));
+        }
+        warrantyRepository.saveAll(records);
     }
 }
