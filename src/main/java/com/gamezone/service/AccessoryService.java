@@ -219,6 +219,29 @@ public class AccessoryService {
         save();
     }
 
+    /**
+     * Adds the given quantity to the stock of the accessory and persists the
+     * change. Unlike {@link #updateStock(String, int)}, which replaces the
+     * stock with an absolute value, this method increments the current stock,
+     * so it can be used to put returned units back into the inventory.
+     *
+     * @param accessoryId the identifier of the accessory whose stock is restored
+     * @param quantity    the number of units to add back to the stock
+     * @throws IllegalArgumentException when the quantity is negative or the
+     *         accessory does not exist
+     */
+    public void restoreStock(String accessoryId, int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("La cantidad a reponer no puede ser negativa.");
+        }
+        Accessory accessory = findById(accessoryId);
+        if (accessory == null) {
+            throw new IllegalArgumentException("Accesorio no encontrado: " + accessoryId);
+        }
+        accessory.updateStock(accessory.getStock() + quantity);
+        save();
+    }
+
     // Validates the attributes shared by every accessory.
     private void validateCommonFields(String title, double price, int stock) {
         if (isBlank(title)) {
