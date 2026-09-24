@@ -1,6 +1,9 @@
 package com.gamezone.persistence;
 
+import com.gamezone.model.Cable;
 import com.gamezone.model.Console;
+import com.gamezone.model.Controller;
+import com.gamezone.model.Memory;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.VideoGame;
@@ -83,6 +86,15 @@ public class ReturnRepository {
             @Override
             public Product deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
                 JsonObject object = json.getAsJsonObject();
+                if (object.has("connectionType")) {
+                    return typeGson.fromJson(json, Controller.class);
+                }
+                if (object.has("lengthInMeters") || object.has("connectorType")) {
+                    return typeGson.fromJson(json, Cable.class);
+                }
+                if (object.has("capacityInGb") || object.has("memoryType")) {
+                    return typeGson.fromJson(json, Memory.class);
+                }
                 if (object.has("platform") || object.has("genre") || object.has("ageRating")) {
                     return typeGson.fromJson(json, VideoGame.class);
                 }
