@@ -10,15 +10,17 @@ public class ReturnService {
     private final SaleService saleService;
     private final PersonService personService;
     private final ProductService productService;
+    private final AccessoryService accessoryService;
     private final ReturnRepository returnRepository;
     private final List<Return> returns;
 
     public ReturnService(ReturnRepository returnRepository, SaleService saleService, PersonService personService,
-            ProductService productService) {
+            ProductService productService, AccessoryService accessoryService) {
         this.saleService = saleService;
         this.returnRepository = returnRepository;
         this.personService = personService;
         this.productService = productService;
+        this.accessoryService = accessoryService;
         this.returns = new ArrayList<>(returnRepository.loadAll());
     }
 
@@ -60,7 +62,7 @@ public class ReturnService {
             String prodId = entry.getKey();
             int qtyToReturn = entry.getValue();
 
-            Product systemProduct = productService.findById(prodId);
+            Product systemProduct = resolveItem(prodId);
             if (systemProduct == null) {
                 throw new IllegalArgumentException("Product not found in system: " + prodId);
             }
@@ -90,7 +92,7 @@ public class ReturnService {
             for (int i = 0; i < qtyToReturn; i++) {
                 productsToReturn.add(systemProduct);
             }
-            productService.restoreStock(prodId, qtyToReturn);
+            restoreStock(systemProduct, qtyToReturn);
         }
 
         Return returnObj = new Return(nextReturnId(), saleId, customer, seller, productsToReturn);
@@ -98,6 +100,37 @@ public class ReturnService {
         save();
 
         return returnObj;
+    }
+
+    /**
+     * Resolves a returned item either from the product inventory or from the
+     * accessory inventory, so a sale that mixes video games, consoles and
+     * accessories can be returned in full.
+     *
+     * @param itemId the identifier of the returned item
+     * @return the matching item, or {@code null} when neither inventory matches
+     */
+    private Product resolveItem(String itemId) {
+        Product item = productService.findById(itemId);
+        if (item == null) {
+            item = accessoryService.findById(itemId);
+        }
+        return item;
+    }
+
+    /**
+     * Puts the returned units back into inventory, delegating to the service
+     * that owns the item type.
+     *
+     * @param item     the returned item whose stock must be restored
+     * @param quantity the number of units to add back to the stock
+     */
+    private void restoreStock(Product item, int quantity) {
+        if (item instanceof Accessory) {
+            accessoryService.restoreStock(item.getId(), quantity);
+        } else {
+            productService.restoreStock(item.getId(), quantity);
+        }
     }
 
     private Map<String, Integer> countAlreadyReturnedByProduct(Sale sale) {

@@ -55,7 +55,8 @@ public class Main {
         // The sale service assigns the warranties of every console it sells.
         SaleService saleService = new SaleService(saleRepository, personService, productService, accessoryService,
                 warrantyService, promotionService);
-        ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService);
+        ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService,
+                accessoryService);
 
         ConsoleMenu menu = new ConsoleMenu(productService, personService, saleService, returnService,
                 accessoryService, warrantyService, promotionService);
