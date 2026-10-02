@@ -183,6 +183,7 @@ public class ConsoleMenu {
             System.out.println("2. View all sales");
             System.out.println("3. View sales by customer");
             System.out.println("4. View sales by seller");
+            System.out.println("5. Ver detalle de una venta (recibo)");
             System.out.println("0. Back");
             int option = readInt("Choose an option: ");
             switch (option) {
@@ -197,6 +198,9 @@ public class ConsoleMenu {
                     break;
                 case 4:
                     viewSalesBySeller();
+                    break;
+                case 5:
+                    viewSaleDetail();
                     break;
                 case 0:
                     running = false;
@@ -303,11 +307,8 @@ public class ConsoleMenu {
         List<String> extendedWarrantyIds = askExtendedWarranties(productIds);
         try {
             Sale sale = saleService.registerSale(customerId, sellerId, productIds, extendedWarrantyIds);
-            System.out.println("Sale " + sale.getId() + " registered. Total: $" + sale.calculateTotal());
-            if (sale.getWarrantyExtraCost() > 0) {
-                System.out.println("El total incluye $" + sale.getWarrantyExtraCost()
-                        + " por garantía extendida.");
-            }
+            System.out.println("Venta " + sale.getId() + " registrada.");
+            System.out.println(sale.generateReceipt());
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
@@ -371,6 +372,16 @@ public class ConsoleMenu {
         }
     }
 
+    private void viewSaleDetail() {
+        String saleId = readText("Id de la venta: ");
+        Sale sale = saleService.findById(saleId);
+        if (sale == null) {
+            System.out.println("No se encontró la venta " + saleId + ".");
+            return;
+        }
+        System.out.println(sale.generateReceipt());
+    }
+
     private void printSale(Sale sale) {
         System.out.println("Sale " + sale.getId()
                 + " | date: " + sale.getDate()
@@ -378,6 +389,9 @@ public class ConsoleMenu {
                 + " | seller: " + sale.getSeller().getFirstName() + " " + sale.getSeller().getLastName()
                 + " | items: " + sale.getProducts().size()
                 + " | total: $" + sale.calculateTotal()
+                + (sale.getAppliedPromotionName() != null && sale.getDiscountAmount() > 0
+                        ? " | promoción: " + sale.getAppliedPromotionName() + " (-$" + sale.getDiscountAmount() + ")"
+                        : "")
                 + (sale.canBeReturned() ? " [returnable]" : " [return expired]"));
     }
 
