@@ -57,6 +57,14 @@ public abstract class Product {
     }
 
     /**
+     * Returns the category of the product, used by category promotions to
+     * filter sellable items without checking the concrete subclass.
+     *
+     * @return the product category (VIDEOGAME, CONSOLE or ACCESSORY)
+     */
+    public abstract String getCategory();
+
+    /**
      * Updates the available stock to the given quantity.
      *
      * @param quantity the new quantity available in inventory

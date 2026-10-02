@@ -38,6 +38,7 @@ public class SaleService {
     private final ProductService productService;
     private final AccessoryService accessoryService;
     private final WarrantyService warrantyService;
+    private final PromotionService promotionService;
     private final List<Sale> sales;
 
     /**
@@ -52,14 +53,18 @@ public class SaleService {
      *                        update their stock
      * @param warrantyService the service used to assign the warranties of the
      *                        consoles included in a sale
+     * @param promotionService the service used to find the best promotion
+     *                        for a sale
      */
     public SaleService(SaleRepository saleRepository, PersonService personService, ProductService productService,
-            AccessoryService accessoryService, WarrantyService warrantyService) {
+            AccessoryService accessoryService, WarrantyService warrantyService,
+            PromotionService promotionService) {
         this.saleRepository = saleRepository;
         this.personService = personService;
         this.productService = productService;
         this.accessoryService = accessoryService;
         this.warrantyService = warrantyService;
+        this.promotionService = promotionService;
         this.sales = new ArrayList<>(saleRepository.loadAll());
     }
 
@@ -146,12 +151,29 @@ public class SaleService {
         }
 
         Sale sale = new Sale(nextSaleId(), customer, seller, products);
+        applyBestPromotion(sale);
         sales.add(sale);
         // The sale is saved first because the warranty repository rebuilds
         // its references by looking the sale up in the stored sales.
         save();
         assignWarranties(sale, extendedWarrantyIds);
         return sale;
+    }
+
+    /**
+     * Looks for the active promotion that grants the largest discount to the
+     * sale and, when there is one, records its name and discount amount in the
+     * sale. The discount is calculated only over the prices of the items, so
+     * it runs before the cost of the extended warranties is added. Only one
+     * promotion is applied per sale.
+     *
+     * @param sale the sale that was just created
+     */
+    private void applyBestPromotion(Sale sale) {
+        promotionService.bestPromotionFor(sale.getProducts()).ifPresent(promotion -> {
+            sale.setAppliedPromotionName(promotion.getName());
+            sale.setDiscountAmount(promotion.calculateDiscount(sale.getProducts()));
+        });
     }
 
     /**

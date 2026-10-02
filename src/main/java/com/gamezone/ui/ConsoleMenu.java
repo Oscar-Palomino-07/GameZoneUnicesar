@@ -4,6 +4,7 @@ import com.gamezone.model.Accessory;
 import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
+import com.gamezone.model.Promotion;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
@@ -11,11 +12,13 @@ import com.gamezone.model.Warranty;
 import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
+import com.gamezone.service.PromotionService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 import com.gamezone.service.WarrantyService;
 
 import java.time.LocalDate;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -38,10 +41,11 @@ public class ConsoleMenu {
     private final ReturnService returnService;
     private final AccessoryService accessoryService;
     private final WarrantyService warrantyService;
+    private final PromotionService promotionService;
     private final Scanner scanner = new Scanner(System.in);
 
     /**
-     * Creates the console menu with all six services of the application.
+     * Creates the console menu with all seven services of the application.
      *
      * @param productService  the service used for product operations
      * @param personService   the service used for person operations
@@ -49,16 +53,18 @@ public class ConsoleMenu {
      * @param returnService   the service used for return operations
      * @param accessoryService the service used for accessory operations
      * @param warrantyService the service used for warranty queries
+     * @param promotionService the service used for promotion operations
      */
     public ConsoleMenu(ProductService productService, PersonService personService,
                        SaleService saleService, ReturnService returnService, AccessoryService accessoryService,
-                       WarrantyService warrantyService) {
+                       WarrantyService warrantyService, PromotionService promotionService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.returnService = returnService;
         this.accessoryService = accessoryService;
         this.warrantyService = warrantyService;
+        this.promotionService = promotionService;
     }
 
     /**
@@ -75,6 +81,7 @@ public class ConsoleMenu {
             System.out.println("5. Accessories");
             System.out.println("6. Reports");
             System.out.println("7. Gestión de garantías");
+            System.out.println("8. Gestión de promociones");
             System.out.println("0. Exit");
             int option = readInt("Choose an option: ");
             switch (option) {
@@ -98,6 +105,9 @@ public class ConsoleMenu {
                     break;
                 case 7:
                     warrantyMenu();
+                    break;
+                case 8:
+                    promotionMenu();
                     break;
                 case 0:
                     running = false;
@@ -173,6 +183,7 @@ public class ConsoleMenu {
             System.out.println("2. View all sales");
             System.out.println("3. View sales by customer");
             System.out.println("4. View sales by seller");
+            System.out.println("5. Ver detalle de una venta (recibo)");
             System.out.println("0. Back");
             int option = readInt("Choose an option: ");
             switch (option) {
@@ -187,6 +198,9 @@ public class ConsoleMenu {
                     break;
                 case 4:
                     viewSalesBySeller();
+                    break;
+                case 5:
+                    viewSaleDetail();
                     break;
                 case 0:
                     running = false;
@@ -293,11 +307,8 @@ public class ConsoleMenu {
         List<String> extendedWarrantyIds = askExtendedWarranties(productIds);
         try {
             Sale sale = saleService.registerSale(customerId, sellerId, productIds, extendedWarrantyIds);
-            System.out.println("Sale " + sale.getId() + " registered. Total: $" + sale.calculateTotal());
-            if (sale.getWarrantyExtraCost() > 0) {
-                System.out.println("El total incluye $" + sale.getWarrantyExtraCost()
-                        + " por garantía extendida.");
-            }
+            System.out.println("Venta " + sale.getId() + " registrada.");
+            System.out.println(sale.generateReceipt());
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
@@ -361,6 +372,16 @@ public class ConsoleMenu {
         }
     }
 
+    private void viewSaleDetail() {
+        String saleId = readText("Id de la venta: ");
+        Sale sale = saleService.findById(saleId);
+        if (sale == null) {
+            System.out.println("No se encontró la venta " + saleId + ".");
+            return;
+        }
+        System.out.println(sale.generateReceipt());
+    }
+
     private void printSale(Sale sale) {
         System.out.println("Sale " + sale.getId()
                 + " | date: " + sale.getDate()
@@ -368,6 +389,9 @@ public class ConsoleMenu {
                 + " | seller: " + sale.getSeller().getFirstName() + " " + sale.getSeller().getLastName()
                 + " | items: " + sale.getProducts().size()
                 + " | total: $" + sale.calculateTotal()
+                + (sale.getAppliedPromotionName() != null && sale.getDiscountAmount() > 0
+                        ? " | promoción: " + sale.getAppliedPromotionName() + " (-$" + sale.getDiscountAmount() + ")"
+                        : "")
                 + (sale.canBeReturned() ? " [returnable]" : " [return expired]"));
     }
 
@@ -699,6 +723,129 @@ public class ConsoleMenu {
                     + " | Inicio: " + warranty.getStartDate()
                     + " | Vence: " + warranty.getEndDate()
                     + " | Estado: " + (warranty.isActive(LocalDate.now()) ? "Vigente" : "Expirada"));
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Promotions submenu
+    // -------------------------------------------------------------------------
+
+    private void promotionMenu() {
+        boolean running = true;
+        while (running) {
+            System.out.println("=== GESTIÓN DE PROMOCIONES ===");
+            System.out.println("1. Registrar promoción por porcentaje");
+            System.out.println("2. Registrar promoción por categoría");
+            System.out.println("3. Registrar promoción por volumen de compra");
+            System.out.println("4. Listar todas las promociones");
+            System.out.println("5. Listar promociones vigentes");
+            System.out.println("0. Volver");
+            int option = readInt("Seleccione una opción: ");
+            switch (option) {
+                case 1:
+                    registerPercentagePromotion();
+                    break;
+                case 2:
+                    registerCategoryPromotion();
+                    break;
+                case 3:
+                    registerBulkPurchasePromotion();
+                    break;
+                case 4:
+                    printPromotions(promotionService.listAllPromotions(), "No hay promociones registradas.");
+                    break;
+                case 5:
+                    printPromotions(promotionService.listActivePromotions(LocalDate.now()),
+                            "No hay promociones vigentes hoy.");
+                    break;
+                case 0:
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Opción inválida. Intente de nuevo.");
+            }
+        }
+    }
+
+    private void registerPercentagePromotion() {
+        String name = readText("Nombre de la promoción: ");
+        double percentage = readDouble("Porcentaje de descuento (0-100): ");
+        LocalDate startDate = readDate("Fecha de inicio (AAAA-MM-DD): ");
+        LocalDate endDate = readDate("Fecha de fin (AAAA-MM-DD): ");
+        if (startDate == null || endDate == null) {
+            return;
+        }
+        try {
+            Promotion promotion = promotionService.registerPercentage(name, percentage, startDate, endDate);
+            System.out.println("Promoción " + promotion.getId() + " registrada.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void registerCategoryPromotion() {
+        String name = readText("Nombre de la promoción: ");
+        double percentage = readDouble("Porcentaje de descuento (0-100): ");
+        String category = readText("Categoría (VIDEOGAME o CONSOLE): ");
+        LocalDate startDate = readDate("Fecha de inicio (AAAA-MM-DD): ");
+        LocalDate endDate = readDate("Fecha de fin (AAAA-MM-DD): ");
+        if (startDate == null || endDate == null) {
+            return;
+        }
+        try {
+            Promotion promotion = promotionService.registerCategory(name, percentage, category, startDate, endDate);
+            System.out.println("Promoción " + promotion.getId() + " registrada.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void registerBulkPurchasePromotion() {
+        String name = readText("Nombre de la promoción: ");
+        double percentage = readDouble("Porcentaje de descuento (0-100): ");
+        int minimumQuantity = readInt("Cantidad mínima de productos: ");
+        LocalDate startDate = readDate("Fecha de inicio (AAAA-MM-DD): ");
+        LocalDate endDate = readDate("Fecha de fin (AAAA-MM-DD): ");
+        if (startDate == null || endDate == null) {
+            return;
+        }
+        try {
+            Promotion promotion = promotionService.registerBulkPurchase(name, percentage, minimumQuantity,
+                    startDate, endDate);
+            System.out.println("Promoción " + promotion.getId() + " registrada.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void printPromotions(List<Promotion> promotions, String emptyMessage) {
+        if (promotions.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Promotion promotion : promotions) {
+            System.out.println(promotion.getId()
+                    + " | " + promotion.getName()
+                    + " | " + promotion.getDiscountPercentage() + "%"
+                    + " | Vigencia: " + promotion.getStartDate() + " a " + promotion.getEndDate()
+                    + " | Estado: " + (promotion.isActive() ? "Vigente" : "No vigente"));
+        }
+    }
+
+    /**
+     * Reads a date typed by the user in ISO format.
+     *
+     * @param prompt the text shown to the user
+     * @return the parsed date, or {@code null} when the text is not a valid
+     *         date (after telling the user so)
+     */
+    private LocalDate readDate(String prompt) {
+        String text = readText(prompt);
+        try {
+            return LocalDate.parse(text);
+        } catch (DateTimeParseException e) {
+            System.out.println("Fecha inválida: use el formato AAAA-MM-DD.");
+            return null;
         }
     }
 
