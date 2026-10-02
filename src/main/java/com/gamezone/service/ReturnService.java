@@ -26,68 +26,68 @@ public class ReturnService {
 
     public Return registerReturn(String saleId, List<String> productIds) {
         if (saleId == null || saleId.isBlank()) {
-            throw new IllegalArgumentException("Sale ID must not be null or empty.");
+            throw new IllegalArgumentException("El identificador de la venta es obligatorio.");
         }
         if (productIds == null || productIds.isEmpty()) {
-            throw new IllegalArgumentException("A return must include at least one product.");
+            throw new IllegalArgumentException("La devolución debe incluir al menos un producto.");
         }
         for (String pid : productIds) {
             if (pid == null || pid.isBlank()) {
-                throw new IllegalArgumentException("Product ID list must not contain null or blank entries.");
+                throw new IllegalArgumentException("La lista de productos no puede contener identificadores vacíos.");
             }
         }
 
-        Sale ventaOriginal = saleService.findById(saleId);
-        if (ventaOriginal == null) {
-            throw new IllegalArgumentException("Original sale not found: " + saleId);
+        Sale originalSale = saleService.findById(saleId);
+        if (originalSale == null) {
+            throw new IllegalArgumentException("No se encontró la venta original: " + saleId);
         }
-        if (!ventaOriginal.canBeReturned()) {
+        if (!originalSale.canBeReturned()) {
             throw new IllegalArgumentException(
-                    "Return period expired. Returns are only accepted within 30 days of the sale.");
+                    "El plazo de devolución venció. Solo se aceptan devoluciones dentro de los 30 días siguientes a la venta.");
         }
 
-        Customer customer = ventaOriginal.getCustomer();
-        Seller seller = ventaOriginal.getSeller();
+        Customer customer = originalSale.getCustomer();
+        Seller seller = originalSale.getSeller();
 
         Map<String, Integer> quantities = new HashMap<>();
         for (String productId : productIds) {
             quantities.merge(productId, 1, Integer::sum);
         }
 
-        Map<String, Integer> alreadyReturned = countAlreadyReturnedByProduct(ventaOriginal);
+        Map<String, Integer> alreadyReturned = countAlreadyReturnedByProduct(originalSale);
 
         List<Product> productsToReturn = new ArrayList<>();
         Map<Product, Integer> itemsToRestock = new LinkedHashMap<>();
 
         for (Map.Entry<String, Integer> entry : quantities.entrySet()) {
-            String prodId = entry.getKey();
+            String productId = entry.getKey();
             int qtyToReturn = entry.getValue();
 
-            Product systemProduct = resolveItem(prodId);
+            Product systemProduct = resolveItem(productId);
             if (systemProduct == null) {
-                throw new IllegalArgumentException("Product not found in system: " + prodId);
+                throw new IllegalArgumentException("El producto no existe en el sistema: " + productId);
             }
 
-            long qtyBought = ventaOriginal.getProducts().stream()
-                    .filter(p -> p.getId().equals(prodId))
+            long qtyBought = originalSale.getProducts().stream()
+                    .filter(p -> p.getId().equals(productId))
                     .count();
 
             if (qtyBought == 0) {
                 throw new IllegalArgumentException(
-                        "Product '" + prodId + "' was not part of the original sale: " + saleId);
+                        "El producto " + productId + " no forma parte de la venta " + saleId + ".");
             }
             if (qtyToReturn > qtyBought) {
                 throw new IllegalArgumentException(
-                        "Cannot return more items than purchased for product: " + prodId
-                        + " (purchased=" + qtyBought + ", requested=" + qtyToReturn + ").");
+                        "No se pueden devolver más unidades de las compradas del producto " + productId
+                        + " (compradas: " + qtyBought + ", solicitadas: " + qtyToReturn + ").");
             }
 
-            int previouslyReturned = alreadyReturned.getOrDefault(prodId, 0);
+            int previouslyReturned = alreadyReturned.getOrDefault(productId, 0);
             if (previouslyReturned + qtyToReturn > qtyBought) {
                 throw new IllegalStateException(
-                        "Double-return detected for product '" + prodId + "' in sale '" + saleId + "': "
-                        + previouslyReturned + " unit(s) already returned, "
-                        + qtyBought + " purchased, but " + qtyToReturn + " more requested.");
+                        "El producto " + productId + " de la venta " + saleId + " ya tiene "
+                        + previouslyReturned + " unidad(es) devuelta(s) de " + qtyBought
+                        + " compradas; no se pueden devolver " + qtyToReturn + " más.");
             }
 
             for (int i = 0; i < qtyToReturn; i++) {
@@ -177,7 +177,7 @@ public class ReturnService {
 
     public List<Return> viewReturnsByCustomer(String customerId) {
         if (customerId == null || customerId.isBlank()) {
-            throw new IllegalArgumentException("Customer ID must not be null or empty.");
+            throw new IllegalArgumentException("El identificador del cliente es obligatorio.");
         }
         List<Return> result = new ArrayList<>();
         for (Return re : returns) {
@@ -190,7 +190,7 @@ public class ReturnService {
 
     public List<Return> viewReturnsBySale(String saleId) {
         if (saleId == null || saleId.isBlank()) {
-            throw new IllegalArgumentException("Sale ID must not be null or empty.");
+            throw new IllegalArgumentException("El identificador de la venta es obligatorio.");
         }
         List<Return> result = new ArrayList<>();
         for (Return re : returns) {
@@ -204,11 +204,11 @@ public class ReturnService {
     public double generateMonthlyBalance(int month, int year) {
         if (month < 1 || month > 12) {
             throw new IllegalArgumentException(
-                    "Invalid month: " + month + ". Must be between 1 and 12.");
+                    "Mes inválido: " + month + ". Debe estar entre 1 y 12.");
         }
         if (year < 2000) {
             throw new IllegalArgumentException(
-                    "Invalid year: " + year + ". Must be 2000 or later.");
+                    "Año inválido: " + year + ". Debe ser 2000 o posterior.");
         }
 
         double totalSales = 0;
