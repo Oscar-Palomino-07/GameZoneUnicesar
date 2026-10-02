@@ -150,7 +150,8 @@ public class ReturnService {
             restoreStock(entry.getKey(), entry.getValue());
         }
 
-        Return returnObj = new Return(nextReturnId(), saleId, customer, seller, productsToReturn);
+        Return returnObj = new Return(nextReturnId(), saleId, customer, seller, productsToReturn,
+                originalSale.calculateSubtotal(), originalSale.getDiscountAmount());
         returns.add(returnObj);
         save();
 
