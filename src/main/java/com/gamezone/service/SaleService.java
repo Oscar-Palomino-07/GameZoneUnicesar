@@ -128,6 +128,37 @@ public class SaleService {
         Seller seller = personService.findSellerById(sellerId)
                 .orElseThrow(() -> new IllegalArgumentException("Seller not found: " + sellerId));
 
+        List<Product> products = resolveAndValidateItems(productIds);
+        Set<String> extendedWarrantyIds = validateExtendedWarrantyRequest(productIds, productIdsWithExtendedWarranty);
+
+        for (Product item : products) {
+            discountStock(item);
+        }
+
+        Sale sale = new Sale(nextSaleId(), customer, seller, products);
+        applyBestPromotion(sale);
+        sales.add(sale);
+        // The sale is saved first because the warranty repository rebuilds
+        // its references by looking the sale up in the stored sales.
+        save();
+        assignWarranties(sale, extendedWarrantyIds);
+        return sale;
+    }
+
+    /**
+     * Resolves every requested item as a product or an accessory and checks
+     * that the available stock covers the units requested for each one. It
+     * only reads: nothing is modified, so a rejected request leaves the
+     * inventory untouched.
+     *
+     * @param productIds the identifiers of the requested items, repeated once
+     *                   per unit
+     * @return the resolved items, one entry per requested unit and in the
+     *         same order as the identifiers
+     * @throws IllegalArgumentException when an item cannot be found or its
+     *         stock cannot cover the requested units
+     */
+    private List<Product> resolveAndValidateItems(List<String> productIds) {
         Map<String, Integer> quantities = new HashMap<>();
         for (String productId : productIds) {
             quantities.merge(productId, 1, Integer::sum);
@@ -141,23 +172,11 @@ public class SaleService {
                 throw new IllegalArgumentException("Not enough stock for product: " + entry.getKey());
             }
         }
-        Set<String> extendedWarrantyIds = validateExtendedWarrantyRequest(productIds, productIdsWithExtendedWarranty);
-
-        List<Product> products = new ArrayList<>();
+        List<Product> items = new ArrayList<>();
         for (String productId : productIds) {
-            Product item = resolveItem(productId);
-            products.add(item);
-            discountStock(item);
+            items.add(resolveItem(productId));
         }
-
-        Sale sale = new Sale(nextSaleId(), customer, seller, products);
-        applyBestPromotion(sale);
-        sales.add(sale);
-        // The sale is saved first because the warranty repository rebuilds
-        // its references by looking the sale up in the stored sales.
-        save();
-        assignWarranties(sale, extendedWarrantyIds);
-        return sale;
+        return items;
     }
 
     /**
