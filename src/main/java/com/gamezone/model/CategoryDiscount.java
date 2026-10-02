@@ -7,7 +7,7 @@ import java.util.List;
  * A promotion that grants a percentage discount only over the products of a
  * specific category. The target category is compared, ignoring the case,
  * against the value returned by {@link Product#getCategory()} (for example,
- * {@code VIDEOGAME} or {@code CONSOLE}).
+ * {@code VIDEOGAME}, {@code CONSOLE} or {@code ACCESSORY}).
  */
 public class CategoryDiscount extends Promotion {
 
