@@ -7,9 +7,13 @@ import java.util.List;
  * A promotion that grants a percentage discount only over the products of a
  * specific category. The target category is compared, ignoring the case,
  * against the value returned by {@link Product#getCategory()} (for example,
- * {@code VIDEOGAME}, {@code CONSOLE} or {@code ACCESSORY}).
+ * {@code VIDEOGAME}, {@code CONSOLE} or {@code ACCESSORY}). Every
+ * {@link Accessory} instance is treated as part of the {@code ACCESSORY}
+ * category.
  */
 public class CategoryDiscount extends Promotion {
+
+    private static final String ACCESSORY_CATEGORY = "ACCESSORY";
 
     private String targetCategory;
 
@@ -61,10 +65,18 @@ public class CategoryDiscount extends Promotion {
         }
         double categoryTotal = 0.0;
         for (Product product : products) {
-            if (targetCategory.equalsIgnoreCase(product.getCategory())) {
+            if (belongsToTargetCategory(product)) {
                 categoryTotal += product.getPrice();
             }
         }
         return categoryTotal * getDiscountPercentage() / 100;
+    }
+
+    // Any Accessory instance belongs to ACCESSORY; other products use getCategory().
+    private boolean belongsToTargetCategory(Product product) {
+        if (product instanceof Accessory) {
+            return ACCESSORY_CATEGORY.equalsIgnoreCase(targetCategory);
+        }
+        return targetCategory.equalsIgnoreCase(product.getCategory());
     }
 }
