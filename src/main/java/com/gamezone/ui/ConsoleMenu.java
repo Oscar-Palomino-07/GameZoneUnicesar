@@ -1,16 +1,23 @@
 package com.gamezone.ui;
 
+import com.gamezone.model.Accessory;
+import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Return;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
+import com.gamezone.model.Warranty;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
+import com.gamezone.service.WarrantyService;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -29,22 +36,29 @@ public class ConsoleMenu {
     private final PersonService personService;
     private final SaleService saleService;
     private final ReturnService returnService;
+    private final AccessoryService accessoryService;
+    private final WarrantyService warrantyService;
     private final Scanner scanner = new Scanner(System.in);
 
     /**
-     * Creates the console menu with all four services of the application.
+     * Creates the console menu with all six services of the application.
      *
-     * @param productService the service used for product operations
-     * @param personService  the service used for person operations
-     * @param saleService    the service used for sale operations
-     * @param returnService  the service used for return operations
+     * @param productService  the service used for product operations
+     * @param personService   the service used for person operations
+     * @param saleService     the service used for sale operations
+     * @param returnService   the service used for return operations
+     * @param accessoryService the service used for accessory operations
+     * @param warrantyService the service used for warranty queries
      */
     public ConsoleMenu(ProductService productService, PersonService personService,
-                       SaleService saleService, ReturnService returnService) {
+                       SaleService saleService, ReturnService returnService, AccessoryService accessoryService,
+                       WarrantyService warrantyService) {
         this.productService = productService;
         this.personService = personService;
         this.saleService = saleService;
         this.returnService = returnService;
+        this.accessoryService = accessoryService;
+        this.warrantyService = warrantyService;
     }
 
     /**
@@ -58,7 +72,9 @@ public class ConsoleMenu {
             System.out.println("2. People");
             System.out.println("3. Sales");
             System.out.println("4. Returns");
-            System.out.println("5. Reports");
+            System.out.println("5. Accessories");
+            System.out.println("6. Reports");
+            System.out.println("7. Gestión de garantías");
             System.out.println("0. Exit");
             int option = readInt("Choose an option: ");
             switch (option) {
@@ -75,7 +91,13 @@ public class ConsoleMenu {
                     returnMenu();
                     break;
                 case 5:
+                    accessoryMenu();
+                    break;
+                case 6:
                     reportsMenu();
+                    break;
+                case 7:
+                    warrantyMenu();
                     break;
                 case 0:
                     running = false;
@@ -265,18 +287,43 @@ public class ConsoleMenu {
         String customerId = readText("Customer id: ");
         String sellerId = readText("Seller id: ");
         String productIdsInput = readText("Product ids (comma separated): ");
-        List<String> productIds = new ArrayList<>();
-        for (String item : productIdsInput.split(",")) {
-            if (!item.trim().isEmpty()) {
-                productIds.add(item.trim());
-            }
-        }
+        List<String> productIds = parseIds(productIdsInput);
+        String accessoryIdsInput = readText("Accessory ids (comma separated, optional): ");
+        productIds.addAll(parseIds(accessoryIdsInput));
+        List<String> extendedWarrantyIds = askExtendedWarranties(productIds);
         try {
-            Sale sale = saleService.registerSale(customerId, sellerId, productIds);
+            Sale sale = saleService.registerSale(customerId, sellerId, productIds, extendedWarrantyIds);
             System.out.println("Sale " + sale.getId() + " registered. Total: $" + sale.calculateTotal());
+            if (sale.getWarrantyExtraCost() > 0) {
+                System.out.println("El total incluye $" + sale.getWarrantyExtraCost()
+                        + " por garantía extendida.");
+            }
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    /**
+     * Asks the user, for every distinct console included in the sale, whether
+     * the extended warranty must be added.
+     *
+     * @param itemIds the identifiers of the items entered for the sale
+     * @return the identifiers of the consoles for which the user accepted the
+     *         extended warranty
+     */
+    private List<String> askExtendedWarranties(List<String> itemIds) {
+        List<String> extendedWarrantyIds = new ArrayList<>();
+        for (String itemId : new LinkedHashSet<>(itemIds)) {
+            Product item = productService.findById(itemId);
+            if (item instanceof Console) {
+                String answer = readText("¿Desea garantía extendida para la consola " + item.getTitle()
+                        + " (" + itemId + ")? (s/n): ");
+                if (answer.equalsIgnoreCase("s")) {
+                    extendedWarrantyIds.add(itemId);
+                }
+            }
+        }
+        return extendedWarrantyIds;
     }
 
     private void viewAllSales() {
@@ -449,6 +496,220 @@ public class ConsoleMenu {
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
+    }
+
+    private void accessoryMenu() {
+        boolean running = true;
+        while (running) {
+            System.out.println("=== ACCESSORIES ===");
+            System.out.println("1. Register controller");
+            System.out.println("2. Register cable");
+            System.out.println("3. Register memory");
+            System.out.println("4. List all accessories");
+            System.out.println("5. List accessories by type");
+            System.out.println("6. View accessories compatible with a console");
+            System.out.println("0. Back");
+            int option = readInt("Choose an option: ");
+            switch (option) {
+                case 1:
+                    registerController();
+                    break;
+                case 2:
+                    registerCable();
+                    break;
+                case 3:
+                    registerMemory();
+                    break;
+                case 4:
+                    listAllAccessories();
+                    break;
+                case 5:
+                    listAccessoriesByType();
+                    break;
+                case 6:
+                    listAccessoriesCompatibleWith();
+                    break;
+                case 0:
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Invalid option. Try again.");
+            }
+        }
+    }
+
+    private void registerController() {
+        String title = readText("Title: ");
+        double price = readDouble("Price: ");
+        int stock = readInt("Stock: ");
+        String connectionType = readText("Connection type (WIRELESS/WIRED): ");
+        String consoleIdsInput = readText("Compatible console ids (comma separated): ");
+        List<String> consoleIds = parseIds(consoleIdsInput);
+        try {
+            Accessory controller = accessoryService.registerController(title, price, stock, connectionType, consoleIds);
+            System.out.println("Controller " + controller.getId() + " registered.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void registerCable() {
+        String title = readText("Title: ");
+        double price = readDouble("Price: ");
+        int stock = readInt("Stock: ");
+        double lengthInMeters = readDouble("Length in meters: ");
+        String connectorType = readText("Connector type: ");
+        String consoleIdsInput = readText("Compatible console ids (comma separated): ");
+        List<String> consoleIds = parseIds(consoleIdsInput);
+        try {
+            Accessory cable = accessoryService.registerCable(title, price, stock, lengthInMeters, connectorType, consoleIds);
+            System.out.println("Cable " + cable.getId() + " registered.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void registerMemory() {
+        String title = readText("Title: ");
+        double price = readDouble("Price: ");
+        int stock = readInt("Stock: ");
+        int capacityInGb = readInt("Capacity in GB: ");
+        String memoryType = readText("Memory type: ");
+        String consoleIdsInput = readText("Compatible console ids (comma separated): ");
+        List<String> consoleIds = parseIds(consoleIdsInput);
+        try {
+            Accessory memory = accessoryService.registerMemory(title, price, stock, capacityInGb, memoryType, consoleIds);
+            System.out.println("Memory " + memory.getId() + " registered.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void listAllAccessories() {
+        List<Accessory> accessories = accessoryService.listAllAccessories();
+        if (accessories.isEmpty()) {
+            System.out.println("No accessories registered.");
+            return;
+        }
+        for (Accessory accessory : accessories) {
+            System.out.println(accessory.getDescription());
+        }
+    }
+
+    private void listAccessoriesByType() {
+        String type = readText("Type (CONTROLLER/CABLE/MEMORY): ");
+        try {
+            List<Accessory> accessories = accessoryService.listAccessoriesByType(type);
+            if (accessories.isEmpty()) {
+                System.out.println("No accessories of type " + type + " registered.");
+                return;
+            }
+            for (Accessory accessory : accessories) {
+                System.out.println(accessory.getDescription());
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void listAccessoriesCompatibleWith() {
+        String consoleId = readText("Console id: ");
+        try {
+            List<Accessory> accessories = accessoryService.findAccessoriesCompatibleWith(consoleId);
+            if (accessories.isEmpty()) {
+                System.out.println("No accessories compatible with console " + consoleId + ".");
+                return;
+            }
+            for (Accessory accessory : accessories) {
+                System.out.println(accessory.getDescription());
+            }
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    // -------------------------------------------------------------------------
+    // Warranties submenu
+    // -------------------------------------------------------------------------
+
+    private void warrantyMenu() {
+        boolean running = true;
+        while (running) {
+            System.out.println("=== GESTIÓN DE GARANTÍAS ===");
+            System.out.println("1. Consultar la garantía de un producto en una venta");
+            System.out.println("2. Listar todas las garantías");
+            System.out.println("3. Listar garantías vigentes");
+            System.out.println("4. Listar garantías próximas a vencer");
+            System.out.println("0. Volver");
+            int option = readInt("Seleccione una opción: ");
+            switch (option) {
+                case 1:
+                    viewWarrantyByProduct();
+                    break;
+                case 2:
+                    printWarranties(warrantyService.listAllWarranties(), "No hay garantías registradas.");
+                    break;
+                case 3:
+                    printWarranties(warrantyService.listActiveWarranties(), "No hay garantías vigentes.");
+                    break;
+                case 4:
+                    viewWarrantiesExpiringSoon();
+                    break;
+                case 0:
+                    running = false;
+                    break;
+                default:
+                    System.out.println("Opción inválida. Intente de nuevo.");
+            }
+        }
+    }
+
+    private void viewWarrantyByProduct() {
+        String saleId = readText("Id de la venta: ");
+        String productId = readText("Id del producto: ");
+        Warranty warranty = warrantyService.findWarrantyByProduct(productId, saleId);
+        if (warranty == null) {
+            System.out.println("No se encontró una garantía para el producto " + productId
+                    + " en la venta " + saleId + ".");
+            return;
+        }
+        System.out.println(warranty.generateWarrantyCertificate());
+    }
+
+    private void viewWarrantiesExpiringSoon() {
+        int daysAhead = readInt("¿Cuántos días de anticipación? ");
+        try {
+            printWarranties(warrantyService.listWarrantiesExpiringSoon(daysAhead),
+                    "No hay garantías que venzan en los próximos " + daysAhead + " días.");
+        } catch (IllegalArgumentException e) {
+            System.out.println(e.getMessage());
+        }
+    }
+
+    private void printWarranties(List<Warranty> warranties, String emptyMessage) {
+        if (warranties.isEmpty()) {
+            System.out.println(emptyMessage);
+            return;
+        }
+        for (Warranty warranty : warranties) {
+            System.out.println(warranty.getId()
+                    + " | " + warranty.getWarrantyType()
+                    + " | Producto: " + warranty.getProduct().getTitle() + " (" + warranty.getProduct().getId() + ")"
+                    + " | Venta: " + warranty.getSale().getId()
+                    + " | Inicio: " + warranty.getStartDate()
+                    + " | Vence: " + warranty.getEndDate()
+                    + " | Estado: " + (warranty.isActive(LocalDate.now()) ? "Vigente" : "Expirada"));
+        }
+    }
+
+    private List<String> parseIds(String input) {
+        List<String> ids = new ArrayList<>();
+        for (String item : input.split(",")) {
+            if (!item.trim().isEmpty()) {
+                ids.add(item.trim());
+            }
+        }
+        return ids;
     }
 
     private String readText(String prompt) {

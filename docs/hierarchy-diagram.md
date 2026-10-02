@@ -38,4 +38,12 @@ classDiagram
     Promotion <|-- PercentageDiscount
     Promotion <|-- CategoryDiscount
     Promotion <|-- BulkPurchaseDiscount
+
+    class Warranty {
+        <<abstract>>
+    }
+    class BasicWarranty
+    class ExtendedWarranty
+    Warranty <|-- BasicWarranty
+    Warranty <|-- ExtendedWarranty
 ```

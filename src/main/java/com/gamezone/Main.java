@@ -1,13 +1,17 @@
 package com.gamezone;
 
+import com.gamezone.persistence.AccessoryRepository;
 import com.gamezone.persistence.PersonRepository;
 import com.gamezone.persistence.ProductRepository;
 import com.gamezone.persistence.ReturnRepository;
 import com.gamezone.persistence.SaleRepository;
+import com.gamezone.persistence.WarrantyRepository;
+import com.gamezone.service.AccessoryService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
+import com.gamezone.service.WarrantyService;
 import com.gamezone.ui.ConsoleMenu;
 
 /**
@@ -25,13 +29,19 @@ public class Main {
         ProductRepository productRepository = new ProductRepository();
         SaleRepository saleRepository = new SaleRepository();
         ReturnRepository returnRepository = new ReturnRepository();
+        AccessoryRepository accessoryRepository = new AccessoryRepository();
+        WarrantyRepository warrantyRepository = new WarrantyRepository(saleRepository);
 
         PersonService personService = new PersonService(personRepository);
         ProductService productService = new ProductService(productRepository);
-        SaleService saleService = new SaleService(saleRepository, personService, productService);
+        AccessoryService accessoryService = new AccessoryService(accessoryRepository);
+        WarrantyService warrantyService = new WarrantyService(warrantyRepository);
+        SaleService saleService = new SaleService(saleRepository, personService, productService, accessoryService,
+                warrantyService);
         ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService);
 
-        ConsoleMenu menu = new ConsoleMenu(productService, personService, saleService, returnService);
+        ConsoleMenu menu = new ConsoleMenu(productService, personService, saleService, returnService,
+                accessoryService, warrantyService);
         menu.start();
     }
 }
