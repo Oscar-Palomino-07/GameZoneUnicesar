@@ -223,6 +223,27 @@ public class ReturnService {
         return totalSales;
     }
 
+    /**
+     * Calculates the total refunded in the given month, adding the refund
+     * amount of every return registered in that month.
+     *
+     * @param month the month to report, from 1 to 12
+     * @param year  the year to report, 2000 or later
+     * @return the sum of the refund amounts of the returns registered in the
+     *         month
+     * @throws IllegalArgumentException when the month or the year is invalid
+     */
+    public double calculateMonthlyReturns(int month, int year) {
+        validatePeriod(month, year);
+        double totalReturns = 0.0;
+        for (Return returnObj : returns) {
+            if (isInPeriod(returnObj.getDate(), month, year)) {
+                totalReturns += returnObj.calculateRefundAmount();
+            }
+        }
+        return totalReturns;
+    }
+
     public double generateMonthlyBalance(int month, int year) {
         if (month < 1 || month > 12) {
             throw new IllegalArgumentException(
