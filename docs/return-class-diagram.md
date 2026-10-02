@@ -95,6 +95,8 @@ classDiagram
         +viewAllReturns() List~Return~
         +viewReturnsByCustomer(customerId: String) List~Return~
         +viewReturnsBySale(saleId: String) List~Return~
+        +calculateMonthlySales(month: int, year: int) double
+        +calculateMonthlyReturns(month: int, year: int) double
         +generateMonthlyBalance(month: int, year: int) double
         +save() void
     }
@@ -171,4 +173,11 @@ classDiagram
   from `ProductService`, so the return always reflects the current catalog data instead of
   duplicating the prices.
 - The monthly balance is derived from the sales owned by `SaleService` and from the returns
-  owned by `ReturnService`, which is why the report lives in `ReturnService`.
+  owned by `ReturnService`, which is why the report lives in `ReturnService`. Since adjustment
+  A6 the report is split into three methods: `calculateMonthlySales` adds the final total of
+  every sale of the month (`Sale.calculateTotal()`, that is, subtotal minus the promotion
+  discount plus the extended warranty cost), `calculateMonthlyReturns` adds the refund of every
+  return of the month, and `generateMonthlyBalance` keeps its signature and returns the
+  difference between both. The balance may be negative, for example when the returns of a month
+  belong to sales of the previous month, so it is reported instead of raising an exception.
+  `ConsoleMenu.monthlyBalance` prints the three values.
