@@ -90,16 +90,35 @@ public class SaleService {
     }
 
     /**
-     * Registers a new sale for the given customer, seller and products,
-     * managing the warranties of the consoles it includes.
+     * Registers a new sale for the given customer, seller and items, applying
+     * the best promotion and managing the warranties of the consoles it
+     * includes.
      *
-     * <p>Every console in the sale receives an automatic basic warranty at no
-     * cost. When the identifier of a console is also listed in
+     * <p>The operations always run in this order, because the order changes
+     * the result (for example, the discount is calculated before the
+     * warranties are added so it never applies to their cost):</p>
+     * <ol>
+     *   <li>Validate that the sale has at least one item.</li>
+     *   <li>Resolve every item as a product or an accessory and validate its
+     *       stock.</li>
+     *   <li>Create the sale and calculate its subtotal.</li>
+     *   <li>Find the best active promotion and register the discount,
+     *       calculated only over the subtotal of the items.</li>
+     *   <li>Generate the basic warranty of every console and the requested
+     *       extended warranties, adding their cost.</li>
+     *   <li>Calculate the final total: subtotal - discount + cost of the
+     *       extended warranties.</li>
+     *   <li>Update the inventory through {@link ProductService} or
+     *       {@link AccessoryService}, according to the type of each item.</li>
+     *   <li>Persist the sale.</li>
+     * </ol>
+     *
+     * <p>Nothing is modified in the inventory or in the sales registry until
+     * every previous step has succeeded, so a rejected sale leaves no trace.
+     * Every console receives an automatic basic warranty at no cost; when the
+     * identifier of a console is also listed in
      * {@code productIdsWithExtendedWarranty}, an extended warranty is assigned
-     * to each unit of that console and its additional cost is added to the
-     * total of the sale. All the validations (including the ones about the
-     * extended warranty request) run before any stock is discounted, so a
-     * rejected sale leaves the inventory untouched.</p>
+     * to each unit of that console.</p>
      *
      * @param customerId                    the identifier of the purchasing
      *                                      customer
