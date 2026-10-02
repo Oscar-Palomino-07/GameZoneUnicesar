@@ -2,7 +2,6 @@ package com.gamezone.model;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.LocalDate;
 import java.util.List;
 
 /**
@@ -14,8 +13,10 @@ import java.util.List;
  * which the sale was registered and cannot be accidentally omitted by the
  * caller.</p>
  *
- * <p>The total amount of the sale is derived from the prices of the included
- * products through {@link #calculateTotal()}.</p>
+ * <p>The subtotal of the sale is the sum of the prices of the included
+ * products. The final total, returned by {@link #calculateTotal()}, is the
+ * subtotal minus the discount of the applied promotion plus the extra cost
+ * of the extended warranties.</p>
  */
 public class Sale {
 
@@ -25,6 +26,8 @@ public class Sale {
     private Seller seller;
     private List<Product> products;
     private double warrantyExtraCost = 0.0;
+    private String appliedPromotionName;
+    private double discountAmount;
 
     /**
      * Creates a sale with the given data, capturing the current date
@@ -95,17 +98,63 @@ public class Sale {
     }
 
     /**
-     * Calculates the total amount of the sale by adding the price of every
-     * included product plus the extra cost of the extended warranties.
+     * @return the name of the promotion applied to the sale, or {@code null}
+     *         when no promotion was applied
+     */
+    public String getAppliedPromotionName() {
+        return appliedPromotionName;
+    }
+
+    /**
+     * Sets the name of the promotion applied to the sale.
      *
-     * @return the total amount of the sale
+     * @param appliedPromotionName the promotion name, or {@code null} when no
+     *                             promotion was applied
+     */
+    public void setAppliedPromotionName(String appliedPromotionName) {
+        this.appliedPromotionName = appliedPromotionName;
+    }
+
+    /**
+     * @return the monetary discount granted by the applied promotion, zero
+     *         when no promotion was applied
+     */
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    /**
+     * Sets the monetary discount granted by the applied promotion.
+     *
+     * @param discountAmount the discount amount, never negative
+     */
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    /**
+     * Calculates the subtotal of the sale, that is, the sum of the price of
+     * every included product before any discount or warranty cost.
+     *
+     * @return the subtotal of the sale
+     */
+    public double calculateSubtotal() {
+        double subtotal = 0.0;
+        for (Product product : products) {
+            subtotal += product.getPrice();
+        }
+        return subtotal;
+    }
+
+    /**
+     * Calculates the final total of the sale: the subtotal minus the discount
+     * of the applied promotion plus the extra cost of the extended
+     * warranties.
+     *
+     * @return the final total of the sale
      */
     public double calculateTotal() {
-        double total = warrantyExtraCost;
-        for (Product product : products) {
-            total += product.getPrice();
-        }
-        return total;
+        return calculateSubtotal() - discountAmount + warrantyExtraCost;
     }
 
     public boolean canBeReturned() {
