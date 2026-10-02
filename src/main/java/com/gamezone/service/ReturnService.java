@@ -6,6 +6,21 @@ import com.gamezone.persistence.ReturnRepository;
 import java.time.LocalDate;
 import java.util.*;
 
+/**
+ * Exposes the business operations related to the returns of the store.
+ *
+ * <p>It validates every return against its original sale: the sale must
+ * exist and be within the 30-day return period, every returned item must be
+ * part of the sale, and the units returned for an item, adding the earlier
+ * returns of the same sale, can never exceed the units purchased. Only when
+ * every item passes these rules is the stock restored, through
+ * {@link ProductService} or {@link AccessoryService} according to the type of
+ * each item, and the return persisted. It also builds the monthly report of
+ * sales, returns and net balance.</p>
+ *
+ * <p>This class belongs to the service layer and is the only one allowed to
+ * invoke the return repository.</p>
+ */
 public class ReturnService {
 
     private final SaleService saleService;
@@ -15,6 +30,18 @@ public class ReturnService {
     private final ReturnRepository returnRepository;
     private final List<Return> returns;
 
+    /**
+     * Creates the return service, loading the stored returns from the
+     * repository into memory.
+     *
+     * @param returnRepository the repository used to persist returns
+     * @param saleService      the service used to locate the original sales
+     * @param personService    the service used to locate customers and sellers
+     * @param productService   the service used to locate products and restore
+     *                         their stock
+     * @param accessoryService the service used to locate accessories and
+     *                         restore their stock
+     */
     public ReturnService(ReturnRepository returnRepository, SaleService saleService, PersonService personService,
             ProductService productService, AccessoryService accessoryService) {
         this.saleService = saleService;
@@ -25,6 +52,26 @@ public class ReturnService {
         this.returns = new ArrayList<>(returnRepository.loadAll());
     }
 
+    /**
+     * Registers the return of some or all the items of a sale.
+     *
+     * <p>All the validations run before anything is modified, so a rejected
+     * return leaves the inventory and the returns registry untouched. The
+     * return identifier is generated automatically following the D-N
+     * sequence of the stored returns.</p>
+     *
+     * @param saleId     the identifier of the original sale
+     * @param productIds the identifiers of the returned items, repeated once
+     *                   per unit
+     * @return the registered return
+     * @throws IllegalArgumentException when an identifier is missing, the sale
+     *         does not exist or its return period expired, or an item does
+     *         not exist, is not part of the sale or exceeds the purchased
+     *         units
+     * @throws IllegalStateException when the requested units, added to the
+     *         units already returned for the same sale, exceed the purchased
+     *         units
+     */
     public Return registerReturn(String saleId, List<String> productIds) {
         if (saleId == null || saleId.isBlank()) {
             throw new IllegalArgumentException("El identificador de la venta es obligatorio.");
@@ -141,6 +188,14 @@ public class ReturnService {
         }
     }
 
+    /**
+     * Counts, per item, the units already returned for the given sale. Old
+     * returns stored without a sale identifier are matched by customer and
+     * seller.
+     *
+     * @param sale the original sale
+     * @return the units already returned, keyed by item identifier
+     */
     private Map<String, Integer> countAlreadyReturnedByProduct(Sale sale) {
         Set<String> saleProductIds = new HashSet<>();
         for (Product p : sale.getProducts()) {
@@ -172,10 +227,20 @@ public class ReturnService {
         return countMap;
     }
 
+    /**
+     * @return an unmodifiable view of all the registered returns
+     */
     public List<Return> viewAllReturns() {
         return Collections.unmodifiableList(returns);
     }
 
+    /**
+     * Returns the returns registered for a specific customer.
+     *
+     * @param customerId the identifier of the customer to look for
+     * @return the returns of the customer, or an empty list when none matches
+     * @throws IllegalArgumentException when the identifier is missing
+     */
     public List<Return> viewReturnsByCustomer(String customerId) {
         if (customerId == null || customerId.isBlank()) {
             throw new IllegalArgumentException("El identificador del cliente es obligatorio.");
@@ -189,6 +254,13 @@ public class ReturnService {
         return result;
     }
 
+    /**
+     * Returns the returns registered for a specific sale.
+     *
+     * @param saleId the identifier of the sale to look for
+     * @return the returns of the sale, or an empty list when none matches
+     * @throws IllegalArgumentException when the identifier is missing
+     */
     public List<Return> viewReturnsBySale(String saleId) {
         if (saleId == null || saleId.isBlank()) {
             throw new IllegalArgumentException("El identificador de la venta es obligatorio.");
@@ -287,10 +359,20 @@ public class ReturnService {
         return date != null && date.getMonthValue() == month && date.getYear() == year;
     }
 
+    /**
+     * Persists the current state of the returns registry into the data file.
+     */
     public void save() {
         returnRepository.saveAll(returns);
     }
 
+    /**
+     * Generates the next return identifier following the D-N sequence,
+     * taking the largest numeric suffix among the stored returns as
+     * reference.
+     *
+     * @return the next available return identifier
+     */
     private String nextReturnId() {
         int max = 0;
         for (Return re : returns) {
