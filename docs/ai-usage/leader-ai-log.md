@@ -225,5 +225,18 @@ A partir de esta sección cada interacción se registra con los campos que exige
 | Objetivo | Documentar la integración: análisis de los ajustes A1 a A7, diagrama de clases único, diagrama de capas y README |
 | Consulta | "ya la A7 esta lista, haz todo lo mio" |
 | Respuesta | La IA revisó el PR #39 de A7 y comprobó que el escenario de sustentación pasa completo. Redactó `docs/integration-analysis.md` (causa y solución de A1 a A7, comportamiento integrado y desviaciones frente a los enunciados), `docs/integrated-class-diagram.md` (validó que el Mermaid renderiza sin errores), actualizó `docs/layers-diagram.md` y `README.md` a partir del código final, y preparó estas entradas de bitácora. Dejó los cambios en el área de staging |
-| Decisión | Los cambios se dejaron en staging y los comité yo; la IA no figura como coautora en esos commits, por eso el uso queda documentado aquí. Pendiente de mi revisión antes de comitear |
-| Commit relacionado | Completar con el hash del commit de cada archivo al comitear |
+| Decisión | Los cambios se dejaron en staging y los comité yo; la IA no figura como coautora en esos commits, por eso el uso queda documentado aquí. Revisé los documentos y se fusionaron en `develop` con el Pull Request #40 |
+| Commit relacionado | `d9312d8` (Pull Request #40) |
+
+### Entrada 16
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-02 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Fase 5, verificación final antes de A9, `docs/leader-log-final` |
+| Objetivo | Comprobar que `develop` integrado funciona completo después de fusionar A7 y A8, y dejar la bitácora al día |
+| Consulta | "ya fusioné la A7, verifica el remoto" |
+| Respuesta | La IA confirmó que los Pull Requests #39 (A7) y #40 (A8) están fusionados y que no hay Pull Requests abiertos. Compiló `origin/develop` y repitió el escenario de sustentación con los datos reales de `data/`: venta de $1205 con la promoción general del 15% y dos garantías, devolución parcial de $1035 con stock restaurado y garantías anuladas, balance mensual de ventas $1205, devoluciones $1035 y neto $170, y los mismos valores después de reiniciar. Los 17 chequeos pasaron. También comprobó que la mezcla de `develop` en `main` no tiene conflictos. Corrigió el hash pendiente de la entrada 15 |
+| Decisión | Acepté el resultado. Sigue el ajuste A9 (Pull Request de `develop` a `main`), que debe aprobar Manuel o Vgiseth. Los cambios de la bitácora quedaron en staging y los comito yo |
+| Commit relacionado | Completar con el hash al comitear |
