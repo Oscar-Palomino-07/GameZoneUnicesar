@@ -3,6 +3,7 @@ package com.gamezone.model;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Represents a sale registered at GameZone Unicesar.
@@ -155,6 +156,44 @@ public class Sale {
      */
     public double calculateTotal() {
         return calculateSubtotal() - discountAmount + warrantyExtraCost;
+    }
+
+    /**
+     * Builds the receipt of the sale in Spanish, with the detail of every
+     * item and the breakdown of the amounts: subtotal, discount (including
+     * the name of the applied promotion), cost of the extended warranties and
+     * final total.
+     *
+     * @return the formatted receipt of the sale
+     */
+    public String generateReceipt() {
+        StringBuilder receipt = new StringBuilder();
+        receipt.append("Recibo de venta ").append(id).append("\n");
+        receipt.append("====================\n");
+        receipt.append("Fecha: ").append(date).append("\n");
+        receipt.append("Cliente: ").append(customer.getFirstName()).append(" ")
+                .append(customer.getLastName()).append("\n");
+        receipt.append("Vendedor: ").append(seller.getFirstName()).append(" ")
+                .append(seller.getLastName()).append("\n");
+        receipt.append("Productos:\n");
+        for (Product product : products) {
+            receipt.append("  - ").append(product.getTitle()).append(" (").append(product.getId())
+                    .append("): $").append(formatAmount(product.getPrice())).append("\n");
+        }
+        receipt.append("Subtotal: $").append(formatAmount(calculateSubtotal())).append("\n");
+        if (appliedPromotionName != null && discountAmount > 0) {
+            receipt.append("Descuento (").append(appliedPromotionName).append("): -$")
+                    .append(formatAmount(discountAmount)).append("\n");
+        } else {
+            receipt.append("Descuento: ninguno\n");
+        }
+        receipt.append("Garantía extendida: $").append(formatAmount(warrantyExtraCost)).append("\n");
+        receipt.append("Total final: $").append(formatAmount(calculateTotal()));
+        return receipt.toString();
+    }
+
+    private String formatAmount(double amount) {
+        return String.format(Locale.US, "%.2f", amount);
     }
 
     public boolean canBeReturned() {
