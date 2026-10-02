@@ -2,6 +2,7 @@ package com.gamezone.model;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 
 public class Return {
 
@@ -100,21 +101,36 @@ public class Return {
         return product.getPrice() * saleDiscount / saleSubtotal;
     }
 
+    /**
+     * Builds the return receipt in Spanish. For every returned product it shows
+     * the list price, the proportional share of the sale discount and the
+     * refunded amount, followed by the total refund.
+     *
+     * @return the formatted return receipt
+     */
     public String generateReturnReceipt() {
         StringBuilder receipt = new StringBuilder();
-        receipt.append("Return Receipt\n");
-        receipt.append("================\n");
+        receipt.append("Recibo de devolución\n");
+        receipt.append("====================\n");
         receipt.append("ID: ").append(id).append("\n");
-        receipt.append("Sale: ").append(saleId).append("\n");
-        receipt.append("Date: ").append(date).append("\n");
-        receipt.append("Customer: ").append(customer.getId()).append("\n");
-        receipt.append("Seller: ").append(seller.getId()).append("\n");
-        receipt.append("Products:\n");
+        receipt.append("Venta: ").append(saleId).append("\n");
+        receipt.append("Fecha: ").append(date).append("\n");
+        receipt.append("Cliente: ").append(customer.getId()).append("\n");
+        receipt.append("Vendedor: ").append(seller.getId()).append("\n");
+        receipt.append("Productos:\n");
         for (Product product : products) {
-            receipt.append("- ").append(product.getTitle()).append(" ").append(product.getPrice()).append("\n");
+            double discount = calculateProportionalDiscount(product);
+            receipt.append("  - ").append(product.getTitle()).append(" (").append(product.getId()).append(")\n");
+            receipt.append("      Precio de lista: $").append(formatAmount(product.getPrice())).append("\n");
+            receipt.append("      Descuento proporcional: -$").append(formatAmount(discount)).append("\n");
+            receipt.append("      Reembolso: $").append(formatAmount(product.getPrice() - discount)).append("\n");
         }
-        receipt.append("Total: ").append(calculateRefundAmount()).append("\n");
+        receipt.append("Total reembolsado: $").append(formatAmount(calculateRefundAmount())).append("\n");
         return receipt.toString();
+    }
+
+    private String formatAmount(double amount) {
+        return String.format(Locale.US, "%.2f", amount);
     }
 
 }
