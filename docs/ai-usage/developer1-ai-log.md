@@ -195,6 +195,21 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 10 — 2026-10-02
+
+| Field | Detail |
+|---|---|
+| Date | 02-10-2026 |
+| AI tool | Claude Code (Claude Opus 5.5, CLI on Windows) |
+| Phase and branch | Phase 4 (returns) — adjustment A5, branch `fix/return-discounted-refund` created from `develop` |
+| Goal | Refund returned items proportionally to the discount of the original sale, and show the breakdown in the return receipt |
+| Query | The technical lead's review, pasted: "A5 (fix/return-discounted-refund) does not exist on the remote yet and blocks A7. Return only stores saleId and does not know the sale discount; to apply price × (1 − discount / subtotal) it must receive that data when the return is registered and store it. That touches ReturnRepository, so coordinate it. The PR needs problem, cause, solution and verification." |
+| Response | The AI read `Return`, `ReturnService`, `ReturnRepository` and `Sale` on `develop`, and the open branches `fix/return-accessory-stock` (A4) and `fix/monthly-balance-report` (A6). It found that `ReturnRepository` serializes `Return` by reflection with Gson in both `develop` and A6, so new fields in `Return` are saved and loaded without changing the repository. It proposed storing the sale subtotal and discount in `Return` at registration time, a private helper for the proportional discount, and a per-item receipt |
+| Decision | Accepted storing `saleSubtotal` and `saleDiscount` in `Return` (values at the moment of the return) instead of looking the sale up again, because the model must not depend on services or repositories. Accepted changing only the `new Return(...)` call in `ReturnService` to pass `calculateSubtotal()` and `getDiscountAmount()` of the original sale; this is the single line shared with Developer 2's A4/A6 branches, so I coordinate it with her before merging. Returns saved before this change have no such fields (Gson leaves them at 0) and are refunded at list price, which keeps old data loadable. Rewrote the receipt in Spanish because it is user-visible, matching the sale receipt. Verified with `mvn -q compile` after each commit and a scratch check: on a 2,500,000 sale with a 375,000 discount, a 2,000,000 console refunds 1,700,000 and a 300,000 controller refunds 255,000; with no discount the full price is refunded |
+| Related commit | `d6befad` fix: store the original sale subtotal and discount in Return; `7ccdbd6` fix: refund returned items proportionally to the sale discount; `b38bb60` fix: show list price, proportional discount and refund per item in the return receipt |
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
