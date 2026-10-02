@@ -216,3 +216,16 @@ del Taller 1 se conservan con su formato original.
 | Respuesta | Encontró que los PR de A2 y de la documentación de devoluciones se fusionaron en mi fork y no en `Oscar-Palomino-07/GameZoneUnicesar`, que la rama de A4 llevaba A2 adentro y que el enunciado del Req. 6 trae el mismo texto del Req. 5. Propuso rehacer A2 con `cherry-pick` sobre el `develop` actual, resolver el conflicto de `Main` (conservar `PromotionService` y el nuevo orden de construcción) y luego A4. Encontró además un defecto en `ReturnService.registerReturn`: restauraba el stock dentro del ciclo de validación, así que una devolución rechazada por el segundo ítem dejaba restaurado el stock del primero. También señaló mensajes al usuario en inglés, el identificador `ventaOriginal` en español y la falta de JavaDoc en `ReturnRepository` |
 | Decisión | Acepté rehacer A2 y A4 con `cherry-pick` para conservar mis commits originales y abrir un PR por ajuste. Mantuve JSON para las garantías, como en todo el proyecto, y corregí el `README.md` que todavía nombraba `warranties.csv`. Acepté mover la restauración de stock después de todas las validaciones, traducir los mensajes y renombrar `ventaOriginal` a `originalSale`. Lo verifiqué con un programa de prueba sobre una copia de `data/`: una devolución con un producto inexistente es rechazada y el stock de la consola sigue igual |
 | Commit relacionado | `fix: validate every returned item before restoring stock`; `fix: show return validation messages in Spanish`; `docs: add JavaDoc to ReturnRepository` |
+
+## Entrada R5-08 — 02-10-2026
+
+| Campo | Detalle |
+|---|---|
+| Fecha | 02-10-2026 |
+| Herramienta | Claude Code (CLI en sesión remota) |
+| Fase y rama | Fase 4, rama `fix/monthly-balance-report` (ajuste A6) |
+| Objetivo | Separar el reporte mensual en total de ventas, total de devoluciones y balance neto, y usar el total final de cada venta |
+| Consulta | "Implementa A6: `calculateMonthlySales` y `calculateMonthlyReturns` en `ReturnService`, `generateMonthlyBalance` con la misma firma y el menú con los tres valores" |
+| Respuesta | Propuso dos métodos públicos que comparten una validación del período (`validatePeriod`) y un filtro por mes y año (`isInPeriod`), y que `generateMonthlyBalance` reste uno del otro. Señaló que la excepción por balance negativo era un error: una venta del 30 de un mes devuelta el 2 del siguiente deja el segundo mes en negativo de forma legítima |
+| Decisión | Acepté la separación y eliminé la `IllegalStateException` por balance negativo, porque el enunciado dice que el método retorna la diferencia. El total de ventas usa `Sale.calculateTotal()`, que ya resta el descuento y suma las garantías extendidas desde A3. El menú muestra los tres valores en español. Actualicé `return-class-diagram.md` y la pregunta Q5 de `return-analysis.md`. Lo verifiqué con el programa de prueba: ventas 2325.00, devoluciones y balance coherentes, y el mes 13 es rechazado con mensaje en español |
+| Commit relacionado | `fix: add calculateMonthlySales to ReturnService`; `fix: add calculateMonthlyReturns to ReturnService`; `fix: return the sales minus returns difference in generateMonthlyBalance`; `fix: show sales, returns and net balance in the monthly balance menu` |
