@@ -180,6 +180,21 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 09 — 2026-10-02
+
+| Field | Detail |
+|---|---|
+| Date | 02-10-2026 |
+| AI tool | Claude Code (Claude Opus 5.5, CLI on Windows) |
+| Phase and branch | Phase 2 (promotions) — adjustment A1, branches `feature/accessory-category-discount` (PR #30) and `feature/accessory-category-discount-completion` |
+| Goal | Publish my local A1 branch, which `git pull` rejected for having no upstream, and complete every point of A1 from the Requirement 5 statement |
+| Query | "There is no tracking information for the current branch" (pasted error); "how many commits do I have unpublished, should the leader or I create this branch?"; "commit and push"; "did I finish my part?" with the Requirement 5 statement pasted; "do what is missing" |
+| Response | The branch existed only locally; per `TEAM.md` each developer creates their own branch. Before pushing, the AI found the branch did not compile: it was based on an old `main` without the promotion module, `CategoryDiscount.java` was saved as UTF-16 and `PromotionService.java` had a BOM and broken accents (encoding damage from PowerShell). It rebuilt the branch from `develop` with clean UTF-8, then listed the A1 points still missing: explicit `Accessory` detection in `calculateDiscount`, the accessories option in `ConsoleMenu`, a preloaded accessory promotion and this log entry |
+| Decision | Accepted rebuilding the branch from `develop` instead of pushing the broken commits (originals kept in a local backup branch). Accepted an `instanceof Accessory` check in `CategoryDiscount` so any accessory counts as `ACCESSORY` regardless of `getCategory()`. Accepted replacing the free-text category prompt with a numbered menu (videogames, consoles, accessories) so the user cannot type an invalid category. Modified the statement's `data/promotions.csv` to `data/promotions.json`, because the project persists promotions as JSON; the promotion runs 2026-09-01 to 2026-12-31, covering the work week like the other preloaded promotions. Verified with `mvn -q compile` and a scratch check that `PR-4` loads as a `CategoryDiscount` and discounts 25% from a controller but not under a VIDEOGAME promotion |
+| Related commit | `82571c2` docs(model): mention ACCESSORY as a CategoryDiscount target category; `380b8d1` feat: validate ACCESSORY in PromotionService.registerCategory; `c143afb` feat: detect Accessory instances as ACCESSORY in CategoryDiscount; `8ca5cba` feat: add accessories option to the category promotion menu; `1be3081` feat: add preloaded accessory category promotion |
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
