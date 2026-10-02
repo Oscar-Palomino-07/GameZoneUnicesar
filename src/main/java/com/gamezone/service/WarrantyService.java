@@ -177,6 +177,57 @@ public class WarrantyService {
     }
 
     /**
+     * Cancels the warranties of one returned unit of a product in the given
+     * sale, because a returned console cannot keep an active warranty. Each
+     * unit of a console receives one basic warranty and, when requested, one
+     * extended warranty, so every call removes at most one of each; calling it
+     * once per returned unit keeps the warranties of the units the customer
+     * kept. The removal is persisted immediately.
+     *
+     * <p>The basic warranty is free, so it refunds nothing; the extended
+     * warranty refunds the additional cost the customer paid for it.</p>
+     *
+     * @param productId the identifier of the returned product
+     * @param saleId    the identifier of the sale in which it was bought
+     * @return the refundable amount of the cancelled warranties: zero for the
+     *         basic warranty plus the additional cost of the extended one
+     * @throws IllegalArgumentException when an identifier is missing
+     */
+    public double cancelWarranties(String productId, String saleId) {
+        if (productId == null || productId.isBlank() || saleId == null || saleId.isBlank()) {
+            throw new IllegalArgumentException("El producto y la venta son obligatorios para anular garantías.");
+        }
+        Warranty basic = null;
+        Warranty extended = null;
+        for (Warranty warranty : warranties) {
+            boolean sameProduct = warranty.getProduct().getId().equals(productId);
+            boolean sameSale = warranty.getSale().getId().equals(saleId);
+            if (!sameProduct || !sameSale) {
+                continue;
+            }
+            if (warranty instanceof ExtendedWarranty) {
+                if (extended == null) {
+                    extended = warranty;
+                }
+            } else if (basic == null) {
+                basic = warranty;
+            }
+        }
+        double refund = 0.0;
+        if (basic != null) {
+            warranties.remove(basic);
+        }
+        if (extended != null) {
+            warranties.remove(extended);
+            refund += extended.getAdditionalCost();
+        }
+        if (basic != null || extended != null) {
+            save();
+        }
+        return refund;
+    }
+
+    /**
      * Returns all registered warranties.
      *
      * @return an unmodifiable view of all registered warranties

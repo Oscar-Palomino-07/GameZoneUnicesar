@@ -15,6 +15,8 @@ public class Return {
     // Subtotal and discount of the original sale, kept to refund what the customer actually paid.
     private double saleSubtotal;
     private double saleDiscount;
+    // Refundable cost of the warranties cancelled because their console was returned.
+    private double warrantyRefund;
 
     /**
      * Creates a return of products from an original sale.
@@ -78,10 +80,31 @@ public class Return {
     }
 
     /**
+     * @return the amount refunded for the warranties cancelled by this
+     *         return, zero when no extended warranty was cancelled
+     */
+    public double getWarrantyRefund() {
+        return warrantyRefund;
+    }
+
+    /**
+     * Sets the amount refunded for the warranties cancelled by this return.
+     * Only extended warranties have a cost, so only they add to this value.
+     *
+     * @param warrantyRefund the refundable cost of the cancelled warranties,
+     *                       never negative
+     */
+    public void setWarrantyRefund(double warrantyRefund) {
+        this.warrantyRefund = warrantyRefund;
+    }
+
+    /**
      * Calculates the amount refunded to the customer. Each returned product is
      * refunded proportionally to the discount of the original sale:
      * {@code price * (1 - saleDiscount / saleSubtotal)}, so the customer gets
-     * back what was actually paid and not the list price.
+     * back what was actually paid and not the list price. The cost of the
+     * extended warranties cancelled because their console was returned is
+     * added in full, since the sale discount never applied to it.
      *
      * @return the total refund amount
      */
@@ -90,7 +113,7 @@ public class Return {
         for (Product product : products) {
             total += product.getPrice() - calculateProportionalDiscount(product);
         }
-        return total;
+        return total + warrantyRefund;
     }
 
     // Share of the sale discount that corresponds to the product; zero when the sale had no discount.
@@ -104,7 +127,8 @@ public class Return {
     /**
      * Builds the return receipt in Spanish. For every returned product it shows
      * the list price, the proportional share of the sale discount and the
-     * refunded amount, followed by the total refund.
+     * refunded amount, then the refund of the cancelled warranties and the
+     * total refund.
      *
      * @return the formatted return receipt
      */
@@ -125,6 +149,7 @@ public class Return {
             receipt.append("      Descuento proporcional: -$").append(formatAmount(discount)).append("\n");
             receipt.append("      Reembolso: $").append(formatAmount(product.getPrice() - discount)).append("\n");
         }
+        receipt.append("Garantías anuladas (reembolso): $").append(formatAmount(warrantyRefund)).append("\n");
         receipt.append("Total reembolsado: $").append(formatAmount(calculateRefundAmount())).append("\n");
         return receipt.toString();
     }

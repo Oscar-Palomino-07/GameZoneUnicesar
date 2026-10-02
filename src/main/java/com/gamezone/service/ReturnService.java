@@ -15,7 +15,8 @@ import java.util.*;
  * returns of the same sale, can never exceed the units purchased. Only when
  * every item passes these rules is the stock restored, through
  * {@link ProductService} or {@link AccessoryService} according to the type of
- * each item, and the return persisted. It also builds the monthly report of
+ * each item, the warranties of every returned console are cancelled through
+ * {@link WarrantyService}, and the return persisted. It also builds the monthly report of
  * sales, returns and net balance.</p>
  *
  * <p>This class belongs to the service layer and is the only one allowed to
@@ -27,6 +28,7 @@ public class ReturnService {
     private final PersonService personService;
     private final ProductService productService;
     private final AccessoryService accessoryService;
+    private final WarrantyService warrantyService;
     private final ReturnRepository returnRepository;
     private final List<Return> returns;
 
@@ -41,14 +43,17 @@ public class ReturnService {
      *                         their stock
      * @param accessoryService the service used to locate accessories and
      *                         restore their stock
+     * @param warrantyService  the service used to cancel the warranties of
+     *                         the returned consoles
      */
     public ReturnService(ReturnRepository returnRepository, SaleService saleService, PersonService personService,
-            ProductService productService, AccessoryService accessoryService) {
+            ProductService productService, AccessoryService accessoryService, WarrantyService warrantyService) {
         this.saleService = saleService;
         this.returnRepository = returnRepository;
         this.personService = personService;
         this.productService = productService;
         this.accessoryService = accessoryService;
+        this.warrantyService = warrantyService;
         this.returns = new ArrayList<>(returnRepository.loadAll());
     }
 
@@ -150,8 +155,18 @@ public class ReturnService {
             restoreStock(entry.getKey(), entry.getValue());
         }
 
+        // A returned console cannot keep an active warranty: its warranties are
+        // cancelled once per returned unit and the extended cost is refunded.
+        double warrantyRefund = 0.0;
+        for (Product product : productsToReturn) {
+            if (product instanceof Console) {
+                warrantyRefund += warrantyService.cancelWarranties(product.getId(), saleId);
+            }
+        }
+
         Return returnObj = new Return(nextReturnId(), saleId, customer, seller, productsToReturn,
                 originalSale.calculateSubtotal(), originalSale.getDiscountAmount());
+        returnObj.setWarrantyRefund(warrantyRefund);
         returns.add(returnObj);
         save();
 
