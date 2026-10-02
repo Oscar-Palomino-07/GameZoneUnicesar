@@ -47,9 +47,17 @@ classDiagram
     }
     class Console
     class VideoGame
+    class Accessory
+    class Controller
+    class Cable
+    class Memory
 
     Product <|-- Console
     Product <|-- VideoGame
+    Product <|-- Accessory
+    Accessory <|-- Controller
+    Accessory <|-- Cable
+    Accessory <|-- Memory
     Sale "1" o-- "1..*" Product
     Return "1" --> "1" Customer
     Return "1" --> "1" Seller
@@ -66,9 +74,13 @@ classDiagram
         +saveAllConsoles(consoles: List~Console~) void
         +loadAllConsoles() List~Console~
     }
+    class AccessoryRepository {
+        +saveAll(accessories: List~Accessory~) void
+        +loadAll() List~Accessory~
+    }
 
     ReturnRepository ..> Return
-    ReturnRepository ..> Product : polymorphic deserializer rebuilds VideoGame or Console
+    ReturnRepository ..> Product : polymorphic deserializer rebuilds VideoGame, Console, Controller, Cable or Memory
     ProductRepository ..> Console
     ProductRepository ..> VideoGame
 
@@ -78,12 +90,19 @@ classDiagram
         -saleService: SaleService
         -personService: PersonService
         -productService: ProductService
+        -accessoryService: AccessoryService
         +registerReturn(saleId: String, productIds: List~String~) Return
         +viewAllReturns() List~Return~
         +viewReturnsByCustomer(customerId: String) List~Return~
         +viewReturnsBySale(saleId: String) List~Return~
         +generateMonthlyBalance(month: int, year: int) double
         +save() void
+    }
+    class AccessoryService {
+        -repository: AccessoryRepository
+        +findById(accessoryId: String) Accessory
+        +updateStock(accessoryId: String, quantity: int) void
+        +restoreStock(accessoryId: String, quantity: int) void
     }
     class SaleService {
         -saleRepository: SaleRepository
@@ -101,7 +120,9 @@ classDiagram
     ReturnService "1" --> "1" SaleService
     ReturnService "1" --> "1" PersonService
     ReturnService "1" --> "1" ProductService
+    ReturnService "1" --> "1" AccessoryService : resolves and restores accessory items
     ProductService "1" --> "1" ProductRepository
+    AccessoryService "1" --> "1" AccessoryRepository
     SaleService ..> Sale
 
     %% ===== UI LAYER =====
@@ -135,9 +156,17 @@ classDiagram
   `Sale.canBeReturned()`, verify that every item was part of the sale and was not already
   returned, and only then restore the stock and persist the new return. A rejected return
   therefore leaves the inventory untouched.
+- A returned item is resolved through `ReturnService.resolveItem`, which looks in
+  `ProductService` first and falls back to `AccessoryService`, so a sale that mixes video games,
+  consoles and accessories can be returned in full. The stock is then restored through the service
+  that owns the item type: `AccessoryService.restoreStock` for accessories and
+  `ProductService.restoreStock` for products. Both methods increment the current stock, unlike
+  their `updateStock` counterparts, which replace it with an absolute value.
 - A return is stored with the identifiers of the sale and of the items, plus the customer
   and the seller copies needed to print the receipt; `ReturnRepository` rebuilds the
-  polymorphic `Product` hierarchy with a Gson deserializer.
+  polymorphic `Product` hierarchy with a Gson deserializer that covers the whole catalog
+  (`VideoGame`, `Console`, `Controller`, `Cable` and `Memory`), using the same discriminators
+  already applied in `SaleRepository`.
 - `Return` keeps a reference to the products it returns, and `ReturnService` obtains them
   from `ProductService`, so the return always reflects the current catalog data instead of
   duplicating the prices.
