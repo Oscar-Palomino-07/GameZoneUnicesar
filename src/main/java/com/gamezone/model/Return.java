@@ -11,14 +11,31 @@ public class Return {
     private Customer customer;
     private Seller seller;
     private List<Product> products;
+    // Subtotal and discount of the original sale, kept to refund what the customer actually paid.
+    private double saleSubtotal;
+    private double saleDiscount;
 
-    public Return(String id, String saleId, Customer customer, Seller seller, List<Product> products) {
+    /**
+     * Creates a return of products from an original sale.
+     *
+     * @param id           the unique return identifier
+     * @param saleId       the identifier of the original sale
+     * @param customer     the customer who returns the products
+     * @param seller       the seller of the original sale
+     * @param products     the returned products, one entry per unit
+     * @param saleSubtotal the subtotal of the original sale, before the discount
+     * @param saleDiscount the discount granted to the original sale
+     */
+    public Return(String id, String saleId, Customer customer, Seller seller, List<Product> products,
+                  double saleSubtotal, double saleDiscount) {
         this.id = id;
         this.saleId = saleId;
         this.date = LocalDate.now();
         this.customer = customer;
         this.seller = seller;
         this.products = products;
+        this.saleSubtotal = saleSubtotal;
+        this.saleDiscount = saleDiscount;
     }
 
     public String getId() {
@@ -43,6 +60,20 @@ public class Return {
 
     public List<Product> getProducts() {
         return products;
+    }
+
+    /**
+     * @return the subtotal of the original sale, before the discount
+     */
+    public double getSaleSubtotal() {
+        return saleSubtotal;
+    }
+
+    /**
+     * @return the discount granted to the original sale
+     */
+    public double getSaleDiscount() {
+        return saleDiscount;
     }
 
     public double calculateRefundAmount() {

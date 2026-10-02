@@ -93,7 +93,8 @@ public class ReturnService {
             productService.restoreStock(prodId, qtyToReturn);
         }
 
-        Return returnObj = new Return(nextReturnId(), saleId, customer, seller, productsToReturn);
+        Return returnObj = new Return(nextReturnId(), saleId, customer, seller, productsToReturn,
+                ventaOriginal.calculateSubtotal(), ventaOriginal.getDiscountAmount());
         returns.add(returnObj);
         save();
 
