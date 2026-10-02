@@ -83,6 +83,9 @@ interface must not contain business rules.
 
 Two safeguards protect the result. The comparison uses
 `sale.getDate().getMonthValue()` and `getYear()`, so a sale from another month or another
-year never enters the sum. And a negative balance raises `IllegalStateException` instead of
-being printed, because refunds larger than the sales of a month mean the stored returns are
-inconsistent and the user should be told instead of receiving a meaningless number.
+year never enters the sum. In the integrated system (adjustment A6) the three values are
+exposed separately: `calculateMonthlySales(month, year)` uses the final total of each sale,
+with the promotion discount and the extended warranty cost, `calculateMonthlyReturns(month,
+year)` adds the refunds, and `generateMonthlyBalance` returns their difference. A negative
+balance is a valid result, because a sale registered at the end of one month can be returned
+at the beginning of the next one, so it is no longer rejected with an exception.
