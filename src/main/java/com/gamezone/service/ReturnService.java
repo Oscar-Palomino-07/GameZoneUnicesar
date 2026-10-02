@@ -3,6 +3,7 @@ package com.gamezone.service;
 import com.gamezone.model.*;
 import com.gamezone.persistence.ReturnRepository;
 
+import java.time.LocalDate;
 import java.util.*;
 
 public class ReturnService {
@@ -201,6 +202,27 @@ public class ReturnService {
         return result;
     }
 
+    /**
+     * Calculates the total sold in the given month. Each sale contributes its
+     * final total, that is, the subtotal minus the discount of the applied
+     * promotion plus the cost of the extended warranties.
+     *
+     * @param month the month to report, from 1 to 12
+     * @param year  the year to report, 2000 or later
+     * @return the sum of the final totals of the sales registered in the month
+     * @throws IllegalArgumentException when the month or the year is invalid
+     */
+    public double calculateMonthlySales(int month, int year) {
+        validatePeriod(month, year);
+        double totalSales = 0.0;
+        for (Sale sale : saleService.viewAllSales()) {
+            if (isInPeriod(sale.getDate(), month, year)) {
+                totalSales += sale.calculateTotal();
+            }
+        }
+        return totalSales;
+    }
+
     public double generateMonthlyBalance(int month, int year) {
         if (month < 1 || month > 12) {
             throw new IllegalArgumentException(
@@ -237,6 +259,34 @@ public class ReturnService {
         }
 
         return balance;
+    }
+
+    /**
+     * Checks that the month and the year of a report are valid.
+     *
+     * @param month the month to check, from 1 to 12
+     * @param year  the year to check, 2000 or later
+     * @throws IllegalArgumentException when the month or the year is invalid
+     */
+    private void validatePeriod(int month, int year) {
+        if (month < 1 || month > 12) {
+            throw new IllegalArgumentException("Mes inválido: " + month + ". Debe estar entre 1 y 12.");
+        }
+        if (year < 2000) {
+            throw new IllegalArgumentException("Año inválido: " + year + ". Debe ser 2000 o posterior.");
+        }
+    }
+
+    /**
+     * Tells whether a date belongs to the given month and year.
+     *
+     * @param date  the date to check
+     * @param month the month of the period
+     * @param year  the year of the period
+     * @return {@code true} when the date falls inside the period
+     */
+    private boolean isInPeriod(LocalDate date, int month, int year) {
+        return date != null && date.getMonthValue() == month && date.getYear() == year;
     }
 
     public void save() {
