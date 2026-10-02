@@ -128,20 +128,31 @@ public class SaleService {
         Seller seller = personService.findSellerById(sellerId)
                 .orElseThrow(() -> new IllegalArgumentException("Seller not found: " + sellerId));
 
+        // Step 2: resolve each item as a product or an accessory and validate
+        // its stock. Nothing is modified until every validation has passed.
         List<Product> products = resolveAndValidateItems(productIds);
         Set<String> extendedWarrantyIds = validateExtendedWarrantyRequest(productIds, productIdsWithExtendedWarranty);
 
+        // Step 3: create the sale; its subtotal is the sum of the item prices.
+        Sale sale = new Sale(nextSaleId(), customer, seller, products);
+
+        // Step 4: best active promotion, with the discount calculated only
+        // over the subtotal of the items.
+        applyBestPromotion(sale);
+
+        // Steps 5 and 6: warranties and final total (subtotal - discount +
+        // cost of the extended warranties).
+        sale.setWarrantyExtraCost(assignWarranties(sale, extendedWarrantyIds));
+
+        // Step 7: update the inventory through the service that owns each item.
         for (Product item : products) {
             discountStock(item);
         }
 
-        Sale sale = new Sale(nextSaleId(), customer, seller, products);
-        applyBestPromotion(sale);
+        // Step 8: persist the sale. The sale only becomes visible once every
+        // previous step has succeeded.
         sales.add(sale);
-        // The sale is saved first because the warranty repository rebuilds
-        // its references by looking the sale up in the stored sales.
         save();
-        assignWarranties(sale, extendedWarrantyIds);
         return sale;
     }
 
@@ -225,16 +236,18 @@ public class SaleService {
     }
 
     /**
-     * Assigns the warranties of a freshly created sale: an automatic basic
+     * Assigns the warranties of the sale being registered: an automatic basic
      * warranty for every console and an extended warranty for the consoles
-     * that requested it. The additional cost of the extended warranties is
-     * added to the total of the sale.
+     * that requested it. It returns the additional cost of the extended
+     * warranties so the caller can include it in the total of the sale.
      *
-     * @param sale               the sale that was just registered
+     * @param sale               the sale being registered
      * @param extendedWarrantyIds the identifiers of the consoles that must
      *                           receive an extended warranty
+     * @return the total cost of the extended warranties, zero when none was
+     *         requested
      */
-    private void assignWarranties(Sale sale, Set<String> extendedWarrantyIds) {
+    private double assignWarranties(Sale sale, Set<String> extendedWarrantyIds) {
         double extraCost = 0.0;
         for (Product product : sale.getProducts()) {
             if (product instanceof Console) {
@@ -245,10 +258,7 @@ public class SaleService {
                 }
             }
         }
-        if (!extendedWarrantyIds.isEmpty()) {
-            sale.setWarrantyExtraCost(extraCost);
-            save();
-        }
+        return extraCost;
     }
 
     /**
