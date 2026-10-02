@@ -56,7 +56,7 @@ public class Main {
         SaleService saleService = new SaleService(saleRepository, personService, productService, accessoryService,
                 warrantyService, promotionService);
         ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService,
-                accessoryService);
+                accessoryService, warrantyService);
 
         ConsoleMenu menu = new ConsoleMenu(productService, personService, saleService, returnService,
                 accessoryService, warrantyService, promotionService);
