@@ -114,6 +114,102 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 06 — 2026-09-18
+
+| Field | Detail |
+|---|---|
+| Date | 18-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Implement the accessory model hierarchy — `Accessory`, `Controller`, `Cable` and `Memory` — in `com.gamezone.model`, and update the hierarchy diagram |
+| Prompt summary | "Implement Developer 1's accessory hierarchy per the assignment guide, with one atomic commit per class" |
+| Legitimate-use category | Java/Maven guidance; code review of my own module; explanation of inheritance, polymorphism and defensive setters |
+| What I did myself | Pulled the shared `feature/accessory-module` branch (created by the leader) with Veronica's `data/accessories.json` already merged; reviewed the guide and `Product` to align field names and constructor order; ran `mvn -q compile` after each class; wrote the Mermaid branch of `docs/hierarchy-diagram.md`; created and pushed the six commits stated below |
+| What the AI provided | First-draft source code for the four classes and the explanations in the assignment guide (why `Accessory` is abstract, the ternary `null` guard, `String.join` in `getDescription()`, and why compatibility is stored as console ids instead of `Console` objects) |
+| Output used? | Yes — used as the working basis for the accessory classes, then verified by compilation and my own review of each segment |
+| Fully understood? | Yes — I can explain every class without the guide: inheritance chain, `super` chaining, the `@Override getDescription()` polymorphism, and the null-safe list handling |
+
+### Notes / decisions
+
+- The commits produced in this session, one per deliverable: `feat(model): add abstract Accessory class with console compatibility`, `feat(model): add Controller accessory`, `feat(model): add Cable accessory`, `feat(model): add Memory accessory`, `docs: update hierarchy diagram with accessory classes`, `docs: add AI usage entry for accessory model`.
+- `data/accessories.json` was added by a teammate before my commits; I kept it and did not touch it, since persistence is another developer's responsibility.
+- Named the exact fields of the subclasses (`connectionType`, `lengthInMeters`, `connectorType`, `capacityInGb`, `memoryType`) so the sales deserializer and the CSV format can rely on them.
+
+---
+
+## Entry 07 — 2026-09-18
+
+| Field | Detail |
+|---|---|
+| Date | 18-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Implement the promotion model hierarchy — `Promotion`, `PercentageDiscount`, `CategoryDiscount`, `BulkPurchaseDiscount` — and the `Product.getCategory()` discriminator, then update the hierarchy diagram |
+| Prompt summary | "Proceed with Developer 1's promotion model per docs/promotion-development-guide.md, one atomic commit per class" |
+| Legitimate-use category | Java/Maven guidance; code review of my own module; explanation of abstract methods, polymorphism and defensive null handling |
+| What I did myself | Connected to the shared `feature/promotion-module` branch (created by the leader) and pulled the guide, the analysis scaffold and the preloaded `data/promotions.json`; read `docs/promotion-development-guide.md` (the module contract) and the class diagram to align field names and signatures; fixed a pre-existing compile error in `AccessoryService` (constructor calls used the wrong argument order against the model hierarchy); ran `mvn -q compile` after every commit; wrote the Mermaid branch of `docs/hierarchy-diagram.md`; created and pushed one atomic commit per class |
+| What the AI provided | First-draft source code for the four promotion classes and the `getCategory()` additions, following the exact signatures in the leader's development guide (`calculateDiscount(List<Product>)`, shared `discountPercentage`, `minimumQuantity`), plus explanations of the inclusive `isActive` window and the null-safe discount calculations |
+| Output used? | Yes — used as the working basis for the promotion classes, then verified by compilation and my own review of each segment |
+| Fully understood? | Yes — I can explain the hierarchy, why `calculateDiscount` is abstract, how `isActive` checks the inclusive window, and why each concrete promotion turns the shared percentage into money differently |
+
+### Notes / decisions
+
+- The contract in `docs/promotion-development-guide.md` deviates from the exam wording — `calculateDiscount(Sale)` became `calculateDiscount(List<Product>)`, `discountPercentage` moved up to `Promotion`, `minimumQuantity` replaces `minQuantity`, and category filtering uses a new `Product.getCategory()` (`VIDEOGAME`/`CONSOLE`/`ACCESSORY`) instead of `instanceof`. I followed the guide as the agreed module contract and flagged the differences in this log.
+- Commits produced in this session: `fix(accessory): align constructor calls with the model hierarchy`, `feat(model): add abstract Promotion class with shared discount attributes`, `feat(model): add category discriminator to the Product hierarchy`, `feat(model): add PercentageDiscount promotion`, `feat(model): add CategoryDiscount promotion`, `feat(model): add BulkPurchaseDiscount promotion`, `docs: update hierarchy diagram with promotion classes`.
+- Field names the service and deserializer can rely on: `Promotion.{id,name,startDate,endDate,discountPercentage}`, `CategoryDiscount.targetCategory`, `BulkPurchaseDiscount.minimumQuantity`.
+
+---
+
+## Entry 08 — 2026-09-18
+
+| Field | Detail |
+|---|---|
+| Date | 18-09-2026 |
+| AI tool | OpenAI-compatible assistant (opencode CLI on Windows PowerShell) |
+| Task | Implement the warranty model hierarchy — `Warranty`, `BasicWarranty` and `ExtendedWarranty` — in `com.gamezone.model`, and update the hierarchy diagram |
+| Prompt summary | "Proceed with requirement 4 as Developer 1: the warranty hierarchy per the assignment guide, one atomic commit per class" |
+| Legitimate-use category | Java/Maven guidance; code review of my own module; explanation of abstract classes, constructor-time polymorphism and date arithmetic |
+| What I did myself | Connected to the shared `feature/warranty-module` branch (created by the leader from `develop`) and created my sub-branch `feature/warranty-model`; verified there was no leader warranty guide yet and that the base compiles; ran `mvn -q compile` after each class; wrote the Mermaid branch of `docs/hierarchy-diagram.md`; created and pushed the commits stated below |
+| What the AI provided | First-draft source code for the three classes and explanations of the design points: why `endDate` must be computed inside the constructor via the abstract `getDurationInMonths()` (polymorphism at construction time), the null-safe inclusive range in `isActive`, and that `ExtendedWarranty`'s cost derives from `getProduct().getPrice()` |
+| Output used? | Yes — used as the working basis for the warranty classes, then verified by compilation and my own review of each class |
+| Fully understood? | Yes — I can explain each class without the guide: the `super(id, product, sale, startDate)` chaining, when the `@Override` methods are invoked, the `startDate.plusMonths(...)` arithmetic, and why the certificate is a user-facing string hence written in Spanish |
+
+### Notes / decisions
+
+- The commits produced in this session, one per deliverable: `feat(model): add abstract Warranty class with automatic expiration`, `feat(model): add BasicWarranty`, `feat(model): add ExtendedWarranty`, `docs: update hierarchy diagram with warranty classes`, `docs: add AI usage entry for warranty model`.
+- The assignment states the warranty certificate must be formatted in Spanish, so its content is Spanish even though identifiers, comments and commit messages stay in English.
+- Only files in the model package and the hierarchy diagram were touched; persistence, service and integration belong to the other two developers.
+
+---
+
+## Entry 09 — 2026-10-02
+
+| Field | Detail |
+|---|---|
+| Date | 02-10-2026 |
+| AI tool | Claude Code (Claude Opus 5.5, CLI on Windows) |
+| Phase and branch | Phase 2 (promotions) — adjustment A1, branches `feature/accessory-category-discount` (PR #30) and `feature/accessory-category-discount-completion` |
+| Goal | Publish my local A1 branch, which `git pull` rejected for having no upstream, and complete every point of A1 from the Requirement 5 statement |
+| Query | "There is no tracking information for the current branch" (pasted error); "how many commits do I have unpublished, should the leader or I create this branch?"; "commit and push"; "did I finish my part?" with the Requirement 5 statement pasted; "do what is missing" |
+| Response | The branch existed only locally; per `TEAM.md` each developer creates their own branch. Before pushing, the AI found the branch did not compile: it was based on an old `main` without the promotion module, `CategoryDiscount.java` was saved as UTF-16 and `PromotionService.java` had a BOM and broken accents (encoding damage from PowerShell). It rebuilt the branch from `develop` with clean UTF-8, then listed the A1 points still missing: explicit `Accessory` detection in `calculateDiscount`, the accessories option in `ConsoleMenu`, a preloaded accessory promotion and this log entry |
+| Decision | Accepted rebuilding the branch from `develop` instead of pushing the broken commits (originals kept in a local backup branch). Accepted an `instanceof Accessory` check in `CategoryDiscount` so any accessory counts as `ACCESSORY` regardless of `getCategory()`. Accepted replacing the free-text category prompt with a numbered menu (videogames, consoles, accessories) so the user cannot type an invalid category. Modified the statement's `data/promotions.csv` to `data/promotions.json`, because the project persists promotions as JSON; the promotion runs 2026-09-01 to 2026-12-31, covering the work week like the other preloaded promotions. Verified with `mvn -q compile` and a scratch check that `PR-4` loads as a `CategoryDiscount` and discounts 25% from a controller but not under a VIDEOGAME promotion |
+| Related commit | `82571c2` docs(model): mention ACCESSORY as a CategoryDiscount target category; `380b8d1` feat: validate ACCESSORY in PromotionService.registerCategory; `c143afb` feat: detect Accessory instances as ACCESSORY in CategoryDiscount; `8ca5cba` feat: add accessories option to the category promotion menu; `1be3081` feat: add preloaded accessory category promotion |
+
+---
+
+## Entry 10 — 2026-10-02
+
+| Field | Detail |
+|---|---|
+| Date | 02-10-2026 |
+| AI tool | Claude Code (Claude Opus 5.5, CLI on Windows) |
+| Phase and branch | Phase 4 (returns) — adjustment A5, branch `fix/return-discounted-refund` created from `develop` |
+| Goal | Refund returned items proportionally to the discount of the original sale, and show the breakdown in the return receipt |
+| Query | The technical lead's review, pasted: "A5 (fix/return-discounted-refund) does not exist on the remote yet and blocks A7. Return only stores saleId and does not know the sale discount; to apply price × (1 − discount / subtotal) it must receive that data when the return is registered and store it. That touches ReturnRepository, so coordinate it. The PR needs problem, cause, solution and verification." |
+| Response | The AI read `Return`, `ReturnService`, `ReturnRepository` and `Sale` on `develop`, and the open branches `fix/return-accessory-stock` (A4) and `fix/monthly-balance-report` (A6). It found that `ReturnRepository` serializes `Return` by reflection with Gson in both `develop` and A6, so new fields in `Return` are saved and loaded without changing the repository. It proposed storing the sale subtotal and discount in `Return` at registration time, a private helper for the proportional discount, and a per-item receipt |
+| Decision | Accepted storing `saleSubtotal` and `saleDiscount` in `Return` (values at the moment of the return) instead of looking the sale up again, because the model must not depend on services or repositories. Accepted changing only the `new Return(...)` call in `ReturnService` to pass `calculateSubtotal()` and `getDiscountAmount()` of the original sale; this is the single line shared with Developer 2's A4/A6 branches, so I coordinate it with her before merging. Returns saved before this change have no such fields (Gson leaves them at 0) and are refunded at list price, which keeps old data loadable. Rewrote the receipt in Spanish because it is user-visible, matching the sale receipt. Verified with `mvn -q compile` after each commit and a scratch check: on a 2,500,000 sale with a 375,000 discount, a 2,000,000 console refunds 1,700,000 and a 300,000 controller refunds 255,000; with no discount the full price is refunded |
+| Related commit | `d6befad` fix: store the original sale subtotal and discount in Return; `7ccdbd6` fix: refund returned items proportionally to the sale discount; `b38bb60` fix: show list price, proportional discount and refund per item in the return receipt |
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)

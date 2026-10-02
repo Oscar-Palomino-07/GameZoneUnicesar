@@ -17,4 +17,33 @@ classDiagram
     class Console
     Product <|-- VideoGame
     Product <|-- Console
+
+    class Accessory {
+        <<abstract>>
+    }
+    class Controller
+    class Cable
+    class Memory
+    Product <|-- Accessory
+    Accessory <|-- Controller
+    Accessory <|-- Cable
+    Accessory <|-- Memory
+
+    class Promotion {
+        <<abstract>>
+    }
+    class PercentageDiscount
+    class CategoryDiscount
+    class BulkPurchaseDiscount
+    Promotion <|-- PercentageDiscount
+    Promotion <|-- CategoryDiscount
+    Promotion <|-- BulkPurchaseDiscount
+
+    class Warranty {
+        <<abstract>>
+    }
+    class BasicWarranty
+    class ExtendedWarranty
+    Warranty <|-- BasicWarranty
+    Warranty <|-- ExtendedWarranty
 ```

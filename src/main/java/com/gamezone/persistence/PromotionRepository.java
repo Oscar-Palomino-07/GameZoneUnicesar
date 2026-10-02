@@ -1,12 +1,9 @@
 package com.gamezone.persistence;
 
-import com.gamezone.model.Cable;
-import com.gamezone.model.Console;
-import com.gamezone.model.Controller;
-import com.gamezone.model.Memory;
-import com.gamezone.model.Product;
-import com.gamezone.model.Sale;
-import com.gamezone.model.VideoGame;
+import com.gamezone.model.BulkPurchaseDiscount;
+import com.gamezone.model.CategoryDiscount;
+import com.gamezone.model.PercentageDiscount;
+import com.gamezone.model.Promotion;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -32,56 +29,55 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Handles file-based persistence for the sales module of GameZone Unicesar.
- * Sales are stored in a JSON file under the {@code data} directory,
+ * Handles file-based persistence for the promotion module of GameZone Unicesar.
+ * Promotions are stored in a JSON file under the {@code data} directory,
  * serialized with Gson. If the file does not exist yet, the repository loads
  * an empty list.
  *
- * <p>The repository registers custom serializers because the default Gson
+ * <p>The repository registers custom adapters because the default Gson
  * behavior is not enough for this module: {@link LocalDate} values are
- * written as ISO-8601 strings and every {@link Product} is rebuilt as its
- * concrete subtype ({@link VideoGame} or {@link Console}) when a file is
- * loaded.</p>
+ * written as ISO-8601 strings and every {@link Promotion} is rebuilt as its
+ * concrete subtype when the file is loaded.</p>
  */
-public class SaleRepository {
+public class PromotionRepository {
 
     private static final String DATA_DIRECTORY = "data";
-    private static final String SALES_FILE = "data/sales.json";
+    private static final String PROMOTIONS_FILE = "data/promotions.json";
 
-    private static final Type SALES_TYPE = new TypeToken<List<Sale>>() {
+    private static final Type PROMOTIONS_TYPE = new TypeToken<List<Promotion>>() {
     }.getType();
 
     private final Gson gson;
 
     /**
-     * Creates the sale repository and configures the Gson instance with the
-     * serializers required for {@link LocalDate} and {@link Product}.
+     * Creates the promotion repository and configures the Gson instance with
+     * the adapters required for {@link LocalDate} and {@link Promotion}.
      */
-    public SaleRepository() {
+    public PromotionRepository() {
         GsonBuilder builder = new GsonBuilder().setPrettyPrinting();
-        builder.registerTypeAdapter(Product.class, new ProductDeserializer());
+        builder.registerTypeAdapter(Promotion.class, new PromotionDeserializer());
         builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
         this.gson = builder.create();
     }
 
     /**
-     * Saves all sales to the sales JSON file, overwriting its previous
-     * contents.
+     * Saves all promotions to the promotions JSON file, overwriting its
+     * previous contents.
      *
-     * @param sales the list of sales to persist
+     * @param promotions the list of promotions to persist
      */
-    public void saveAll(List<Sale> sales) {
-        writeList(SALES_FILE, sales, SALES_TYPE);
+    public void saveAll(List<Promotion> promotions) {
+        writeList(PROMOTIONS_FILE, promotions, PROMOTIONS_TYPE);
     }
 
     /**
-     * Loads all sales from the sales JSON file.
+     * Loads all promotions from the promotions JSON file.
      *
-     * @return the list of stored sales, or an empty list if the file does
-     *         not exist or cannot be parsed
+     * @return the list of stored promotions, or an empty list if the file
+     *         does not exist or cannot be parsed
      */
-    public List<Sale> loadAll() {
-        return readList(SALES_FILE, SALES_TYPE);
+    public List<Promotion> loadAll() {
+        return readList(PROMOTIONS_FILE, PROMOTIONS_TYPE);
     }
 
     /**
@@ -89,7 +85,7 @@ public class SaleRepository {
      * directory and the file when they do not exist yet.
      *
      * @param fileName the path of the destination file
-     * @param items    the list of sales to persist
+     * @param items    the list of promotions to persist
      * @param type     the Gson type of the generic list
      */
     private void writeList(String fileName, List<?> items, Type type) {
@@ -100,18 +96,18 @@ public class SaleRepository {
                 gson.toJson(items, type, writer);
             }
         } catch (IOException e) {
-            System.err.println("Error saving sales to " + fileName + ": " + e.getMessage());
+            System.err.println("Error saving promotions to " + fileName + ": " + e.getMessage());
         }
     }
 
     /**
-     * Deserializes a list of sales from the given JSON file.
+     * Deserializes a list of promotions from the given JSON file.
      *
      * @param fileName the path of the source file
      * @param type     the Gson type of the generic list
-     * @param <T>      the concrete type stored in the file
-     * @return the stored sales, or an empty list if the file does not exist
-     *         or cannot be parsed
+     * @param <T>      the type stored in the file
+     * @return the stored promotions, or an empty list if the file does not
+     *         exist or cannot be parsed
      */
     private <T> List<T> readList(String fileName, Type type) {
         Path path = Paths.get(fileName);
@@ -122,37 +118,27 @@ public class SaleRepository {
             List<T> items = gson.fromJson(reader, type);
             return items != null ? items : new ArrayList<>();
         } catch (IOException | JsonSyntaxException e) {
-            System.err.println("Error loading sales from " + fileName + ": " + e.getMessage());
+            System.err.println("Error loading promotions from " + fileName + ": " + e.getMessage());
             return new ArrayList<>();
         }
     }
 
     /**
-     * Rebuilds a {@link Product} from its JSON representation, choosing the
-     * concrete subtype ({@link VideoGame}, {@link Console}, {@link Controller},
-     * {@link Cable} or {@link Memory}) based on the attributes present in the
-     * serialized object.
+     * Rebuilds a {@link Promotion} from its JSON representation, choosing the
+     * concrete subtype based on the attributes present in the serialized object.
      */
-    private static class ProductDeserializer implements JsonDeserializer<Product> {
-
-        private final Gson typeGson = new Gson();
+    private static class PromotionDeserializer implements JsonDeserializer<Promotion> {
 
         @Override
-        public Product deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
+        public Promotion deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
             JsonObject object = json.getAsJsonObject();
-            if (object.has("connectionType")) {
-                return typeGson.fromJson(json, Controller.class);
+            if (object.has("targetCategory")) {
+                return context.deserialize(json, CategoryDiscount.class);
             }
-            if (object.has("lengthInMeters") || object.has("connectorType")) {
-                return typeGson.fromJson(json, Cable.class);
+            if (object.has("minimumQuantity")) {
+                return context.deserialize(json, BulkPurchaseDiscount.class);
             }
-            if (object.has("capacityInGb") || object.has("memoryType")) {
-                return typeGson.fromJson(json, Memory.class);
-            }
-            if (object.has("platform") || object.has("genre") || object.has("ageRating")) {
-                return typeGson.fromJson(json, VideoGame.class);
-            }
-            return typeGson.fromJson(json, Console.class);
+            return context.deserialize(json, PercentageDiscount.class);
         }
     }
 

@@ -2,8 +2,8 @@ package com.gamezone.model;
 
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.time.LocalDate;
 import java.util.List;
+import java.util.Locale;
 
 /**
  * Represents a sale registered at GameZone Unicesar.
@@ -14,8 +14,10 @@ import java.util.List;
  * which the sale was registered and cannot be accidentally omitted by the
  * caller.</p>
  *
- * <p>The total amount of the sale is derived from the prices of the included
- * products through {@link #calculateTotal()}.</p>
+ * <p>The subtotal of the sale is the sum of the prices of the included
+ * products. The final total, returned by {@link #calculateTotal()}, is the
+ * subtotal minus the discount of the applied promotion plus the extra cost
+ * of the extended warranties.</p>
  */
 public class Sale {
 
@@ -24,6 +26,9 @@ public class Sale {
     private Customer customer;
     private Seller seller;
     private List<Product> products;
+    private double warrantyExtraCost = 0.0;
+    private String appliedPromotionName;
+    private double discountAmount;
 
     /**
      * Creates a sale with the given data, capturing the current date
@@ -78,17 +83,117 @@ public class Sale {
     }
 
     /**
-     * Calculates the total amount of the sale by adding the price of every
-     * included product.
+     * @return the extra cost added to the sale by extended warranties
+     */
+    public double getWarrantyExtraCost() {
+        return warrantyExtraCost;
+    }
+
+    /**
+     * Sets the extra cost that extended warranties add to the sale.
      *
-     * @return the total amount of the sale
+     * @param warrantyExtraCost the new extra cost of the extended warranties
+     */
+    public void setWarrantyExtraCost(double warrantyExtraCost) {
+        this.warrantyExtraCost = warrantyExtraCost;
+    }
+
+    /**
+     * @return the name of the promotion applied to the sale, or {@code null}
+     *         when no promotion was applied
+     */
+    public String getAppliedPromotionName() {
+        return appliedPromotionName;
+    }
+
+    /**
+     * Sets the name of the promotion applied to the sale.
+     *
+     * @param appliedPromotionName the promotion name, or {@code null} when no
+     *                             promotion was applied
+     */
+    public void setAppliedPromotionName(String appliedPromotionName) {
+        this.appliedPromotionName = appliedPromotionName;
+    }
+
+    /**
+     * @return the monetary discount granted by the applied promotion, zero
+     *         when no promotion was applied
+     */
+    public double getDiscountAmount() {
+        return discountAmount;
+    }
+
+    /**
+     * Sets the monetary discount granted by the applied promotion.
+     *
+     * @param discountAmount the discount amount, never negative
+     */
+    public void setDiscountAmount(double discountAmount) {
+        this.discountAmount = discountAmount;
+    }
+
+    /**
+     * Calculates the subtotal of the sale, that is, the sum of the price of
+     * every included product before any discount or warranty cost.
+     *
+     * @return the subtotal of the sale
+     */
+    public double calculateSubtotal() {
+        double subtotal = 0.0;
+        for (Product product : products) {
+            subtotal += product.getPrice();
+        }
+        return subtotal;
+    }
+
+    /**
+     * Calculates the final total of the sale: the subtotal minus the discount
+     * of the applied promotion plus the extra cost of the extended
+     * warranties.
+     *
+     * @return the final total of the sale
      */
     public double calculateTotal() {
-        double total = 0.0;
+        return calculateSubtotal() - discountAmount + warrantyExtraCost;
+    }
+
+    /**
+     * Builds the receipt of the sale in Spanish, with the detail of every
+     * item and the breakdown of the amounts: subtotal, discount (including
+     * the name of the applied promotion), cost of the extended warranties and
+     * final total.
+     *
+     * @return the formatted receipt of the sale
+     */
+    public String generateReceipt() {
+        StringBuilder receipt = new StringBuilder();
+        receipt.append("Recibo de venta ").append(id).append("\n");
+        receipt.append("====================\n");
+        receipt.append("Fecha: ").append(date).append("\n");
+        receipt.append("Cliente: ").append(customer.getFirstName()).append(" ")
+                .append(customer.getLastName()).append("\n");
+        receipt.append("Vendedor: ").append(seller.getFirstName()).append(" ")
+                .append(seller.getLastName()).append("\n");
+        receipt.append("Productos:\n");
         for (Product product : products) {
-            total += product.getPrice();
+            receipt.append("  - ").append(product.getTitle()).append(" (").append(product.getId())
+                    .append("): $").append(formatAmount(product.getPrice())).append("\n");
         }
-        return total;
+        receipt.append("Subtotal: $").append(formatAmount(calculateSubtotal())).append("\n");
+        if (appliedPromotionName != null && discountAmount > 0) {
+            receipt.append("Descuento (").append(appliedPromotionName).append("): -$")
+                    .append(formatAmount(discountAmount)).append("\n");
+        } else {
+            receipt.append("Descuento: ninguno\n");
+        }
+        receipt.append("Garantía extendida: $").append(formatAmount(warrantyExtraCost)).append("\n");
+        receipt.append("Total final: $").append(formatAmount(calculateTotal()));
+        return receipt.toString();
+    }
+
+    private String formatAmount(double amount) {
+        return String.format(Locale.US, "%.2f", amount);
     }
 
     public boolean canBeReturned() {

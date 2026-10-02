@@ -117,3 +117,113 @@ The sales module code and all project documentation were produced by my own hand
 
 **What the AI did:**
 The AI compiled the full project with `javac` (using the Gson 2.14.0 jar) and executed the application with test data (registering a product, a customer and a sale) to confirm that the three layers — model, persistence and service — integrate correctly. It ran without errors, confirming the round-trip persistence of sales and the stock discount logic.
+
+---
+
+## Requerimiento 5 — Integración del sistema (formato de 8 campos)
+
+A partir de esta sección cada interacción se registra con los campos que exige el Requerimiento 5. La herramienta usada en todas las entradas es Claude Code.
+
+### Entrada 8
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-09-18 |
+| Herramienta | Claude Code (Claude Sonnet 5) |
+| Fase y rama | Requerimiento 1 (accesorios), análisis del estado del repositorio. Sin rama de trabajo propia |
+| Objetivo | Entender qué me tocaba como Líder Técnico en el Requerimiento 1 y qué faltaba en el repositorio |
+| Consulta | "para este requerimiento 1 yo soy Líder Técnico dame un md con las instrucciones de lo que me toca hacer y el contexto". Ante la primera negativa de la IA (el PDF del parcial prohíbe la IA durante el examen) aclaré: "ya el profesor lo permitió, porque hay que terminar todos los requerimientos que hicieron los demás grupos en el parcial y hoy vamos a sustentar solo el que hicimos nosotros ( obvio sin IA )" y confirmé que el requerimiento hecho en vivo fue "el de Devoluciones" |
+| Respuesta | La IA se negó mientras no se aclarara el contexto, cruzó mi explicación con lo que había en el repositorio (el módulo de devoluciones) y entregó un informe con lo ya hecho por los desarrolladores, lo pendiente de mi parte (`SaleService`, `ConsoleMenu`, `README.md`), los dos documentos de análisis y diagrama que faltaban y tres riesgos: un solo Pull Request para el módulo, la rama sin borrar y el formato de datos |
+| Decisión | Acepté el informe como guía de trabajo. No lo versioné. Los riesgos quedaron como pendientes del equipo |
+| Commit relacionado | Ninguno |
+
+### Entrada 9
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-09-18 |
+| Herramienta | Claude Code (Claude Sonnet 5) |
+| Fase y rama | Requerimiento 4 (garantías), `feature/warranty-integration` |
+| Objetivo | Implementar mi parte del Requerimiento 4: integración de las garantías en `SaleService.registerSale`, `ConsoleMenu` y `README.md` |
+| Consulta | "puedes terminar lo que me toca del requerimiento 4 ?" (con el PDF del Requerimiento 4 adjunto) |
+| Respuesta | La IA leyó el enunciado y el código existente, y implementó: el costo adicional de garantías en `Sale`, la garantía básica automática por consola y la extendida opcional en `SaleService.registerSale` (validando todo antes de descontar stock), la pregunta de garantía extendida al vender, el submenú "Gestión de garantías" y el `README.md`. Compiló y probó un escenario completo (consola $1000, videojuego $200, extendida $100): subtotal $1300 y total con garantía correcto, y el stock sin cambios cuando una venta es rechazada |
+| Decisión | Acepté el código tal como fue generado |
+| Commit relacionado | `ba271bc`, `d38593c`, `e30e843`, `53cd40c`, `59baaf6` |
+
+### Entrada 10
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-09-18 |
+| Herramienta | Claude Code (Claude Sonnet 5) |
+| Fase y rama | Requerimiento 4 (garantías), `feature/warranty-integration` |
+| Objetivo | Cerrar lo que faltaba del Requerimiento 4: formato de persistencia y documentos de análisis y diagrama |
+| Consulta | "hazlos por favor todo lo que falta sin tanto misterio que ya el profe sabe que se puede usar la IA PARA TODO" |
+| Respuesta | La IA migró `WarrantyRepository` a `data/warranties.csv` con discriminador, como pedía el PDF, redactó `docs/warranty-analysis.md` (las cinco preguntas) y `docs/warranty-class-diagram.md`, y actualizó el `README.md`. Me advirtió que debía leer los dos documentos antes de presentarlos como míos |
+| Decisión | Acepté los documentos y el cambio a CSV tal como fueron generados. Más adelante el equipo decidió mantener JSON en todo el sistema y el ajuste A2 devolvió las garantías a `warranties.json` |
+| Commit relacionado | `d724b25`, `b5c4458`, `e797f9f`, `8262eec` |
+
+### Entrada 11
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-01 y 2026-10-02 |
+| Herramienta | Claude Code (Claude Sonnet 5 y 5.5) |
+| Fase y rama | Fase 2 (promociones). Rama de Manuel desfasada de `develop` |
+| Objetivo | Resolver los errores de compilación de Manuel en su rama del ajuste A1 y entender las decisiones pendientes que mostraba la pantalla de una herramienta de Vgiseth |
+| Consulta | Pegué el mensaje de Manuel ("Tu rama salió de develop, y develop todavía no tiene el módulo de promociones...") y luego la pantalla con las "Decisiones tuyas que bloquean todo lo demás (4)" |
+| Respuesta | La IA verificó el remoto: `develop` solo tenía merges de Pull Request, así que no había que rebobinarlo a `dc396d3`; recomendó hacer un respaldo y resetear el `develop` local a `origin/develop`. Sobre A6 recomendó corregir el saldo negativo; sobre A7 recomendó la rama `feature/return-warranty-cancellation`; y corrigió su propia respuesta anterior: por la regla de fases A4 a A7 no podían iniciar hasta cerrar la fase 3 |
+| Decisión | Acepté las recomendaciones y se las transmití al equipo. Se aplicaron: A6 corrige el saldo negativo, la rama de A7 lleva ese nombre y Vgiseth rehízo A2 y A4 en ramas limpias |
+| Commit relacionado | Ninguno propio. Pull Requests #35, #37 y #38 de los desarrolladores |
+
+### Entrada 12
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-02 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Fase 2 (promociones), `feature/promotion-integration` |
+| Objetivo | Implementar mi parte del Requerimiento 2: `Sale`, `SaleService`, `ConsoleMenu`, `Main` y `README.md` |
+| Consulta | Adjunté `Parcial - Requerimiento 2.pdf` y `Requerimiento 5 - Integración.pdf`. Más tarde, cuando el push falló por una credencial de otra cuenta: "manda otra vez para iniciar sesion" y "ya inicié sesión, continúa" |
+| Respuesta | La IA implementó `appliedPromotionName`, `discountAmount`, `calculateSubtotal`, `calculateTotal` y `generateReceipt` en `Sale`; la aplicación de la mejor promoción en `SaleService` antes de las garantías; el submenú "Gestión de promociones" (cinco opciones); el recibo al vender y la opción "ver detalle de una venta"; el cableado en `Main` y el `README.md`. Resolvió dos conflictos de documentación al mezclar `develop` y probó una venta de $1205. No vio ninguna contraseña: yo inicié sesión directamente en la ventana de GitHub con la cuenta institucional |
+| Decisión | Acepté la implementación. Para subirla inicié sesión con la cuenta institucional, porque el equipo tenía guardada la sesión de otra cuenta |
+| Commit relacionado | `c13af45`, `95fd2b2`, `039fd6b`, `eb06bfe`, `04f5e67`, `de74591`, `8adba0f` (Pull Requests #28 y #29) |
+
+### Entrada 13
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-02 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Fase 3, ajuste A3, `refactor/unified-sale-registration` |
+| Objetivo | Reorganizar `SaleService.registerSale` en los ocho pasos que exige el ajuste A3 |
+| Consulta | "Manuel ya hizo el A1, empieza el A3 revisa el remoto" y después "Ya abrí el PR de A3, apruébalo y sigue" |
+| Respuesta | La IA revisó el remoto y avisó que el A1 se había fusionado incompleto. Demostró el problema con una prueba: si fallaba la asignación de garantías, el stock quedaba descontado (4/4) y quedaba una venta fantasma. Refactorizó `registerSale` (extrajo la validación, dejó el inventario para después de las garantías y guardó la venta una sola vez) y escribió la descripción del Pull Request con problema, causa, solución y verificación. Se negó a aprobar mi propio PR |
+| Decisión | Acepté el refactor y la descripción. No pude aprobar mi PR: lo aprobaron Manuel y Vgiseth |
+| Commit relacionado | `4787697`, `c13acf8`, `5b7947c` (Pull Request #33) |
+
+### Entrada 14
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-02 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Fases 3 y 4, revisión de las ramas de A2, A4, A5, A6 y A7 |
+| Objetivo | Revisar el trabajo de los desarrolladores como Líder Técnico y saber qué faltaba para terminar el Requerimiento 5 |
+| Consulta | "verifica el estado del repositorio remoto y dime con exactitud qué hace falta para terminar el requerimiento 5. ¿Qué le digo a mis desarrolladores?", "vero dice que no pudo borrar" y "verifica el remoto otra vez" |
+| Respuesta | La IA compiló cada rama y la probó con un escenario completo. Encontró que la rama de A4 estaba mezclada con A2, tenía una base vieja y mantenía un defecto de atomicidad; que A2 usaba `warranties.json`; que A5 estaba correcta; que A6 estaba apilada sobre A2 y A4; y que A7 pasaba todo el escenario, incluida una venta con dos consolas iguales |
+| Decisión | No aprobé la rama de A4 mezclada. Pregunté al profesor y autorizó borrar solo esa rama; los desarrolladores la rehicieron limpia. El equipo mantiene JSON. A5 y A7 pasaron la prueba y quedaron listas para su aprobación |
+| Commit relacionado | Ninguno propio. Pull Requests #34 a #39 de los desarrolladores |
+
+### Entrada 15
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-02 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Fase 5, ajuste A8, `docs/integration-documentation` |
+| Objetivo | Documentar la integración: análisis de los ajustes A1 a A7, diagrama de clases único, diagrama de capas y README |
+| Consulta | "ya la A7 esta lista, haz todo lo mio" |
+| Respuesta | La IA revisó el PR #39 de A7 y comprobó que el escenario de sustentación pasa completo. Redactó `docs/integration-analysis.md` (causa y solución de A1 a A7, comportamiento integrado y desviaciones frente a los enunciados), `docs/integrated-class-diagram.md` (validó que el Mermaid renderiza sin errores), actualizó `docs/layers-diagram.md` y `README.md` a partir del código final, y preparó estas entradas de bitácora. Dejó los cambios en el área de staging |
+| Decisión | Los cambios se dejaron en staging y los comité yo; la IA no figura como coautora en esos commits, por eso el uso queda documentado aquí. Pendiente de mi revisión antes de comitear |
+| Commit relacionado | Completar con el hash del commit de cada archivo al comitear |

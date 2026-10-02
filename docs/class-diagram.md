@@ -53,6 +53,7 @@ classDiagram
     }
     class Return {
         -id: String
+        -saleId: String
         -date: LocalDate
         -customer: Customer
         -seller: Seller
@@ -137,7 +138,7 @@ classDiagram
         +registerReturn(saleId: String, productIds: List~String~) Return
         +viewAllReturns() List~Return~
         +viewReturnsByCustomer(customerId: String) List~Return~
-        +viewReturnsBySeller(sellerId: String) List~Return~
+        +viewReturnsBySale(saleId: String) List~Return~
         +generateMonthlyBalance(month: int, year: int) double
         +save() void
     }
