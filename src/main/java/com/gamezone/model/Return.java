@@ -76,12 +76,28 @@ public class Return {
         return saleDiscount;
     }
 
+    /**
+     * Calculates the amount refunded to the customer. Each returned product is
+     * refunded proportionally to the discount of the original sale:
+     * {@code price * (1 - saleDiscount / saleSubtotal)}, so the customer gets
+     * back what was actually paid and not the list price.
+     *
+     * @return the total refund amount
+     */
     public double calculateRefundAmount() {
         double total = 0.0;
         for (Product product : products) {
-            total += product.getPrice();
+            total += product.getPrice() - calculateProportionalDiscount(product);
         }
         return total;
+    }
+
+    // Share of the sale discount that corresponds to the product; zero when the sale had no discount.
+    private double calculateProportionalDiscount(Product product) {
+        if (saleSubtotal <= 0 || saleDiscount <= 0) {
+            return 0.0;
+        }
+        return product.getPrice() * saleDiscount / saleSubtotal;
     }
 
     public String generateReturnReceipt() {
