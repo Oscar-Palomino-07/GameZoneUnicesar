@@ -442,7 +442,8 @@ public class ConsoleMenu {
         }
         try {
             Return ret = returnService.registerReturn(saleId, productIds);
-            System.out.println("Return " + ret.getId() + " registered. Refund: $" + ret.calculateRefundAmount());
+            System.out.println("Devolución " + ret.getId() + " registrada.");
+            System.out.println(ret.generateReturnReceipt());
         } catch (IllegalArgumentException | IllegalStateException e) {
             System.out.println(e.getMessage());
         }
