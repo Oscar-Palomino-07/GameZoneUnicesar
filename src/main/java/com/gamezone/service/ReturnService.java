@@ -57,6 +57,7 @@ public class ReturnService {
         Map<String, Integer> alreadyReturned = countAlreadyReturnedByProduct(ventaOriginal);
 
         List<Product> productsToReturn = new ArrayList<>();
+        Map<Product, Integer> itemsToRestock = new LinkedHashMap<>();
 
         for (Map.Entry<String, Integer> entry : quantities.entrySet()) {
             String prodId = entry.getKey();
@@ -92,7 +93,13 @@ public class ReturnService {
             for (int i = 0; i < qtyToReturn; i++) {
                 productsToReturn.add(systemProduct);
             }
-            restoreStock(systemProduct, qtyToReturn);
+            itemsToRestock.put(systemProduct, qtyToReturn);
+        }
+
+        // The stock is restored only after every item passed its validations,
+        // so a rejected return leaves the inventory untouched.
+        for (Map.Entry<Product, Integer> entry : itemsToRestock.entrySet()) {
+            restoreStock(entry.getKey(), entry.getValue());
         }
 
         Return returnObj = new Return(nextReturnId(), saleId, customer, seller, productsToReturn);
