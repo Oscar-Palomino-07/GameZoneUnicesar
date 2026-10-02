@@ -27,6 +27,7 @@ public class PromotionService {
     // Allowed values for the target category of a category promotion.
     private static final String VIDEOGAME_CATEGORY = "VIDEOGAME";
     private static final String CONSOLE_CATEGORY = "CONSOLE";
+    private static final String ACCESSORY_CATEGORY = "ACCESSORY";
 
     private final PromotionRepository repository;
     // In-memory list of promotions, loaded once when the service is created.
@@ -69,7 +70,7 @@ public class PromotionService {
      *
      * @param name           the promotion name shown on the receipt
      * @param percentage     the discount percentage, between 0 and 100
-     * @param targetCategory VIDEOGAME or CONSOLE, case insensitive
+     * @param targetCategory VIDEOGAME, CONSOLE or ACCESSORY, case insensitive
      * @param startDate      the first day the promotion is active
      * @param endDate        the last day the promotion is active
      * @return the registered promotion
@@ -204,11 +205,12 @@ public class PromotionService {
         }
     }
 
-    // Converts the category to upper case and checks it is VIDEOGAME or CONSOLE.
+    // Converts the category to upper case and checks it is VIDEOGAME, CONSOLE or ACCESSORY.
     private String normalizeCategory(String category) {
         String value = category == null ? "" : category.trim().toUpperCase();
-        if (!value.equals(VIDEOGAME_CATEGORY) && !value.equals(CONSOLE_CATEGORY)) {
-            throw new IllegalArgumentException("La categoría debe ser VIDEOGAME o CONSOLE.");
+        if (!value.equals(VIDEOGAME_CATEGORY) && !value.equals(CONSOLE_CATEGORY)
+                && !value.equals(ACCESSORY_CATEGORY)) {
+            throw new IllegalArgumentException("La categoría debe ser VIDEOGAME, CONSOLE o ACCESSORY.");
         }
         return value;
     }
