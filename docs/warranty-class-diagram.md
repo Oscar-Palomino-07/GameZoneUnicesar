@@ -104,6 +104,7 @@ classDiagram
         +listAllWarranties() List~Warranty~
         +listActiveWarranties() List~Warranty~
         +listWarrantiesExpiringSoon(daysAhead: int) List~Warranty~
+        +cancelWarranties(productId: String, saleId: String) double
         -rebuildWarranties() List~Warranty~
     }
     class SaleService {
@@ -154,3 +155,4 @@ classDiagram
 - The references are rebuilt by `WarrantyService.rebuildWarranties()`, which locates the sale through `SaleRepository` and the covered product through `ProductService`. A record whose sale or product can no longer be found is skipped with a message on the error stream instead of breaking the whole load.
 - Because the resolution lives in the service layer and the repository depends on nothing, no cycle can be formed between the sales and the warranties flows. The whole graph is built with plain constructor injection, in this order inside `Main`: repositories, `PersonService`/`ProductService`/`AccessoryService`, `WarrantyService`, `SaleService`, `ReturnService`, `ConsoleMenu`.
 - The original three-parameter `registerSale` remains and delegates to the new overload, so the existing behavior is not broken.
+- `WarrantyService.cancelWarranties(productId, saleId)` (adjustment A7) is invoked by `ReturnService` once per returned console unit. It removes at most one basic and one extended warranty of that product in that sale, persists the change and returns the refundable cost: zero for the basic warranty and the additional cost for the extended one. Removing one unit at a time keeps the warranties of the units the customer did not return.

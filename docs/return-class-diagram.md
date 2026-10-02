@@ -14,12 +14,15 @@ classDiagram
         -customer: Customer
         -seller: Seller
         -products: List~Product~
+        -warrantyRefund: double
         +getId() String
         +getSaleId() String
         +getDate() LocalDate
         +getCustomer() Customer
         +getSeller() Seller
         +getProducts() List~Product~
+        +getWarrantyRefund() double
+        +setWarrantyRefund(warrantyRefund: double) void
         +calculateRefundAmount() double
         +generateReturnReceipt() String
     }
@@ -91,6 +94,7 @@ classDiagram
         -personService: PersonService
         -productService: ProductService
         -accessoryService: AccessoryService
+        -warrantyService: WarrantyService
         +registerReturn(saleId: String, productIds: List~String~) Return
         +viewAllReturns() List~Return~
         +viewReturnsByCustomer(customerId: String) List~Return~
@@ -105,6 +109,9 @@ classDiagram
         +findById(accessoryId: String) Accessory
         +updateStock(accessoryId: String, quantity: int) void
         +restoreStock(accessoryId: String, quantity: int) void
+    }
+    class WarrantyService {
+        +cancelWarranties(productId: String, saleId: String) double
     }
     class SaleService {
         -saleRepository: SaleRepository
@@ -123,6 +130,7 @@ classDiagram
     ReturnService "1" --> "1" PersonService
     ReturnService "1" --> "1" ProductService
     ReturnService "1" --> "1" AccessoryService : resolves and restores accessory items
+    ReturnService "1" --> "1" WarrantyService : cancels the warranties of returned consoles
     ProductService "1" --> "1" ProductRepository
     AccessoryService "1" --> "1" AccessoryRepository
     SaleService ..> Sale
@@ -181,3 +189,8 @@ classDiagram
   difference between both. The balance may be negative, for example when the returns of a month
   belong to sales of the previous month, so it is reported instead of raising an exception.
   `ConsoleMenu.monthlyBalance` prints the three values.
+- A returned console cannot keep an active warranty (adjustment A7). After the stock is restored,
+  `ReturnService.registerReturn` calls `WarrantyService.cancelWarranties(productId, saleId)` once
+  per returned console unit and stores the sum of the returned values in
+  `Return.warrantyRefund`. `Return.calculateRefundAmount()` adds that value to the refund of the
+  items, and `Return.generateReturnReceipt()` shows it on its own line.
