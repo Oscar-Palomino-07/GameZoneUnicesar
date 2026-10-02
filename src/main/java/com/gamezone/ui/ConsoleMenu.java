@@ -495,7 +495,7 @@ public class ConsoleMenu {
         boolean running = true;
         while (running) {
             System.out.println("=== REPORTS ===");
-            System.out.println("1. Monthly balance (sales - returns)");
+            System.out.println("1. Balance mensual (ventas - devoluciones)");
             System.out.println("0. Back");
             int option = readInt("Choose an option: ");
             switch (option) {
@@ -512,12 +512,17 @@ public class ConsoleMenu {
     }
 
     private void monthlyBalance() {
-        int month = readInt("Month (1-12): ");
-        int year  = readInt("Year (e.g. 2026): ");
+        int month = readInt("Mes (1-12): ");
+        int year  = readInt("Año (ej. 2026): ");
         try {
+            double totalSales = returnService.calculateMonthlySales(month, year);
+            double totalReturns = returnService.calculateMonthlyReturns(month, year);
             double balance = returnService.generateMonthlyBalance(month, year);
-            System.out.printf("Monthly balance for %02d/%d: $%.2f%n", month, year, balance);
-        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.printf("Balance mensual %02d/%d%n", month, year);
+            System.out.printf("  Total de ventas:       $%.2f%n", totalSales);
+            System.out.printf("  Total de devoluciones: $%.2f%n", totalReturns);
+            System.out.printf("  Balance neto:          $%.2f%n", balance);
+        } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
         }
     }
