@@ -1,6 +1,9 @@
 package com.gamezone.persistence;
 
+import com.gamezone.model.Cable;
 import com.gamezone.model.Console;
+import com.gamezone.model.Controller;
+import com.gamezone.model.Memory;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.VideoGame;
@@ -126,8 +129,9 @@ public class SaleRepository {
 
     /**
      * Rebuilds a {@link Product} from its JSON representation, choosing the
-     * concrete subtype ({@link VideoGame} or {@link Console}) based on the
-     * attributes present in the serialized object.
+     * concrete subtype ({@link VideoGame}, {@link Console}, {@link Controller},
+     * {@link Cable} or {@link Memory}) based on the attributes present in the
+     * serialized object.
      */
     private static class ProductDeserializer implements JsonDeserializer<Product> {
 
@@ -136,6 +140,15 @@ public class SaleRepository {
         @Override
         public Product deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
             JsonObject object = json.getAsJsonObject();
+            if (object.has("connectionType")) {
+                return typeGson.fromJson(json, Controller.class);
+            }
+            if (object.has("lengthInMeters") || object.has("connectorType")) {
+                return typeGson.fromJson(json, Cable.class);
+            }
+            if (object.has("capacityInGb") || object.has("memoryType")) {
+                return typeGson.fromJson(json, Memory.class);
+            }
             if (object.has("platform") || object.has("genre") || object.has("ageRating")) {
                 return typeGson.fromJson(json, VideoGame.class);
             }
