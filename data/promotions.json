@@ -21,5 +21,13 @@
     "name": "10% llevando 3 o más",
     "startDate": "2026-09-01",
     "endDate": "2026-12-31"
+    },
+  {
+    "discountPercentage": 25.0,
+    "targetCategory": "ACCESSORY",
+    "id": "PR-4",
+    "name": "25% en accesorios",
+    "startDate": "2026-09-01",
+    "endDate": "2026-12-31"
   }
 ]

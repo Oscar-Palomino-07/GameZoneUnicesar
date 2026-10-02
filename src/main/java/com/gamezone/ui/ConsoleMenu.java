@@ -786,7 +786,10 @@ public class ConsoleMenu {
     private void registerCategoryPromotion() {
         String name = readText("Nombre de la promoción: ");
         double percentage = readDouble("Porcentaje de descuento (0-100): ");
-        String category = readText("Categoría (VIDEOGAME o CONSOLE): ");
+        String category = readPromotionCategory();
+        if (category == null) {
+            return;
+        }
         LocalDate startDate = readDate("Fecha de inicio (AAAA-MM-DD): ");
         LocalDate endDate = readDate("Fecha de fin (AAAA-MM-DD): ");
         if (startDate == null || endDate == null) {
@@ -797,6 +800,25 @@ public class ConsoleMenu {
             System.out.println("Promoción " + promotion.getId() + " registrada.");
         } catch (IllegalArgumentException e) {
             System.out.println(e.getMessage());
+        }
+    }
+
+    // Lets the user pick the target category of a category promotion.
+    private String readPromotionCategory() {
+        System.out.println("Categoría:");
+        System.out.println("1. Videojuegos");
+        System.out.println("2. Consolas");
+        System.out.println("3. Accesorios");
+        switch (readInt("Seleccione una opción: ")) {
+            case 1:
+                return "VIDEOGAME";
+            case 2:
+                return "CONSOLE";
+            case 3:
+                return "ACCESSORY";
+            default:
+                System.out.println("Categoría no válida.");
+                return null;
         }
     }
 
