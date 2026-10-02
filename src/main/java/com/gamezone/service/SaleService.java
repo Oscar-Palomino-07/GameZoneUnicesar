@@ -90,16 +90,35 @@ public class SaleService {
     }
 
     /**
-     * Registers a new sale for the given customer, seller and products,
-     * managing the warranties of the consoles it includes.
+     * Registers a new sale for the given customer, seller and items, applying
+     * the best promotion and managing the warranties of the consoles it
+     * includes.
      *
-     * <p>Every console in the sale receives an automatic basic warranty at no
-     * cost. When the identifier of a console is also listed in
+     * <p>The operations always run in this order, because the order changes
+     * the result (for example, the discount is calculated before the
+     * warranties are added so it never applies to their cost):</p>
+     * <ol>
+     *   <li>Validate that the sale has at least one item.</li>
+     *   <li>Resolve every item as a product or an accessory and validate its
+     *       stock.</li>
+     *   <li>Create the sale and calculate its subtotal.</li>
+     *   <li>Find the best active promotion and register the discount,
+     *       calculated only over the subtotal of the items.</li>
+     *   <li>Generate the basic warranty of every console and the requested
+     *       extended warranties, adding their cost.</li>
+     *   <li>Calculate the final total: subtotal - discount + cost of the
+     *       extended warranties.</li>
+     *   <li>Update the inventory through {@link ProductService} or
+     *       {@link AccessoryService}, according to the type of each item.</li>
+     *   <li>Persist the sale.</li>
+     * </ol>
+     *
+     * <p>Nothing is modified in the inventory or in the sales registry until
+     * every previous step has succeeded, so a rejected sale leaves no trace.
+     * Every console receives an automatic basic warranty at no cost; when the
+     * identifier of a console is also listed in
      * {@code productIdsWithExtendedWarranty}, an extended warranty is assigned
-     * to each unit of that console and its additional cost is added to the
-     * total of the sale. All the validations (including the ones about the
-     * extended warranty request) run before any stock is discounted, so a
-     * rejected sale leaves the inventory untouched.</p>
+     * to each unit of that console.</p>
      *
      * @param customerId                    the identifier of the purchasing
      *                                      customer
@@ -128,6 +147,48 @@ public class SaleService {
         Seller seller = personService.findSellerById(sellerId)
                 .orElseThrow(() -> new IllegalArgumentException("Seller not found: " + sellerId));
 
+        // Step 2: resolve each item as a product or an accessory and validate
+        // its stock. Nothing is modified until every validation has passed.
+        List<Product> products = resolveAndValidateItems(productIds);
+        Set<String> extendedWarrantyIds = validateExtendedWarrantyRequest(productIds, productIdsWithExtendedWarranty);
+
+        // Step 3: create the sale; its subtotal is the sum of the item prices.
+        Sale sale = new Sale(nextSaleId(), customer, seller, products);
+
+        // Step 4: best active promotion, with the discount calculated only
+        // over the subtotal of the items.
+        applyBestPromotion(sale);
+
+        // Steps 5 and 6: warranties and final total (subtotal - discount +
+        // cost of the extended warranties).
+        sale.setWarrantyExtraCost(assignWarranties(sale, extendedWarrantyIds));
+
+        // Step 7: update the inventory through the service that owns each item.
+        for (Product item : products) {
+            discountStock(item);
+        }
+
+        // Step 8: persist the sale. The sale only becomes visible once every
+        // previous step has succeeded.
+        sales.add(sale);
+        save();
+        return sale;
+    }
+
+    /**
+     * Resolves every requested item as a product or an accessory and checks
+     * that the available stock covers the units requested for each one. It
+     * only reads: nothing is modified, so a rejected request leaves the
+     * inventory untouched.
+     *
+     * @param productIds the identifiers of the requested items, repeated once
+     *                   per unit
+     * @return the resolved items, one entry per requested unit and in the
+     *         same order as the identifiers
+     * @throws IllegalArgumentException when an item cannot be found or its
+     *         stock cannot cover the requested units
+     */
+    private List<Product> resolveAndValidateItems(List<String> productIds) {
         Map<String, Integer> quantities = new HashMap<>();
         for (String productId : productIds) {
             quantities.merge(productId, 1, Integer::sum);
@@ -141,23 +202,11 @@ public class SaleService {
                 throw new IllegalArgumentException("Not enough stock for product: " + entry.getKey());
             }
         }
-        Set<String> extendedWarrantyIds = validateExtendedWarrantyRequest(productIds, productIdsWithExtendedWarranty);
-
-        List<Product> products = new ArrayList<>();
+        List<Product> items = new ArrayList<>();
         for (String productId : productIds) {
-            Product item = resolveItem(productId);
-            products.add(item);
-            discountStock(item);
+            items.add(resolveItem(productId));
         }
-
-        Sale sale = new Sale(nextSaleId(), customer, seller, products);
-        applyBestPromotion(sale);
-        sales.add(sale);
-        // The sale is saved first because the warranty repository rebuilds
-        // its references by looking the sale up in the stored sales.
-        save();
-        assignWarranties(sale, extendedWarrantyIds);
-        return sale;
+        return items;
     }
 
     /**
@@ -206,16 +255,18 @@ public class SaleService {
     }
 
     /**
-     * Assigns the warranties of a freshly created sale: an automatic basic
+     * Assigns the warranties of the sale being registered: an automatic basic
      * warranty for every console and an extended warranty for the consoles
-     * that requested it. The additional cost of the extended warranties is
-     * added to the total of the sale.
+     * that requested it. It returns the additional cost of the extended
+     * warranties so the caller can include it in the total of the sale.
      *
-     * @param sale               the sale that was just registered
+     * @param sale               the sale being registered
      * @param extendedWarrantyIds the identifiers of the consoles that must
      *                           receive an extended warranty
+     * @return the total cost of the extended warranties, zero when none was
+     *         requested
      */
-    private void assignWarranties(Sale sale, Set<String> extendedWarrantyIds) {
+    private double assignWarranties(Sale sale, Set<String> extendedWarrantyIds) {
         double extraCost = 0.0;
         for (Product product : sale.getProducts()) {
             if (product instanceof Console) {
@@ -226,10 +277,7 @@ public class SaleService {
                 }
             }
         }
-        if (!extendedWarrantyIds.isEmpty()) {
-            sale.setWarrantyExtraCost(extraCost);
-            save();
-        }
+        return extraCost;
     }
 
     /**
