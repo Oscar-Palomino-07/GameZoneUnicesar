@@ -244,42 +244,19 @@ public class ReturnService {
         return totalReturns;
     }
 
+    /**
+     * Generates the net balance of the given month: the total sold minus the
+     * total refunded. The balance can be negative, for example when the
+     * returns of the month belong to sales registered in the previous month.
+     *
+     * @param month the month to report, from 1 to 12
+     * @param year  the year to report, 2000 or later
+     * @return the difference between {@link #calculateMonthlySales(int, int)}
+     *         and {@link #calculateMonthlyReturns(int, int)}
+     * @throws IllegalArgumentException when the month or the year is invalid
+     */
     public double generateMonthlyBalance(int month, int year) {
-        if (month < 1 || month > 12) {
-            throw new IllegalArgumentException(
-                    "Mes inválido: " + month + ". Debe estar entre 1 y 12.");
-        }
-        if (year < 2000) {
-            throw new IllegalArgumentException(
-                    "Año inválido: " + year + ". Debe ser 2000 o posterior.");
-        }
-
-        double totalSales = 0;
-        double totalReturns = 0;
-
-        for (Sale sale : saleService.viewAllSales()) {
-            if (sale.getDate().getMonthValue() == month && sale.getDate().getYear() == year) {
-                totalSales += sale.calculateTotal();
-            }
-        }
-
-        for (Return returnObj : returns) {
-            if (returnObj.getDate().getMonthValue() == month && returnObj.getDate().getYear() == year) {
-                totalReturns += returnObj.calculateRefundAmount();
-            }
-        }
-
-        double balance = totalSales - totalReturns;
-
-        if (balance < 0) {
-            throw new IllegalStateException(
-                    String.format(
-                            "Negative balance detected for %02d/%d: sales=%.2f, returns=%.2f. "
-                            + "Total refunds exceed total sales, which suggests inconsistent return data.",
-                            month, year, totalSales, totalReturns));
-        }
-
-        return balance;
+        return calculateMonthlySales(month, year) - calculateMonthlyReturns(month, year);
     }
 
     /**
