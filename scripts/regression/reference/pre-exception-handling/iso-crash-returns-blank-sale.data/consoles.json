@@ -1,0 +1,11 @@
+[
+  {
+    "brand": "Xbox",
+    "model": "Series X",
+    "generation": "2020",
+    "id": "1",
+    "title": "Xbox Series X",
+    "price": 2500000.0,
+    "stock": 5
+  }
+]

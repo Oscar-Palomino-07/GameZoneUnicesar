@@ -1,0 +1,16 @@
+[
+  {
+    "type": "BASIC",
+    "id": "W-1",
+    "productId": "1",
+    "saleId": "V-2",
+    "startDate": "2026-10-20"
+  },
+  {
+    "type": "BASIC",
+    "id": "W-2",
+    "productId": "1",
+    "saleId": "V-4",
+    "startDate": "2026-10-20"
+  }
+]

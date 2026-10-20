@@ -1,0 +1,104 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Platform: Genre: Age rating: Video game registered.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Platform: Genre: Age rating: Video game registered.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Platform: Genre: Age rating: A product with id V-1 already exists.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Platform: Genre: Age rating: Price and stock cannot be negative.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Platform: Genre: Age rating: All video game fields are required.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Platform: Genre: Age rating: Price and stock cannot be negative.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Invalid number. Try again.
+Price: Stock: Invalid number. Try again.
+Stock: Platform: Genre: Age rating: Video game registered.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Brand: Model: Generation: Console registered.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Brand: Model: Generation: A product with id C-2 already exists.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Brand: Model: Generation: All console fields are required.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Invalid option. Try again.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: VideoGame: Halo Infinite | platform: Xbox | genre: Shooter | age rating: T | price: $200000.0 | stock: 10
+VideoGame: FIFA 25 | platform: PS5 | genre: Sports | age rating: E | price: $150000.0 | stock: 2
+VideoGame: Typed Wrong Number | platform: PC | genre: Action | age rating: E | price: $50000.0 | stock: 3
+Console: Xbox Series X | brand: Xbox | model: Series X | generation: 2020 | price: $2500000.0 | stock: 5
+Console: PlayStation 5 | brand: Sony | model: PS5 | generation: 2020 | price: $2800000.0 | stock: 3
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!

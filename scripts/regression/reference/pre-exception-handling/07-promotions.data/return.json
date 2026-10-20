@@ -1,0 +1,113 @@
+[
+  {
+    "id": "D-1",
+    "saleId": "V-1",
+    "date": "2026-10-20",
+    "customer": {
+      "email": "ana@mail.com",
+      "id": "P-1",
+      "firstName": "Ana",
+      "lastName": "Torres",
+      "phone": "3001112233"
+    },
+    "seller": {
+      "employeeCode": "EMP001",
+      "shift": "MORNING",
+      "id": "P-100",
+      "firstName": "Carlos",
+      "lastName": "Mendoza",
+      "phone": "3001234567"
+    },
+    "products": [
+      {
+        "platform": "Xbox",
+        "genre": "Shooter",
+        "ageRating": "T",
+        "id": "V-1",
+        "title": "Halo Infinite",
+        "price": 200000.0,
+        "stock": 10
+      }
+    ],
+    "saleSubtotal": 350000.0,
+    "saleDiscount": 70000.0,
+    "warrantyRefund": 0.0
+  },
+  {
+    "id": "D-2",
+    "saleId": "V-2",
+    "date": "2026-10-20",
+    "customer": {
+      "email": "luis@mail.com",
+      "id": "P-2",
+      "firstName": "Luis",
+      "lastName": "Perez",
+      "phone": "3004445566"
+    },
+    "seller": {
+      "employeeCode": "EMP002",
+      "shift": "AFTERNOON",
+      "id": "P-101",
+      "firstName": "Laura",
+      "lastName": "Gomez",
+      "phone": "3019876543"
+    },
+    "products": [
+      {
+        "brand": "Xbox",
+        "model": "Series X",
+        "generation": "2020",
+        "id": "1",
+        "title": "Xbox Series X",
+        "price": 2500000.0,
+        "stock": 4
+      }
+    ],
+    "saleSubtotal": 2545000.0,
+    "saleDiscount": 381750.0,
+    "warrantyRefund": 0.0
+  },
+  {
+    "id": "D-3",
+    "saleId": "V-3",
+    "date": "2026-10-20",
+    "customer": {
+      "email": "luis@mail.com",
+      "id": "P-2",
+      "firstName": "Luis",
+      "lastName": "Perez",
+      "phone": "3004445566"
+    },
+    "seller": {
+      "employeeCode": "EMP002",
+      "shift": "AFTERNOON",
+      "id": "P-101",
+      "firstName": "Laura",
+      "lastName": "Gomez",
+      "phone": "3019876543"
+    },
+    "products": [
+      {
+        "platform": "Xbox",
+        "genre": "Shooter",
+        "ageRating": "T",
+        "id": "V-1",
+        "title": "Halo Infinite",
+        "price": 200000.0,
+        "stock": 10
+      },
+      {
+        "platform": "Xbox",
+        "genre": "Shooter",
+        "ageRating": "T",
+        "id": "V-1",
+        "title": "Halo Infinite",
+        "price": 200000.0,
+        "stock": 10
+      }
+    ],
+    "saleSubtotal": 550000.0,
+    "saleDiscount": 110000.0,
+    "warrantyRefund": 0.0
+  }
+]

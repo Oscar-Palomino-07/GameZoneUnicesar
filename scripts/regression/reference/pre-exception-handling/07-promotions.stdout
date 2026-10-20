@@ -1,0 +1,144 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Fecha de inicio (AAAA-MM-DD): Fecha de fin (AAAA-MM-DD): Promoción PR-5 registrada.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Fecha de inicio (AAAA-MM-DD): Fecha de fin (AAAA-MM-DD): El nombre de la promoción es obligatorio.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Fecha de inicio (AAAA-MM-DD): Fecha de fin (AAAA-MM-DD): El porcentaje debe estar entre 0 y 100.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Fecha de inicio (AAAA-MM-DD): Fecha de fin (AAAA-MM-DD): La fecha de inicio no puede ser posterior a la fecha de fin.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Fecha de inicio (AAAA-MM-DD): Fecha inválida: use el formato AAAA-MM-DD.
+Fecha de fin (AAAA-MM-DD): === GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Categoría:
+1. Videojuegos
+2. Consolas
+3. Accesorios
+Seleccione una opción: Fecha de inicio (AAAA-MM-DD): Fecha de fin (AAAA-MM-DD): Promoción PR-6 registrada.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Categoría:
+1. Videojuegos
+2. Consolas
+3. Accesorios
+Seleccione una opción: Categoría no válida.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Cantidad mínima de productos: Fecha de inicio (AAAA-MM-DD): Fecha de fin (AAAA-MM-DD): Promoción PR-7 registrada.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Nombre de la promoción: Porcentaje de descuento (0-100): Cantidad mínima de productos: Fecha de inicio (AAAA-MM-DD): Fecha de fin (AAAA-MM-DD): La cantidad mínima de productos debe ser mayor que cero.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: PR-1 | Descuento general 15% | 15.0% | Vigencia: 2020-01-01 a 2099-12-31 | Estado: Vigente
+PR-2 | 20% en videojuegos | 20.0% | Vigencia: 2020-01-01 a 2099-12-31 | Estado: Vigente
+PR-3 | 10% llevando 3 o más | 10.0% | Vigencia: 2020-01-01 a 2099-12-31 | Estado: Vigente
+PR-4 | 25% en accesorios | 25.0% | Vigencia: 2020-01-01 a 2099-12-31 | Estado: Vigente
+PR-5 | Promo Test | 10.0% | Vigencia: 2026-01-01 a 2099-12-31 | Estado: Vigente
+PR-6 | Category Promo | 5.0% | Vigencia: 2026-01-01 a 2099-12-31 | Estado: Vigente
+PR-7 | Bulk Promo | 5.0% | Vigencia: 2026-01-01 a 2099-12-31 | Estado: Vigente
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: PR-1 | Descuento general 15% | 15.0% | Vigencia: 2020-01-01 a 2099-12-31 | Estado: Vigente
+PR-2 | 20% en videojuegos | 20.0% | Vigencia: 2020-01-01 a 2099-12-31 | Estado: Vigente
+PR-3 | 10% llevando 3 o más | 10.0% | Vigencia: 2020-01-01 a 2099-12-31 | Estado: Vigente
+PR-4 | 25% en accesorios | 25.0% | Vigencia: 2020-01-01 a 2099-12-31 | Estado: Vigente
+PR-5 | Promo Test | 10.0% | Vigencia: 2026-01-01 a 2099-12-31 | Estado: Vigente
+PR-6 | Category Promo | 5.0% | Vigencia: 2026-01-01 a 2099-12-31 | Estado: Vigente
+PR-7 | Bulk Promo | 5.0% | Vigencia: 2026-01-01 a 2099-12-31 | Estado: Vigente
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: Opción inválida. Intente de nuevo.
+=== GESTIÓN DE PROMOCIONES ===
+1. Registrar promoción por porcentaje
+2. Registrar promoción por categoría
+3. Registrar promoción por volumen de compra
+4. Listar todas las promociones
+5. Listar promociones vigentes
+0. Volver
+Seleccione una opción: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!

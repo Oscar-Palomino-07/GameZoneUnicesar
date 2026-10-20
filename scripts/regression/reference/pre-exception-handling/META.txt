@@ -1,0 +1,5 @@
+label:  pre-exception-handling
+branch: feature/exception-handling
+commit: 74ce41b
+dirty:  0 changed file(s) under src/
+date:   2026-10-20 09:11:47
