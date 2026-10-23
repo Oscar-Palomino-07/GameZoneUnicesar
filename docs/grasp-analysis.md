@@ -47,7 +47,15 @@ Before consolidating, every line number and every quoted statement is checked ag
 
 **Assigned to:** Oscar Palomino (Technical Lead).
 
-*Pending: to be written after the consolidated audit is merged.*
+Yes. Twelve of the nineteen violations of the consolidated audit involve the code of more than one team member: V-01, V-02, V-03, V-08, V-11, V-12, V-13, V-14, V-15, V-16, V-17 and V-18 (section 6 of `docs/grasp-audit/consolidated-audit.md`).
+
+**How they were registered.** Each violation has a single identifier, whoever found it. When two members found the same problem from their own side, the second report did not register it again: Developer 2's report cross-references the Technical Lead's V-01, V-02, V-03 and V-08 and lists only the part of the correction that belongs to her. The consolidation keeps one violation for each, with a table of the parts that each member corrects. The new classes that a correction creates are created by the responsible of the violation that originates it.
+
+**A concrete case, V-02.** The Technical Lead found that `SaleService.resolveItem` (lines 297–303) and `discountStock` (lines 311–318) look the item up in two services and choose by `instanceof Accessory` (line 313) which one changes the stock. Developer 2 found the same code in `ReturnService.resolveItem` (lines 184–190) and `restoreStock` (lines 199–205, `instanceof Accessory` at line 200). They are two owners with the same problem, so the consolidation registers it once, as an Indirection violation. The agreed solution is an `InventoryService`: the Technical Lead creates it and changes `SaleService` and `Main`, and Developer 2 changes `ReturnService`. It has to be applied after V-01, because the new service uses the stock methods that V-01 adds to `Product`.
+
+**Two other cases with a different shape.** In V-12, Developer 2's services take the product list out of `Sale` to answer questions; the correction needs two new methods in `Sale`, which belongs to the Technical Lead, so he adds them first and she changes her two callers afterwards. In V-11, Developer 1's registration methods are called by `ConsoleMenu`; the solution proposed in his report would have made the menu create domain objects, which would have been a new violation, so the consolidation changed it to a `ProductFactory` and left the calls of the menu to the Technical Lead.
+
+**How we verified that none was missed.** Besides the coverage table (43 of 43 classes audited by their responsible), we searched the production code for the typical symptoms of a border problem and checked each hit against the three reports. The 14 `instanceof` of the code are all registered: `CategoryDiscount` line 77 (V-10), `AccessoryService` lines 271, 273 and 275 (V-15), `ReturnService` lines 162 (V-03) and 200 (V-02), `SaleService` lines 254 and 277 (V-03) and 313 (V-02), `WarrantyService` lines 168, 208 and 325 (V-16) and 288 (V-03), and `ConsoleMenu` line 325 (V-04). The three places that compute stock outside `Product` are V-01, and the copies of the Gson adapters and of the file access are V-08 and V-18.
 
 ---
 
@@ -135,4 +143,19 @@ For us, "the same external behavior" means three things: the same inputs give th
 
 **Assigned to:** Oscar Palomino (Technical Lead).
 
-*Pending: to be written after the consolidated audit is merged.*
+The violations are corrected in five waves, which follow the dependencies between the parts (section 7 of `docs/grasp-audit/consolidated-audit.md`):
+
+1. **Foundations.** The methods and classes that the other corrections use: the stock and warranty methods of `Product` and `Console` (V-01, V-03), the type methods of the accessory and warranty hierarchies (V-15, V-16), the methods of `Sale` (V-06, V-07, V-12), the shared persistence classes (V-08), the `ProductCategory` enum (V-17) and the new validators (V-19). They are in different files, so they can be done in parallel.
+2. **Callers and mediators.** The code that uses the new methods, and `InventoryService` (V-02), which needs the stock methods of the first wave.
+3. **Restructuring.** The changes that touch constructors and shared wiring: `ReturnService` (V-14, V-13, V-12, V-03 and V-02), `MonthlyBalanceService`, `JsonFileStore` and `ProductFactory`.
+4. **User interface.** The split of `ConsoleMenu` (V-05) goes last, because it moves the code that the corrections of V-04, V-11 and V-14 modify; doing it earlier would force moving code twice.
+5. **Cleanup.** The old registration methods of `ProductService` are removed once the menu stopped using them, and the last repositories use `JsonFileStore`.
+
+The reason for this order is that a method has to exist before its callers use it, a created class is used afterwards, and the file that moves code is changed when the others have finished.
+
+**Coordination in the shared branch.** Five rules prevent conflicts in `feature/grasp-refactor`:
+- Each file is changed only by its owner, so two people never edit the same file; when a violation needs changes in a class of another member, that member makes them.
+- A wave starts when the prerequisites of the previous ones are pushed. Every commit is pushed immediately, after `git pull --rebase`, and nobody uses `--force`.
+- Every commit names its violation identifier (`refactor: ... (V-XX)`), and the commits of a boundary violation are made in the order of the table, so the project compiles after each one.
+- When a change breaks the compilation of a file of another member (the constructor of `ReturnService` and `Main`), the owner of the second file fixes it in the very next commit and nobody pushes in between.
+- Before each pull request the project is compiled and the non-regression check is run on the affected operations, and the three pull requests are opened at the end of each member's part, reviewed and approved by another member.
