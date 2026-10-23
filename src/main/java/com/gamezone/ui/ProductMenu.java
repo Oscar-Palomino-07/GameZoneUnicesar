@@ -1,6 +1,7 @@
 package com.gamezone.ui;
 
 import com.gamezone.model.Product;
+import com.gamezone.service.ProductFactory;
 import com.gamezone.service.ProductService;
 
 import java.util.List;
@@ -71,7 +72,8 @@ public class ProductMenu implements Menu {
         String genre = input.readText("Genre: ");
         String ageRating = input.readText("Age rating: ");
         errorReporter.runGuarded(() -> {
-            productService.registerVideoGame(id, title, price, stock, platform, genre, ageRating);
+            productService.registerProduct(
+                    ProductFactory.createVideoGame(id, title, price, stock, platform, genre, ageRating));
             System.out.println(productService.findById(id) != null
                     ? "Video game registered."
                     : "Video game could not be registered.");
@@ -87,7 +89,8 @@ public class ProductMenu implements Menu {
         String model = input.readText("Model: ");
         String generation = input.readText("Generation: ");
         errorReporter.runGuarded(() -> {
-            productService.registerConsole(id, title, price, stock, brand, model, generation);
+            productService.registerProduct(
+                    ProductFactory.createConsole(id, title, price, stock, brand, model, generation));
             System.out.println(productService.findById(id) != null
                     ? "Console registered."
                     : "Console could not be registered.");
