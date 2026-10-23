@@ -1,22 +1,10 @@
 package com.gamezone.persistence;
 
 import com.gamezone.exceptions.PersistenceException;
-import com.gamezone.model.Cable;
-import com.gamezone.model.Console;
-import com.gamezone.model.Controller;
-import com.gamezone.model.Memory;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
-import com.gamezone.model.VideoGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
@@ -38,10 +26,10 @@ import java.util.List;
  * serialized with Gson. If the file does not exist yet, the repository loads
  * an empty list.
  *
- * <p>The repository registers custom serializers because the default Gson
- * behavior is not enough for this module: {@link LocalDate} values are
- * written as ISO-8601 strings and every {@link Product} is rebuilt as its
- * concrete subtype ({@link VideoGame} or {@link Console}) when a file is
+ * <p>The repository registers two shared serializers because the default Gson
+ * behavior is not enough for this module: {@link LocalDateAdapter} writes
+ * {@link LocalDate} values as ISO-8601 strings and {@link ProductDeserializer}
+ * rebuilds every {@link Product} as its concrete subtype when a file is
  * loaded.</p>
  */
 public class SaleRepository {
@@ -127,52 +115,6 @@ public class SaleRepository {
             return items != null ? items : new ArrayList<>();
         } catch (IOException | JsonSyntaxException e) {
             throw new PersistenceException(fileName, "lectura", e);
-        }
-    }
-
-    /**
-     * Rebuilds a {@link Product} from its JSON representation, choosing the
-     * concrete subtype ({@link VideoGame}, {@link Console}, {@link Controller},
-     * {@link Cable} or {@link Memory}) based on the attributes present in the
-     * serialized object.
-     */
-    private static class ProductDeserializer implements JsonDeserializer<Product> {
-
-        private final Gson typeGson = new Gson();
-
-        @Override
-        public Product deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-            JsonObject object = json.getAsJsonObject();
-            if (object.has("connectionType")) {
-                return typeGson.fromJson(json, Controller.class);
-            }
-            if (object.has("lengthInMeters") || object.has("connectorType")) {
-                return typeGson.fromJson(json, Cable.class);
-            }
-            if (object.has("capacityInGb") || object.has("memoryType")) {
-                return typeGson.fromJson(json, Memory.class);
-            }
-            if (object.has("platform") || object.has("genre") || object.has("ageRating")) {
-                return typeGson.fromJson(json, VideoGame.class);
-            }
-            return typeGson.fromJson(json, Console.class);
-        }
-    }
-
-    /**
-     * Serializes {@link LocalDate} values as ISO-8601 strings instead of the
-     * default Gson object representation.
-     */
-    private static class LocalDateAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
-
-        @Override
-        public JsonElement serialize(LocalDate date, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(date.toString());
-        }
-
-        @Override
-        public LocalDate deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-            return LocalDate.parse(json.getAsString());
         }
     }
 }
