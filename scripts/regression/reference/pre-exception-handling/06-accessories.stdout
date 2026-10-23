@@ -1,0 +1,202 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Connection type (WIRELESS/WIRED): Compatible console ids (comma separated): Controller A-4 registered.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Connection type (WIRELESS/WIRED): Compatible console ids (comma separated): El tipo de conexión debe ser WIRELESS o WIRED.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Connection type (WIRELESS/WIRED): Compatible console ids (comma separated): El precio no puede ser negativo.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Connection type (WIRELESS/WIRED): Compatible console ids (comma separated): El nombre del accesorio es obligatorio.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Length in meters: Connector type: Compatible console ids (comma separated): Cable A-5 registered.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Length in meters: Connector type: Compatible console ids (comma separated): La longitud del cable debe ser mayor que cero.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Length in meters: Connector type: Compatible console ids (comma separated): El tipo de conector es obligatorio.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Capacity in GB: Memory type: Compatible console ids (comma separated): Memory A-6 registered.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Capacity in GB: Memory type: Compatible console ids (comma separated): La capacidad de la memoria debe ser mayor que cero.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Title: Price: Stock: Capacity in GB: Memory type: Compatible console ids (comma separated): El tipo de memoria es obligatorio.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Controller: Control inalámbrico Xbox | price: $250000.0 | stock: 4 | compatible consoles: 1 | connection: WIRELESS
+Cable: Cable HDMI 2.1 | price: $45000.0 | stock: 9 | compatible consoles: 1 | length: 2.0 m | connector: HDMI
+Memory: Tarjeta de expansión 1TB | price: $350000.0 | stock: 4 | compatible consoles: 1 | capacity: 1024 GB | type: INTERNAL
+Controller: Control Pro | price: $300000.0 | stock: 3 | compatible consoles: 1 | connection: WIRELESS
+Cable: Cable DP | price: $80000.0 | stock: 5 | compatible consoles: 1 | length: 1.5 m | connector: DisplayPort
+Memory: SSD 512 | price: $200000.0 | stock: 2 | compatible consoles: 1 | capacity: 512 GB | type: EXTERNAL
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Type (CONTROLLER/CABLE/MEMORY): Cable: Cable HDMI 2.1 | price: $45000.0 | stock: 9 | compatible consoles: 1 | length: 2.0 m | connector: HDMI
+Cable: Cable DP | price: $80000.0 | stock: 5 | compatible consoles: 1 | length: 1.5 m | connector: DisplayPort
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Type (CONTROLLER/CABLE/MEMORY): Tipo de accesorio no válido: INVALID. Use CONTROLLER, CABLE o MEMORY.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Type (CONTROLLER/CABLE/MEMORY): Debe indicar el tipo de accesorio.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Console id: Controller: Control inalámbrico Xbox | price: $250000.0 | stock: 4 | compatible consoles: 1 | connection: WIRELESS
+Cable: Cable HDMI 2.1 | price: $45000.0 | stock: 9 | compatible consoles: 1 | length: 2.0 m | connector: HDMI
+Memory: Tarjeta de expansión 1TB | price: $350000.0 | stock: 4 | compatible consoles: 1 | capacity: 1024 GB | type: INTERNAL
+Controller: Control Pro | price: $300000.0 | stock: 3 | compatible consoles: 1 | connection: WIRELESS
+Cable: Cable DP | price: $80000.0 | stock: 5 | compatible consoles: 1 | length: 1.5 m | connector: DisplayPort
+Memory: SSD 512 | price: $200000.0 | stock: 2 | compatible consoles: 1 | capacity: 512 GB | type: EXTERNAL
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Console id: No accessories compatible with console C-2.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Console id: Debe indicar el identificador de la consola.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: Invalid option. Try again.
+=== ACCESSORIES ===
+1. Register controller
+2. Register cable
+3. Register memory
+4. List all accessories
+5. List accessories by type
+6. View accessories compatible with a console
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!

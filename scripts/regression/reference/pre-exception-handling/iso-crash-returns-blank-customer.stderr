@@ -1,0 +1,6 @@
+Exception in thread "main" java.lang.IllegalArgumentException: El identificador del cliente es obligatorio.
+	at com.gamezone.service.ReturnService.viewReturnsByCustomer(ReturnService.java:262)
+	at com.gamezone.ui.ConsoleMenu.viewReturnsByCustomer(ConsoleMenu.java:465)
+	at com.gamezone.ui.ConsoleMenu.returnMenu(ConsoleMenu.java:420)
+	at com.gamezone.ui.ConsoleMenu.start(ConsoleMenu.java:98)
+	at com.gamezone.Main.main(Main.java:63)

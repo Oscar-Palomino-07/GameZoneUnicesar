@@ -1,5 +1,9 @@
 package com.gamezone.ui;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.PersistenceException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
@@ -219,14 +223,12 @@ public class ConsoleMenu {
         String platform = readText("Platform: ");
         String genre = readText("Genre: ");
         String ageRating = readText("Age rating: ");
-        try {
+        runGuarded(() -> {
             productService.registerVideoGame(id, title, price, stock, platform, genre, ageRating);
             System.out.println(productService.findById(id) != null
                     ? "Video game registered."
                     : "Video game could not be registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void registerConsole() {
@@ -237,14 +239,12 @@ public class ConsoleMenu {
         String brand = readText("Brand: ");
         String model = readText("Model: ");
         String generation = readText("Generation: ");
-        try {
+        runGuarded(() -> {
             productService.registerConsole(id, title, price, stock, brand, model, generation);
             System.out.println(productService.findById(id) != null
                     ? "Console registered."
                     : "Console could not be registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void listAllProducts() {
@@ -264,12 +264,10 @@ public class ConsoleMenu {
         String lastName = readText("Last name: ");
         String phone = readText("Phone: ");
         String email = readText("Email: ");
-        try {
+        runGuarded(() -> {
             personService.registerCustomer(id, firstName, lastName, phone, email);
             System.out.println("Customer registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void listCustomers() {
@@ -305,13 +303,11 @@ public class ConsoleMenu {
         String accessoryIdsInput = readText("Accessory ids (comma separated, optional): ");
         productIds.addAll(parseIds(accessoryIdsInput));
         List<String> extendedWarrantyIds = askExtendedWarranties(productIds);
-        try {
+        runGuarded(() -> {
             Sale sale = saleService.registerSale(customerId, sellerId, productIds, extendedWarrantyIds);
             System.out.println("Venta " + sale.getId() + " registrada.");
             System.out.println(sale.generateReceipt());
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     /**
@@ -440,13 +436,11 @@ public class ConsoleMenu {
                 productIds.add(item.trim());
             }
         }
-        try {
+        runGuarded(() -> {
             Return ret = returnService.registerReturn(saleId, productIds);
             System.out.println("Devolución " + ret.getId() + " registrada.");
             System.out.println(ret.generateReturnReceipt());
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void viewAllReturns() {
@@ -515,7 +509,7 @@ public class ConsoleMenu {
     private void monthlyBalance() {
         int month = readInt("Mes (1-12): ");
         int year  = readInt("Año (ej. 2026): ");
-        try {
+        runGuarded(() -> {
             double totalSales = returnService.calculateMonthlySales(month, year);
             double totalReturns = returnService.calculateMonthlyReturns(month, year);
             double balance = returnService.generateMonthlyBalance(month, year);
@@ -523,9 +517,7 @@ public class ConsoleMenu {
             System.out.printf("  Total de ventas:       $%.2f%n", totalSales);
             System.out.printf("  Total de devoluciones: $%.2f%n", totalReturns);
             System.out.printf("  Balance neto:          $%.2f%n", balance);
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void accessoryMenu() {
@@ -575,12 +567,10 @@ public class ConsoleMenu {
         String connectionType = readText("Connection type (WIRELESS/WIRED): ");
         String consoleIdsInput = readText("Compatible console ids (comma separated): ");
         List<String> consoleIds = parseIds(consoleIdsInput);
-        try {
+        runGuarded(() -> {
             Accessory controller = accessoryService.registerController(title, price, stock, connectionType, consoleIds);
             System.out.println("Controller " + controller.getId() + " registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void registerCable() {
@@ -591,12 +581,10 @@ public class ConsoleMenu {
         String connectorType = readText("Connector type: ");
         String consoleIdsInput = readText("Compatible console ids (comma separated): ");
         List<String> consoleIds = parseIds(consoleIdsInput);
-        try {
+        runGuarded(() -> {
             Accessory cable = accessoryService.registerCable(title, price, stock, lengthInMeters, connectorType, consoleIds);
             System.out.println("Cable " + cable.getId() + " registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void registerMemory() {
@@ -607,12 +595,10 @@ public class ConsoleMenu {
         String memoryType = readText("Memory type: ");
         String consoleIdsInput = readText("Compatible console ids (comma separated): ");
         List<String> consoleIds = parseIds(consoleIdsInput);
-        try {
+        runGuarded(() -> {
             Accessory memory = accessoryService.registerMemory(title, price, stock, capacityInGb, memoryType, consoleIds);
             System.out.println("Memory " + memory.getId() + " registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void listAllAccessories() {
@@ -628,7 +614,7 @@ public class ConsoleMenu {
 
     private void listAccessoriesByType() {
         String type = readText("Type (CONTROLLER/CABLE/MEMORY): ");
-        try {
+        runGuarded(() -> {
             List<Accessory> accessories = accessoryService.listAccessoriesByType(type);
             if (accessories.isEmpty()) {
                 System.out.println("No accessories of type " + type + " registered.");
@@ -637,14 +623,12 @@ public class ConsoleMenu {
             for (Accessory accessory : accessories) {
                 System.out.println(accessory.getDescription());
             }
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void listAccessoriesCompatibleWith() {
         String consoleId = readText("Console id: ");
-        try {
+        runGuarded(() -> {
             List<Accessory> accessories = accessoryService.findAccessoriesCompatibleWith(consoleId);
             if (accessories.isEmpty()) {
                 System.out.println("No accessories compatible with console " + consoleId + ".");
@@ -653,9 +637,7 @@ public class ConsoleMenu {
             for (Accessory accessory : accessories) {
                 System.out.println(accessory.getDescription());
             }
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     // -------------------------------------------------------------------------
@@ -708,12 +690,8 @@ public class ConsoleMenu {
 
     private void viewWarrantiesExpiringSoon() {
         int daysAhead = readInt("¿Cuántos días de anticipación? ");
-        try {
-            printWarranties(warrantyService.listWarrantiesExpiringSoon(daysAhead),
-                    "No hay garantías que venzan en los próximos " + daysAhead + " días.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        runGuarded(() -> printWarranties(warrantyService.listWarrantiesExpiringSoon(daysAhead),
+                "No hay garantías que venzan en los próximos " + daysAhead + " días."));
     }
 
     private void printWarranties(List<Warranty> warranties, String emptyMessage) {
@@ -781,12 +759,10 @@ public class ConsoleMenu {
         if (startDate == null || endDate == null) {
             return;
         }
-        try {
+        runGuarded(() -> {
             Promotion promotion = promotionService.registerPercentage(name, percentage, startDate, endDate);
             System.out.println("Promoción " + promotion.getId() + " registrada.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void registerCategoryPromotion() {
@@ -801,12 +777,10 @@ public class ConsoleMenu {
         if (startDate == null || endDate == null) {
             return;
         }
-        try {
+        runGuarded(() -> {
             Promotion promotion = promotionService.registerCategory(name, percentage, category, startDate, endDate);
             System.out.println("Promoción " + promotion.getId() + " registrada.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     // Lets the user pick the target category of a category promotion.
@@ -837,13 +811,11 @@ public class ConsoleMenu {
         if (startDate == null || endDate == null) {
             return;
         }
-        try {
+        runGuarded(() -> {
             Promotion promotion = promotionService.registerBulkPurchase(name, percentage, minimumQuantity,
                     startDate, endDate);
             System.out.println("Promoción " + promotion.getId() + " registrada.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void printPromotions(List<Promotion> promotions, String emptyMessage) {
@@ -874,6 +846,34 @@ public class ConsoleMenu {
         } catch (DateTimeParseException e) {
             System.out.println("Fecha inválida: use el formato AAAA-MM-DD.");
             return null;
+        }
+    }
+
+    /**
+     * Runs a menu action and turns every error it can raise into a message for
+     * the user, one message per category of error.
+     *
+     * <p>The catch blocks go from the most specific exception to the most
+     * general one, so each category of the exception hierarchy gets its own
+     * message and the user never sees a technical message or a stack trace.
+     * The last block keeps the original behavior for the modules that still
+     * report their errors with the standard Java exceptions.</p>
+     *
+     * @param action the menu action to run
+     */
+    private void runGuarded(Runnable action) {
+        try {
+            action.run();
+        } catch (ResourceNotFoundException e) {
+            System.out.println("No se encontró el recurso solicitado: " + e.getMessage());
+        } catch (BusinessRuleException e) {
+            System.out.println("No se puede completar la operación: " + e.getMessage());
+        } catch (InvalidDataException e) {
+            System.out.println("Los datos ingresados no son válidos: " + e.getMessage());
+        } catch (PersistenceException e) {
+            System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+        } catch (IllegalArgumentException | IllegalStateException e) {
+            System.out.println(e.getMessage());
         }
     }
 

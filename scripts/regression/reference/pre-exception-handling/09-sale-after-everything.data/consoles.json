@@ -1,0 +1,20 @@
+[
+  {
+    "brand": "Xbox",
+    "model": "Series X",
+    "generation": "2020",
+    "id": "1",
+    "title": "Xbox Series X",
+    "price": 2500000.0,
+    "stock": 4
+  },
+  {
+    "brand": "Sony",
+    "model": "PS5",
+    "generation": "2020",
+    "id": "C-2",
+    "title": "PlayStation 5",
+    "price": 2800000.0,
+    "stock": 3
+  }
+]

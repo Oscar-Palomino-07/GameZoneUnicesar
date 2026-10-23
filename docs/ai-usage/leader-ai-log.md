@@ -227,3 +227,31 @@ A partir de esta sección cada interacción se registra con los campos que exige
 | Respuesta | La IA revisó el PR #39 de A7 y comprobó que el escenario de sustentación pasa completo. Redactó `docs/integration-analysis.md` (causa y solución de A1 a A7, comportamiento integrado y desviaciones frente a los enunciados), `docs/integrated-class-diagram.md` (validó que el Mermaid renderiza sin errores), actualizó `docs/layers-diagram.md` y `README.md` a partir del código final, y preparó estas entradas de bitácora. Dejó los cambios en el área de staging |
 | Decisión | Los cambios se dejaron en staging y los comité yo; la IA no figura como coautora en esos commits, por eso el uso queda documentado aquí. Pendiente de mi revisión antes de comitear |
 | Commit relacionado | Completar con el hash del commit de cada archivo al comitear |
+
+## Requerimiento 6 — Validaciones y excepciones (formato de 8 campos)
+
+### Entrada 16
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-20 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Preparación del Requerimiento 6, `feature/exception-handling` |
+| Objetivo | Tener una forma repetible de comprobar que la refactorización de excepciones no cambia el comportamiento del menú, antes de tocar el código |
+| Consulta | "para que es la verificacion de no regresion ?" y "hazlo" (el script) |
+| Respuesta | La IA explicó qué es una verificación de no regresión y construyó `scripts/regression/`: `run.sh` compila el código, reproduce con entradas fijas las 31 operaciones del menú (flujos normales y errores de cada categoría, más archivo corrupto y carpeta de datos no escribible) sobre datos de prueba fijos, y `compare.sh` compara dos corridas enmascarando fechas. Se comprobó que dos corridas del mismo código dan `OK` y que un cambio de mensaje provocado a propósito se detecta como `DIFF`. Generó la corrida de referencia de `develop` (`74ce41b`) en `scripts/regression/reference/pre-exception-handling` |
+| Decisión | Adopté el script como estrategia de la pregunta 4. Los comités de esta entrada son míos y la IA no figura como coautora; el uso queda documentado aquí |
+| Commit relacionado | `2c50556` |
+
+### Entrada 17
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-22 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Parte del Líder Técnico del Requerimiento 6, `feature/exception-handling` |
+| Objetivo | Adaptar `ConsoleMenu` para capturar las excepciones por tipo, y documentar la capa nueva (análisis, diagrama y README) |
+| Consulta | "revisa el remoto y dime en qué punto vamos" y "haz todo lo que me falta a mi" |
+| Respuesta | La IA revisó el remoto y comprobó con el script que `develop` compilaba pero se caía con una traza en el primer error de validación, porque `ConsoleMenu` solo capturaba `IllegalArgumentException`. Propuso y aplicó un método `runGuarded(Runnable)` con un `catch` por tipo (de lo específico a lo general) usado por las 15 acciones del menú, en lugar de repetir los bloques 15 veces, y un último `catch` para las excepciones estándar de los módulos no migrados. Aplicó el cambio por secciones (productos, clientes, ventas, devoluciones y reportes, accesorios, garantías y promociones), corrió el script y verificó que las únicas diferencias fueran los mensajes, el rechazo de correos inválidos y el mensaje de persistencia. Añadió el manejo de `PersistenceException` en `Main`, porque los archivos se leen al crear los servicios, antes de que exista el menú. Redactó `docs/exception-analysis.md`, `docs/exception-class-diagram.md` (validó que el Mermaid se interpreta sin errores) y la sección del README |
+| Decisión | Acepté `runGuarded` en lugar de repetir los bloques, y el manejo en `Main`. Dejé fuera del alcance dos hallazgos para el Requerimiento 7: devolver con un identificador vacío todavía cierra el programa con una traza (ya ocurría antes), y `ProductValidator` rechaza el precio 0 (`price <= 0`) cuando antes solo se rechazaban los negativos. Los comités son míos y la IA no figura como coautora; el uso queda documentado aquí. Debo estudiar el código y los documentos antes de la sustentación |
+| Commit relacionado | `2e84e34`, `dbf95d6`, `128cc4a`, `8620af5`, `4b8b983`, `4eccd00`, `122e7ab`, `957b1d4`, `d8ac6d2`, `bee1fe8`, `e78b50d` |
