@@ -298,7 +298,7 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ## Compliance checklist
 
-- [ ] No AI-generated design (diagrams, hierarchy, layer structure) was used.
-- [ ] No AI answers to the `analysis.md` guiding questions.
-- [ ] No complete classes were copied and pasted without understanding.
-- [ ] No project documentation was produced by AI without my own intervention.
+- [x] No AI-generated design (diagrams, hierarchy, layer structure) was used.
+- [x] No AI answers to the `analysis.md` guiding questions.
+- [x] No complete classes were copied and pasted without understanding.
+- [x] No project documentation was produced by AI without my own intervention.
