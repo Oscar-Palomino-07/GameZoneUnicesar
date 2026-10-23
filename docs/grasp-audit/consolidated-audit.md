@@ -269,3 +269,23 @@ Twelve of the nineteen violations involve the code of more than one team member.
 
 **Related violations that stay separate.** V-08 and V-18 touch the same repositories but extract different things (the Gson adapters and the file access), so they are applied in sequence and never in parallel. V-10, V-15, V-16 and V-17 all remove a type or category check, but each one is in a different class and needs a different change.
 
+---
+
+## 7. Correction Sequence
+
+The order follows the dependencies between the parts: a method must exist before its callers use it, a class that is created is used afterwards, and the file that moves code (`ConsoleMenu`) is changed last. Each team member edits only the files under their responsibility, so two people never change the same file.
+
+| Wave | Developer 1 | Developer 2 | Technical Lead |
+|---|---|---|---|
+| **1. Foundations** (no dependencies; in parallel) | V-01 (`Product`), V-03 (`Product`, `Console`), V-10, V-15 (`Accessory` hierarchy), V-16 (`Warranty` hierarchy) | V-17 (creates `ProductCategory`; `PromotionService`), V-19 | V-06, V-07, V-12 (`Sale`), V-08 (creates the shared classes; `SaleRepository`) |
+| **2. Callers and mediators** | V-17 (`VideoGame`, `Console`, `Accessory`), V-09 | V-01 (`AccessoryService`), V-03 and V-16 (`WarrantyService`), V-12 (`WarrantyService`), V-15 (`AccessoryService`), V-08 (her two repositories) | V-01 (`ProductService`, `SaleService`), then V-02 (creates `InventoryService`; `SaleService`, `Main`), V-03 (`SaleService`), V-04 |
+| **3. Restructuring** | V-11 (adds `ProductFactory` and `registerProduct`, keeping the old methods) | `ReturnService` in one sequence (V-14, V-13, V-12, V-03, V-02), V-14 (creates `MonthlyBalanceService`), then V-18 (creates `JsonFileStore`; her five repositories) | V-13 (`Main`) and V-14 (`ConsoleMenu.monthlyBalance`, `Main`), each one right after the matching commit of Developer 2 |
+| **4. User interface** | — | — | V-05 (splits `ConsoleMenu`, including the calls of V-11 and V-14) |
+| **5. Cleanup** | V-11 (removes the two old registration methods), V-18 (`ProductRepository`) | — | V-18 (`SaleRepository`) |
+
+Two sequences inside the waves need to be respected by the person who does them:
+* **`ReturnService` (Developer 2):** all its changes (V-14, V-13, V-12, V-03 and V-02) are made by one person in one sequence, in that order: V-14 first because it moves code out of the class, then V-13, which removes a field, then the three that change its calls. The constructor changes of V-13 and V-02 break `Main`, so the Technical Lead fixes `Main` in the very next commit, and nobody else pushes in between.
+* **V-18:** it starts only after V-08 and V-09 are pushed, because the three of them change `ProductRepository`, `SaleRepository` or the two repositories of Developer 2.
+
+**Rule of the sequence:** a wave starts when the prerequisites of the previous waves are pushed to `feature/grasp-refactor`. Each commit mentions its violation identifier, and the commits of a boundary violation are made in the order of the table, so the project compiles after each one.
+
