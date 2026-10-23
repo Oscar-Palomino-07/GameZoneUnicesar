@@ -148,3 +148,43 @@ Keep responsibilities focused, understandable and closely related. Avoid bloated
 * **Evidence:**
   * Methods: `registerVideoGame` (lines 54–57), `registerConsole` (lines 81–84), `validate` (lines 170–177), and `isBlank` (lines 185–187).
   * `ProductService` mixes business coordination with low-level string sanitization (`isBlank`), primitive range validation (`price < 0 || stock < 0`), and terminal exception message formatting. This dilutes the class's primary role as a use case coordinator.
+
+
+---
+
+## 6. Polymorphism
+
+### Principle
+When related behaviors vary by type (class), assign responsibility for the behavior to the types using polymorphic operations rather than conditional logic based on type.
+
+### Audit by Class
+
+#### 1. `com.gamezone.model.Product`, `VideoGame`, `Console`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Declarations: `Product.getDescription()` (line 82) and `Product.getCategory()` (line 65).
+  * Overrides: `VideoGame` (lines 58–60, 69–76) and `Console` (lines 58–60, 69–76).
+  * External callers (such as sales reporting or UI menus) print product descriptions or filter categories through dynamic dispatch without performing `if (p instanceof VideoGame)` or `switch(type)` type-checking.
+
+#### 2. `com.gamezone.service.ProductService`
+* **Verdict:** `Violation`
+* **Evidence:**
+  * Lines 20–21 and 92–97:
+    ```java
+    private final List<VideoGame> videoGames = new ArrayList<>();
+    private final List<Console> consoles = new ArrayList<>();
+    ...
+    public List<Product> listAllProducts() {
+        List<Product> products = new ArrayList<>();
+        products.addAll(videoGames);
+        products.addAll(consoles);
+        return products;
+    }
+    ```
+  * `ProductService` stores inventory items in segregated concrete lists rather than a single polymorphic `List<Product>`. Consequently, `listAllProducts()` must manually instantiate a new list and merge both collections on every call. If a third product type is added, `ProductService` must add another list field, modify `listAllProducts()`, and duplicate registration logic, breaking open/closed extensibility at the service level.
+
+#### 3. Extension Models (Accessories and Promotions)
+* **Verdict:** `Correct`
+* **Evidence:**
+  * `Accessory.getDescription()` is implemented polymorphically across `Controller`, `Cable`, and `Memory`.
+  * `Promotion.calculateDiscount(List<Product>)` is an abstract method in `Promotion` implemented polymorphically by `PercentageDiscount`, `CategoryDiscount`, and `BulkPurchaseDiscount`. `SaleService` evaluates active promotions through dynamic dispatch without checking concrete promotion classes.
