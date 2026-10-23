@@ -243,3 +243,29 @@ There are 19 violations. The identifiers V-01 to V-08 are those of the Technical
 * **Consequence:** The services mix business operations with validation, and the same kind of rule is written in two styles.
 * **Agreed solution:** Create `AccessoryValidator` and `PromotionValidator` in `com.gamezone.validation`, with static methods that keep the same `IllegalArgumentException` and the same messages, and call them from the services. They do not access files or services.
 * **Responsible for the correction:** Developer 2.
+
+---
+
+## 6. Boundary Findings
+
+Twelve of the nineteen violations involve the code of more than one team member. Each one is registered once, with a single identifier, and each member corrects only the part that is under their responsibility. The Technical Lead coordinates the order of the commits (section 7).
+
+| Violation | Reported from both sides? | Part of Developer 1 | Part of Developer 2 | Part of the Technical Lead |
+|---|---|---|---|---|
+| V-01 | Yes (Technical Lead and Developer 2) | `Product.increaseStock` and `decreaseStock` | `AccessoryService.restoreStock` | `ProductService.restoreStock`, `SaleService.discountStock` |
+| V-02 | Yes (Technical Lead and Developer 2) | — | `ReturnService` (and `AccessoryService` if needed) | Creates `InventoryService`; `SaleService`, `Main` |
+| V-03 | Yes (Technical Lead and Developer 2) | `Product.supportsWarranty`, `Console` | `WarrantyService`, `ReturnService` | `SaleService` |
+| V-08 | Yes (Technical Lead and Developer 2) | — | `ReturnRepository`, `PromotionRepository` | Creates the shared classes; `SaleRepository` |
+| V-11 | No (Developer 1 only, with the dependency declared) | `ProductFactory`, `registerProduct` | — | Product menu calls (in V-05) |
+| V-12 | No (Developer 2 only, with the dependency declared) | — | `ReturnService`, `WarrantyService` | `Sale.countUnits`, `Sale.contains` |
+| V-13 | No (Developer 2 only, with the dependency declared) | — | `ReturnService` | `Main` |
+| V-14 | No (Developer 2 only, with the dependency declared) | — | Creates `MonthlyBalanceService` | `ConsoleMenu.monthlyBalance`, `Main` |
+| V-15 | No (Developer 2 only, with the dependency declared) | `Accessory` hierarchy | `AccessoryService` | — |
+| V-16 | No (Developer 2 only, with the dependency declared) | `Warranty` hierarchy | `WarrantyService` | — |
+| V-17 | No (Developer 2 only, with the dependency declared) | `VideoGame`, `Console`, `Accessory` | Creates `ProductCategory`; `PromotionService` | — |
+| V-18 | No (Developer 2 only, with the dependency declared) | `ProductRepository` | Creates `JsonFileStore`; her five repositories | `SaleRepository` |
+
+**How the double reports were unified.** V-01, V-02, V-03 and V-08 were found from two sides: the Technical Lead found them in `SaleService` and `SaleRepository`, and Developer 2 found the same code in `AccessoryService`, `ReturnService`, `WarrantyService`, `PromotionRepository` and `ReturnRepository`. Developer 2's report did not register them again; it cross-referenced them and listed its part of the correction, so the consolidation keeps a single violation for each, with the three parts.
+
+**Related violations that stay separate.** V-08 and V-18 touch the same repositories but extract different things (the Gson adapters and the file access), so they are applied in sequence and never in parallel. V-10, V-15, V-16 and V-17 all remove a type or category check, but each one is in a different class and needs a different change.
+
