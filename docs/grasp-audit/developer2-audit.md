@@ -172,3 +172,62 @@ When behavior varies by type, assign it to the types through polymorphic operati
   * Choosing the subclass from the attributes of the JSON happens at the only point where the type must be chosen, which is when the object is rebuilt from the file.
 * **`PersonService`, `Person`, `Customer`, `Seller`:** `Not applicable`
   * No behavior varies by the type of person: customers and sellers only differ in their data.
+
+---
+
+## 8. Pattern 7: Pure Fabrication
+
+### Principle
+Assign a cohesive set of responsibilities to an artificial class that does not represent a domain concept.
+
+### Audit by Class
+* **Repositories (`PersonRepository`, `AccessoryRepository`, `PromotionRepository`, `ReturnRepository`, `WarrantyRepository`):** `Violation`
+  * The repositories themselves are correct fabrications, but the technical task they share, writing a list to a JSON file and reading it back, is copied in each of them: `PersonRepository` lines 90–124, `AccessoryRepository` lines 85–119, `PromotionRepository` lines 91–124, `ReturnRepository` lines 87–120 and `WarrantyRepository` lines 62–94. The same code also exists in `ProductRepository` (Developer 1) and `SaleRepository` (Technical Lead). See **V-07**.
+  * The duplicated `LocalDateAdapter` and `ProductDeserializer` of `PromotionRepository` and `ReturnRepository` are already registered by the Technical Lead. See **leader V-08**.
+* **`AccessoryService`, `PromotionService`:** `Violation`
+  * Their validation rules have no class of their own, as described under High Cohesion. See **V-08**.
+* **`WarrantyRepository.WarrantyRecord`:** `Correct`
+  * It is an artificial record (lines 131–190) that keeps the warranty file free of `Sale` and `Product` objects. This is the solution of adjustment A2.
+* **Use of the validators in `ProductService`, `PersonService` and `SaleService` (Requirement 6):** `Correct`
+  * The validators are fabrications that keep the rules out of the services: for example `ProductValidator.validateProductData` (`ProductService` lines 61 and 92), `PersonValidator.validatePersonData` (`PersonService` line 63) and `SaleValidator.validateSaleData` (`SaleService` line 160).
+* **`Person`, `Customer`, `Seller`:** `Not applicable`
+  * They represent real concepts of the domain.
+
+---
+
+## 9. Pattern 8: Indirection
+
+### Principle
+Assign the responsibility to an intermediate object that mediates between two components, so that they are not coupled directly.
+
+### Audit by Class
+* **`PersonService`, `AccessoryService`, `PromotionService`, `ReturnService`, `WarrantyService`:** `Correct`
+  * Each service mediates between the user interface and the file of its module, so `ConsoleMenu` never touches a repository. For example, `PersonService.save()` (lines 120–123) is the only path to `PersonRepository`.
+  * The missing intermediary between `ReturnService` and the two inventories (`resolveItem`, lines 184–190, and `restoreStock`, lines 199–205) is already registered by the Technical Lead. See **leader V-02**.
+* **`WarrantyService`:** `Correct`
+  * Since adjustment A2 it is the intermediary that rebuilds the references of the stored warranties (`rebuildWarranties`, lines 72–96), so `WarrantyRepository` does not depend on any other module.
+* **Repositories:** `Correct`
+  * They mediate between the objects and the JSON files. The services only know `saveAll(...)` and `loadAll()`.
+* **`Person`, `Customer`, `Seller`:** `Not applicable`
+  * They do not mediate between components.
+
+---
+
+## 10. Pattern 9: Protected Variations
+
+### Principle
+Identify the points of predicted variation and create a stable interface around them.
+
+### Audit by Class
+* **`PromotionService`:** `Violation`
+  * The valid categories of a category promotion are three string constants in the service (lines 28–30), checked in `normalizeCategory` (lines 209–216). The same strings are the values returned by `getCategory()` in `VideoGame`, `Console` and `Accessory`. A new kind of product, which the business already foresees, requires editing the service as well as the product hierarchy, and nothing warns if they disagree. See **V-06**.
+* **`AccessoryService`:** `Violation`
+  * A new type of accessory requires editing the constants (lines 29–31), the check in `listAccessoriesByType` (lines 149–153) and the `switch` of `matchesType` (lines 268–279). See **V-04**.
+* **`WarrantyService`:** `Violation`
+  * A new type of warranty requires editing the four type checks listed under Polymorphism. See **V-05**.
+* **Use of the exceptions in the repositories of Requirement 6:** `Correct`
+  * `ProductRepository`, `PersonRepository` and `SaleRepository` translate the I/O errors into `PersistenceException` (for example `PersonRepository` lines 98 and 122), so the menu does not depend on `IOException` or on Gson.
+* **`PersonService`:** `Correct`
+  * The format of the files is hidden behind `PersonRepository` (lines 47–79). `findCustomerById` and `findSellerById` return `Optional`, so the callers do not depend on how a missing person is represented.
+* **`Person`, `Customer`, `Seller`:** `Correct`
+  * Their state is private and accessed only through methods.
