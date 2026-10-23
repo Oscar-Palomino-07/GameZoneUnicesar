@@ -135,3 +135,46 @@ Assign responsibilities so that the dependencies between classes stay low, which
   * It depends on every class by design, because it is the composition root. No other class depends on `Main`.
 * **`ProductService.restoreStock(String, int)`:** `Correct`
   * It depends on `ProductValidator` and on `Product`, as any method of its class does.
+
+---
+
+## 6. Pattern 5: High Cohesion
+
+### Principle
+Keep the responsibilities of a class focused and closely related. Avoid classes that mix tasks of different kinds.
+
+### Audit by Class
+* **`ConsoleMenu`:** `Violation`
+  * It has 923 lines and 48 methods. It mixes: the main menu and seven submenus (`start()` line 77, `productMenu()` 126, `personMenu()` 154, `saleMenu()` 182, `returnMenu()` 398, `reportsMenu()` 489, `accessoryMenu()` 523, `warrantyMenu()` 647, `promotionMenu()` 717); the reading and parsing of the user input (`readDate` 842, `parseIds` 880, `readText` 890, `readInt` 899, `readDouble` 912); the translation of errors into messages (`runGuarded` 864–878); and the formatting of four kinds of entities (`printSale` 381, `printReturn` 481, `printWarranties` 697, `printPromotions` 821).
+  * Every module of the system has code in this single class. See **V-05**.
+* **`SaleService`:** `Correct`
+  * All its methods belong to the sale use case: `registerSale` and the steps it is made of (`resolveAndValidateItems`, `applyBestPromotion`, `validateExtendedWarrantyRequest`, `assignWarranties`, `discountStock`), the queries over the sales (`viewAllSales`, `viewSalesByCustomer`, `viewSalesBySeller`, `findById`) and their persistence (`save`, `nextSaleId`).
+* **`Sale`:** `Correct`
+  * It holds the data of a sale and the calculations and the receipt derived from that data.
+* **`SaleRepository`:** `Correct`
+  * It only reads and writes the sales file. The duplicated helper classes it contains are reported under Pure Fabrication (**V-08**).
+* **`Main`:** `Correct`
+  * It has one task: to create the objects and start the menu (lines 43–86).
+* **`ProductService.restoreStock(String, int)`:** `Correct`
+  * It restores the stock of a product and persists the change, which is one task.
+
+---
+
+## 7. Pattern 6: Polymorphism
+
+### Principle
+When behavior varies by type, assign the behavior to the types through polymorphic operations instead of conditionals on the type.
+
+### Audit by Class
+* **`SaleService`:** `Violation`
+  * `validateExtendedWarrantyRequest(...)` (line 254, `resolveItem(requestedId) instanceof Console`) and `assignWarranties(...)` (line 277, `product instanceof Console`) decide which items have warranties by asking for the concrete class. See **V-03**.
+  * `discountStock(Product)` (line 313, `item instanceof Accessory`) chooses which inventory service to call by the concrete class. See **V-02**.
+  * `applyBestPromotion(...)` (line 229) calls `promotion.calculateDiscount(...)`, an abstract method that each promotion implements, without checking the promotion type. That part is `Correct`.
+* **`ConsoleMenu`:** `Violation`
+  * `askExtendedWarranties(...)` (line 325, `item instanceof Console`) repeats the type check of the service. It is registered once, under **V-04**, whose correction relies on the polymorphic method proposed in **V-03**.
+* **`SaleRepository`:** `Correct`
+  * `ProductDeserializer.deserialize(...)` (lines 143–159) chooses the subtype from the attributes present in the JSON. That branching happens where the object is created from stored data, which is the one place where the type must be chosen. After the object is created, the rest of the system works with `Product` polymorphically.
+* **`Sale`:** `Correct`
+  * No method of the class inspects the type of a product: `calculateSubtotal()` (lines 142–148) and `generateReceipt()` (lines 179–182) only call `getPrice()`, `getTitle()` and `getId()`.
+* **`Main`, `ProductService.restoreStock(String, int)`:** `Not applicable`
+  * Neither contains behavior that varies by type.
