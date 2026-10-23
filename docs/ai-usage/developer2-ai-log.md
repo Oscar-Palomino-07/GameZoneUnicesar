@@ -287,3 +287,41 @@ Bitácora del 20 al 22 de octubre de 2026, con los mismos ocho campos del Requer
 | Respuesta | Los cambios locales eran un comando de Git pegado por error en la línea `import java.util.List;`, así que se descartaron con `git restore`. Antes de cada commit comprobó con `git apply --check` que el parche entraba sin errores. Al final compiló el proyecto completo y confirmó que los archivos quedaron idénticos a los verificados |
 | Decisión | Apliqué y subí los ocho commits yo misma. Mi primer intento de Pull Request (#43) lo abrí con las ramas invertidas (`develop` hacia `feature/exception-handling`); no tenía cambios de archivos y lo fusioné sin revisión. Mis commits entraron a `develop` con el PR #42, aprobado y fusionado por el Líder Técnico |
 | Commit relacionado | PR #42, PR #43 |
+
+---
+
+# Requerimiento 7 — Auditoría y corrección GRASP
+
+## Fase 1 — Auditoría
+
+El enunciado no permite usar IA en esta fase para identificar violaciones ni para redactar el informe. El docente comunicó después al curso: "Chicos, con respecto al uso de la IA, queda totalmente permitido". Las entradas de esta sección se hicieron con base en ese permiso.
+
+### Entrada R7-F1-01 — 23-10-2026
+
+| Campo | Detalle |
+|---|---|
+| Fecha | 23-10-2026 |
+| Herramienta | Claude Code (aplicación de escritorio) |
+| Fase y rama | Fase 1 (auditoría), rama `feature/grasp-audit` |
+| Objetivo | Auditar frente a los nueve patrones GRASP el código bajo mi responsabilidad y redactar mi informe `docs/grasp-audit/developer2-audit.md` |
+| Consulta | Que hiciera mi informe de auditoría como Desarrolladora 2 según el PDF del Requerimiento 7, con el mismo formato del informe del Líder Técnico |
+| Respuesta | Fijó como estado auditado el commit `8b0be4b`, el mismo del Líder Técnico (mis clases son idénticas en `develop`), y armó el alcance según la tabla de la sección 4: personas, los repositorios y servicios de accesorios, promociones, devoluciones y garantías, y el uso de excepciones y validadores del Requerimiento 6. Encontró ocho violaciones: V-01 (Experto, `ReturnService` y `WarrantyService` recorren los productos de `Sale`), V-02 (Bajo Acoplamiento, `ReturnService` recibe un `PersonService` que no usa), V-03 (Alta Cohesión, el balance mensual dentro de `ReturnService`), V-04 (Polimorfismo, `instanceof` por tipo de accesorio en `AccessoryService`), V-05 (Polimorfismo, `instanceof ExtendedWarranty` en `WarrantyService`), V-06 (Variaciones Protegidas, las categorías de producto repetidas en `PromotionService`), V-07 (Fabricación Pura, la lectura y escritura de JSON copiada en los repositorios) y V-08 (Fabricación Pura, validaciones de accesorios y promociones sin validador). No repitió los hallazgos que el Líder Técnico ya registró con código mío (sus V-01, V-02, V-03 y V-08): los dejó como referencias cruzadas con la parte que me toca corregir. También anotó como fuera de alcance que cuatro módulos siguen con `IllegalArgumentException` y `System.err`, porque cambiarlos alteraría los mensajes y el arranque |
+| Decisión | Acepté el informe. Antes de subirlo revisé que entiendo cada violación y su solución, porque en la sustentación me van a preguntar por mi propio código. Marqué como correcta la dependencia de `WarrantyService` con `SaleRepository`, porque es la solución del ajuste A2 y no un error |
+| Commit relacionado | Commits `docs:` de `developer2-audit.md` en `feature/grasp-audit` |
+
+### Entrada R7-F1-02 — 23-10-2026
+
+| Campo | Detalle |
+|---|---|
+| Fecha | 23-10-2026 |
+| Herramienta | Claude Code (aplicación de escritorio) |
+| Fase y rama | Fase 1 (auditoría), rama `feature/grasp-audit` |
+| Objetivo | Responder la pregunta orientadora Q4, que me asignó el Líder Técnico en `docs/grasp-analysis.md` |
+| Consulta | Que redactara la Q4: la estrategia para que todas las operaciones del menú sigan funcionando igual y la evidencia final |
+| Respuesta | Propuso un guion fijo de verificación con todas las operaciones de los ocho submenús, ejecutado sobre una copia de `data/` antes de la primera corrección, en cada Pull Request y al final. Señaló dos riesgos propios del proyecto: Gson guarda en los JSON los nombres de los atributos privados, así que una corrección no puede renombrarlos, y las fechas de las ventas cambian según el día de la ejecución |
+| Decisión | Acepté la respuesta porque coincide con el método que usamos en el Requerimiento 6 para comprobar que el refactor no cambió nada. La estrategia la tiene que aplicar todo el equipo en `docs/grasp-refactor-log.md` |
+| Commit relacionado | `docs: answer Q4 on preserving the external behavior` |
+
+## Fase 2 — Corrección
+
+*Sin entradas todavía.*
