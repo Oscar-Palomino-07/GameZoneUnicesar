@@ -49,3 +49,52 @@ In accordance with the responsibility table of the requirement, Developer 2 audi
 
 ### Method
 Each class was read against the question of every pattern. The line numbers and the quoted statements were checked on commit `8b0be4b`. A finding that the Technical Lead already registered in `leader-audit.md` is not registered again: it is cross-referenced as "see leader V-XX", and the part of the correction that belongs to Developer 2 is stated in section 13.
+
+---
+
+## 2. Pattern 1: Information Expert
+
+### Principle
+Assign a responsibility to the class that has the information needed to fulfill it.
+
+### Audit by Class
+* **`Person`, `Customer`, `Seller`:** `Correct`
+  * Each class holds and exposes only its own data (`Person` lines 15–18, `Customer` line 14, `Seller` lines 12–13). No other class computes anything with that data.
+* **`PersonService`:** `Correct`
+  * `findCustomerById` (lines 94–98) and `findSellerById` (lines 107–111) search the lists that the service itself keeps (lines 29–30).
+* **`AccessoryService`:** `Correct`, with one cross-reference
+  * `findAccessoriesCompatibleWith` (lines 170–182) asks each accessory `isCompatibleWith(...)` (line 177) instead of reading its list of consoles.
+  * `restoreStock` (line 241, `accessory.updateStock(accessory.getStock() + quantity);`) performs the stock arithmetic outside the entity. It is already registered by the Technical Lead. See **leader V-01**.
+* **`PromotionService`:** `Correct`
+  * `listActivePromotions` (lines 133–142) asks each promotion `isActive(date)` (line 137), and `bestPromotionFor` (lines 170–186) asks each promotion `calculateDiscount(products)` (line 178).
+* **`WarrantyService`:** `Violation`
+  * `listActiveWarranties` (lines 244–254) correctly asks each warranty `isActive(today)` (line 249).
+  * `validateWarrantyRequest` (lines 291–297) walks through `sale.getProducts()` to find out whether the product belongs to the sale. That information belongs to `Sale`. See **V-01**.
+* **`ReturnService`:** `Violation`
+  * `registerReturn` (lines 124–126) counts the purchased units of a product with a stream over `originalSale.getProducts()`. The sale owns its product list and should answer that question. See **V-01**.
+  * `calculateMonthlySales` (line 308) and `calculateMonthlyReturns` (line 329) correctly ask `sale.calculateTotal()` and `returnObj.calculateRefundAmount()`.
+* **Repositories (`PersonRepository`, `AccessoryRepository`, `PromotionRepository`, `ReturnRepository`, `WarrantyRepository`):** `Correct`
+  * Each one is the expert on its own file: the path and the Gson type are private constants (for example `PersonRepository` lines 30–37, `WarrantyRepository` lines 38–44).
+
+---
+
+## 3. Pattern 2: Creator
+
+### Principle
+Assign class B the responsibility of creating instances of class A when B contains or records A, or has the data to initialize A.
+
+### Audit by Class
+* **`PersonService`:** `Correct`
+  * `registerCustomer` creates the customer (line 65, `new Customer(...)`) and records it in the `customers` list that it keeps (line 29).
+* **`AccessoryService`:** `Correct`
+  * `registerController` (line 63), `registerCable` (line 92) and `registerMemory` (line 120) create the accessories and add them to the list that the service records (line 35). The service also generates the identifier (`nextAccessoryId`, lines 296–309), which it can do because it holds every accessory.
+* **`PromotionService`:** `Correct`
+  * The three `register*` methods create the promotions (lines 60, 84 and 110) and record them (lines 62, 86 and 112).
+* **`ReturnService`:** `Correct`
+  * `registerReturn` creates the `Return` (line 167) with data that only it has gathered (the validated products, the original sale and the warranty refund) and records it (line 170).
+* **`WarrantyService`:** `Correct`
+  * `assignBasicWarranty` (line 127), `assignExtendedWarranty` (line 147) and `rebuildWarranties` (lines 90 and 92) create the warranties, and the service records them (line 43).
+* **Repositories:** `Correct`
+  * The deserializers (`AccessoryRepository` lines 125–142, `PromotionRepository` lines 130–143, `ReturnRepository` lines 128–149) create the concrete objects because they are the classes that hold the serialized data. `WarrantyService.save()` creates the `WarrantyRecord` objects (line 328) because it is the only class that knows both the warranty and the record format.
+* **`Person`, `Customer`, `Seller`:** `Not applicable`
+  * They create no objects.
