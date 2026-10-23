@@ -46,3 +46,52 @@ Assign a responsibility to the class that has the necessary information to fulfi
 * **Evidence:**
   * Method: `restoreStock(String productId, int quantity)` (lines 148–158).
   * In line 156: `product.updateStock(product.getStock() + quantity);`. The service queries the product's current stock via getter, computes the addition externally, and sets the new value. Under Information Expert, the entity `Product` should define an `increaseStock(int quantity)` or `addStock(int quantity)` method to encapsulate arithmetic on its own state.
+
+
+---
+
+## 2. Creator
+
+### Principle
+Assign class $B$ the responsibility to create an instance of class $A$ if $B$ contains, aggregates, records, closely uses, or has the initializing data for $A$.
+
+### Audit by Class
+
+#### 1. `com.gamezone.model.Product`, `VideoGame`, `Console`
+* **Verdict:** `Not applicable`
+* **Evidence:** These classes are domain entities that represent catalog items. They do not hold or instantiate other domain objects.
+
+#### 2. `com.gamezone.persistence.ProductRepository`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Methods: `loadAllVideoGames()` (lines 57–59) and `loadAllConsoles()` (lines 77–79) via `readList` (lines 113–124).
+  * The repository instantiates product collections from JSON files because it has the raw serialized data and the generic type tokens necessary to reconstruct the object graph.
+
+#### 3. `com.gamezone.service.ProductService`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Methods: `registerVideoGame(...)` (line 58: `new VideoGame(...)`) and `registerConsole(...)` (line 85: `new Console(...)`).
+  * `ProductService` directly aggregates and records the created instances into its internal collections (`videoGames.add(...)`, `consoles.add(...)`) and possesses the full set of input attributes passed from the user interface.
+
+---
+
+## 3. Controller
+
+### Principle
+Assign the responsibility of handling system events/messages to a non-UI class that represents either the overall system (facade) or a specific use case scenario.
+
+### Audit by Class
+
+#### 1. `com.gamezone.model.Product`, `VideoGame`, `Console`
+* **Verdict:** `Not applicable`
+* **Evidence:** Domain model classes do not handle system operations or user interface actions.
+
+#### 2. `com.gamezone.persistence.ProductRepository`
+* **Verdict:** `Not applicable`
+* **Evidence:** Dedicated strictly to file I/O operations; does not orchestrate application use cases.
+
+#### 3. `com.gamezone.service.ProductService`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Methods: `registerVideoGame`, `registerConsole`, `listAllProducts`, `findById`, `updateStock`, `restoreStock` (lines 52–158).
+  * `ProductService` operates as the Use Case Controller for product management. The UI class `ConsoleMenu` delegates all user inputs to `ProductService`, ensuring that terminal I/O remains isolated from business workflows.
