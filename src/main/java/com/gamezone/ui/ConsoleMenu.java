@@ -5,7 +5,6 @@ import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
-import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Promotion;
@@ -24,7 +23,6 @@ import com.gamezone.service.WarrantyService;
 import java.time.LocalDate;
 import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Scanner;
@@ -320,14 +318,11 @@ public class ConsoleMenu {
      */
     private List<String> askExtendedWarranties(List<String> itemIds) {
         List<String> extendedWarrantyIds = new ArrayList<>();
-        for (String itemId : new LinkedHashSet<>(itemIds)) {
-            Product item = productService.findById(itemId);
-            if (item instanceof Console) {
-                String answer = readText("¿Desea garantía extendida para la consola " + item.getTitle()
-                        + " (" + itemId + ")? (s/n): ");
-                if (answer.equalsIgnoreCase("s")) {
-                    extendedWarrantyIds.add(itemId);
-                }
+        for (Product item : saleService.findItemsEligibleForExtendedWarranty(itemIds)) {
+            String answer = readText("¿Desea garantía extendida para la consola " + item.getTitle()
+                    + " (" + item.getId() + ")? (s/n): ");
+            if (answer.equalsIgnoreCase("s")) {
+                extendedWarrantyIds.add(item.getId());
             }
         }
         return extendedWarrantyIds;

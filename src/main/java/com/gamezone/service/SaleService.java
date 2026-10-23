@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -224,6 +225,27 @@ public class SaleService {
      */
     private void applyBestPromotion(Sale sale) {
         promotionService.bestPromotionFor(sale.getProducts()).ifPresent(sale::applyPromotion);
+    }
+
+    /**
+     * Finds the items of a sale request that can receive an extended
+     * warranty, so the user interface can offer it without knowing which
+     * items have a warranty.
+     *
+     * @param itemIds the identifiers of the items entered for the sale
+     * @return the distinct items that support a warranty, in the order in
+     *         which they first appear; identifiers that match no item are
+     *         ignored
+     */
+    public List<Product> findItemsEligibleForExtendedWarranty(List<String> itemIds) {
+        List<Product> eligibleItems = new ArrayList<>();
+        for (String itemId : new LinkedHashSet<>(itemIds)) {
+            Product item = resolveItem(itemId);
+            if (item != null && item.supportsWarranty()) {
+                eligibleItems.add(item);
+            }
+        }
+        return eligibleItems;
     }
 
     /**
