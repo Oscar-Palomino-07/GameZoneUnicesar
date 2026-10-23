@@ -4,7 +4,6 @@ import com.gamezone.model.BulkPurchaseDiscount;
 import com.gamezone.model.CategoryDiscount;
 import com.gamezone.model.PercentageDiscount;
 import com.gamezone.model.Promotion;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
@@ -13,14 +12,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,13 +31,12 @@ import java.util.List;
  */
 public class PromotionRepository {
 
-    private static final String DATA_DIRECTORY = "data";
     private static final String PROMOTIONS_FILE = "data/promotions.json";
 
     private static final Type PROMOTIONS_TYPE = new TypeToken<List<Promotion>>() {
     }.getType();
 
-    private final Gson gson;
+    private final JsonFileStore store;
 
     /**
      * Creates the promotion repository and configures the Gson instance with
@@ -54,7 +46,7 @@ public class PromotionRepository {
         GsonBuilder builder = new GsonBuilder().setPrettyPrinting();
         builder.registerTypeAdapter(Promotion.class, new PromotionDeserializer());
         builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
-        this.gson = builder.create();
+        this.store = new JsonFileStore(builder.create());
     }
 
     /**
@@ -87,11 +79,7 @@ public class PromotionRepository {
      */
     private void writeList(String fileName, List<?> items, Type type) {
         try {
-            Path path = Paths.get(fileName);
-            Files.createDirectories(Paths.get(DATA_DIRECTORY));
-            try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                gson.toJson(items, type, writer);
-            }
+            store.write(fileName, items, type);
         } catch (IOException e) {
             System.err.println("Error saving promotions to " + fileName + ": " + e.getMessage());
         }
@@ -107,13 +95,8 @@ public class PromotionRepository {
      *         exist or cannot be parsed
      */
     private <T> List<T> readList(String fileName, Type type) {
-        Path path = Paths.get(fileName);
-        if (!Files.exists(path)) {
-            return new ArrayList<>();
-        }
-        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            List<T> items = gson.fromJson(reader, type);
-            return items != null ? items : new ArrayList<>();
+        try {
+            return store.read(fileName, type);
         } catch (IOException | JsonSyntaxException e) {
             System.err.println("Error loading promotions from " + fileName + ": " + e.getMessage());
             return new ArrayList<>();
