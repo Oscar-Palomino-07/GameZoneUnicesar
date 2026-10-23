@@ -89,6 +89,10 @@ One row for each change. The violation identifiers are those of the consolidated
 | `SaleService`, `ConsoleMenu` | `SaleService.findItemsEligibleForExtendedWarranty` returns the items that can receive the extended warranty, and `ConsoleMenu.askExtendedWarranties` only asks the user about them, with the same prompt and order | V-04 | Controller | `880a7d4` | Technical Lead |
 | `ConsoleMenu`, `Main` | `ConsoleMenu` keeps only the main loop and receives the list of submenus; the input reading, the error reporting and each of the eight modules move to their own classes, and `Main` creates them and passes the list. Prompts, messages and order of the options are the same | V-05 | High Cohesion | `b8266ca`, `5867dd1`, `e5dcbc8`, `a16b1db`, `9fe03f7`, `0506034`, `208045d` | Technical Lead |
 | `scripts/regression` | The comparison ignores the frames of the stack traces (it still compares the exception and its message), because the frames name the classes that moved | — (verification of the phase) | — | `1566cc3` | Technical Lead |
+| `ProductMenu` | The menu builds the product with `ProductFactory` and registers it with `ProductService.registerProduct`, with the same validation order, prompts and messages | V-11 (part) | Protected Variations | `d511741` | Technical Lead |
+| `ReportMenu`, `Main` | The report menu calls `MonthlyBalanceService` for the same three figures, and `Main` creates the service | V-14 (part) | High Cohesion | `d61f115` | Technical Lead |
+| `InventoryService`, `SaleService`, `Main` | `InventoryService` finds an item in the product inventory first and in the accessory inventory afterwards, and changes its stock where it is kept; `SaleService` uses it instead of `ProductService` and `AccessoryService`, so `resolveItem`, the `instanceof Accessory` and the stock arithmetic of `discountStock` disappear; `Main` wires it | V-02, V-01 (part) | Indirection, Information Expert | `c0e5150`, `029e7b3` | Technical Lead |
+| `SaleRepository` | The reading and writing of `sales.json` is done by the shared `JsonFileStore`; the repository keeps the same file, the same `PersistenceException` and the same messages | V-18 (part) | Pure Fabrication | `5c01090` | Technical Lead |
 
 ---
 
@@ -134,6 +138,7 @@ Every class, interface or abstraction that a correction creates is listed here, 
 |---|---|---|---|
 | `LocalDateAdapter` | `com.gamezone.persistence` | Technical Lead | V-08 |
 | `ProductDeserializer` | `com.gamezone.persistence` | Technical Lead | V-08 |
+| `InventoryService` | `com.gamezone.service` | Technical Lead | V-02 |
 | `ConsoleInput` | `com.gamezone.ui` | Technical Lead | V-05 |
 | `ConsoleErrorReporter` | `com.gamezone.ui` | Technical Lead | V-05 |
 | `Menu` (interface) | `com.gamezone.ui` | Technical Lead | V-05 |
