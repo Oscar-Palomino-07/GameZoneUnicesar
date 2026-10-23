@@ -264,12 +264,10 @@ public class ConsoleMenu {
         String lastName = readText("Last name: ");
         String phone = readText("Phone: ");
         String email = readText("Email: ");
-        try {
+        runGuarded(() -> {
             personService.registerCustomer(id, firstName, lastName, phone, email);
             System.out.println("Customer registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void listCustomers() {
