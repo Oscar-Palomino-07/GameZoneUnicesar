@@ -178,3 +178,65 @@ When behavior varies by type, assign the behavior to the types through polymorph
   * No method of the class inspects the type of a product: `calculateSubtotal()` (lines 142–148) and `generateReceipt()` (lines 179–182) only call `getPrice()`, `getTitle()` and `getId()`.
 * **`Main`, `ProductService.restoreStock(String, int)`:** `Not applicable`
   * Neither contains behavior that varies by type.
+
+---
+
+## 8. Pattern 7: Pure Fabrication
+
+### Principle
+Assign a cohesive set of responsibilities to an artificial class that does not represent a domain concept, to keep high cohesion and low coupling in the domain classes.
+
+### Audit by Class
+* **`SaleRepository`:** `Violation`
+  * It has two private helper classes: `ProductDeserializer` (lines 139–160) and `LocalDateAdapter` (lines 166–177). The same code is repeated in `ReturnRepository` (`ProductDeserializer` line 128, `LocalDateAdapter` line 155) and `LocalDateAdapter` also in `PromotionRepository` (line 149). The shared technical task of converting dates and rebuilding products from JSON never received its own class. See **V-08**.
+* **`ConsoleMenu`:** `Violation`
+  * The reading and validation of input (`readText`, `readInt`, `readDouble`, `readDate`, `parseIds`) and the translation of errors into messages (`runGuarded`) are technical tasks that are not part of any menu flow and have no class of their own. See **V-05**.
+* **`SaleService`:** `Correct`
+  * An application service is an artificial class: it does not exist in a video game store, and it concentrates the orchestration of the sale (lines 147–184) so that `Sale` stays a simple entity.
+* **`Main`:** `Correct`
+  * It is a technical class with a single job, the dependency wiring, which no domain class should do.
+* **`Sale`:** `Not applicable`
+  * It represents a real concept of the domain.
+* **`ProductService.restoreStock(String, int)`:** `Correct`
+  * It lives in a service, which is the fabrication that holds the stock operations and their persistence, so `Product` does not need to know about files.
+
+---
+
+## 9. Pattern 8: Indirection
+
+### Principle
+Assign responsibility to an intermediate object that mediates between two components, so they are not coupled directly.
+
+### Audit by Class
+* **`SaleService`:** `Violation`
+  * Nothing mediates between the sale use case and the two inventories (products and accessories). `SaleService` talks to both `ProductService` and `AccessoryService` and decides by type which one to use: `resolveItem` (lines 297–303) and `discountStock` (lines 311–318). `ReturnService` repeats the same code (`resolveItem` line 184, `restoreStock` lines 199–205). See **V-02**.
+* **`ConsoleMenu`:** `Correct`
+  * The user interface never touches a repository or a file: its imports (lines 16–22) are only services, so the services are the mediators between the interface and the persistence layer.
+* **`SaleRepository`:** `Correct`
+  * It mediates between the `Sale` objects and the JSON file. The services only know `saveAll(...)` and `loadAll()` (lines 74–86).
+* **`Main`:** `Correct`
+  * The wiring of the objects goes through one place, so no class creates its own collaborators.
+* **`Sale`, `ProductService.restoreStock(String, int)`:** `Not applicable`
+  * Neither of them mediates between two components.
+
+---
+
+## 10. Pattern 9: Protected Variations
+
+### Principle
+Identify the points of predicted variation or instability and create a stable interface around them, so the rest of the system is protected from the changes.
+
+### Audit by Class
+* **`SaleService`:** `Violation`
+  * The business foresees new kinds of products, and a new kind that has a warranty would require editing `validateExtendedWarrantyRequest` (line 254) and `assignWarranties` (line 277) because they test for `Console`. See **V-03**. The same happens with a new inventory for `discountStock` (line 313). See **V-02**.
+  * The promotions are protected: `applyBestPromotion` (lines 226–231) depends on the abstract `Promotion.calculateDiscount(...)`, so a new type of promotion does not change the service. That part is `Correct`.
+* **`ConsoleMenu`:** `Violation`
+  * Adding a module to the system forces editing `start()`: the options are printed in lines 80–89 and dispatched by the `switch` in lines 91–121. See **V-05**.
+* **`SaleRepository`:** `Correct`
+  * The file path (line 50), the Gson configuration and the helper classes are private. If the storage format changed, only this class would change, because the rest of the system uses `saveAll(...)` and `loadAll()` (lines 74–86).
+* **`Sale`:** `Correct`
+  * All its state is private (lines 24–31), and the rest of the system accesses it through methods.
+* **`Main`:** `Correct`
+  * A change in the way a service is built affects only the wiring in `createMenu()`.
+* **`ProductService.restoreStock(String, int)`:** `Correct`
+  * `ReturnService` depends on the operation and not on how the stock is stored.
