@@ -231,3 +231,65 @@ Keep class responsibilities focused, understandable and closely related. A class
   * Note on Requerimiento 6 refactoring: Prior to Requirement 6, `ProductService` mixed use-case coordination with low-level string blank-checking and range validation (`validate` and `isBlank`). Following the extraction of these checks to `ProductValidator`, `ProductService` exhibits High Cohesion, concentrating solely on orchestrating catalog workflows and synchronizing persistence.
 * **Validation Layer (`ProductValidator`, `PersonValidator`, `SaleValidator`):** `Correct`
   * High cohesion around input and business rule validation, keeping services clean and preventing duplicated validation logic.
+
+
+---
+
+## 7. Pattern 6: Polymorphism
+
+### Principle
+When related behaviors vary by type, assign responsibility for the behavior to the types using polymorphic operations rather than conditional logic based on explicit type checking.
+
+### Audit by Module and Class
+* **`Product.getDescription()` & `Product.getCategory()`:** `Correct`
+  * Abstract declarations in `Product` (lines 65, 82) are overridden across `VideoGame`, `Console`, and `Accessory`. External consumers retrieve descriptions and category tags through dynamic dispatch without conditional `switch` or `instanceof` cascades.
+* **`Accessory` Hierarchy (`Controller`, `Cable`, `Memory`):** `Correct`
+  * Each concrete accessory overrides `getDescription()` to format its particular hardware specifications polymorphically.
+* **`Promotion` Hierarchy (`PercentageDiscount`, `CategoryDiscount`, `BulkPurchaseDiscount`):** `Correct`
+  * Abstract method `calculateDiscount(List<Product>)` is implemented polymorphically by each concrete discount strategy. `SaleService` evaluates active promotions via dynamic dispatch.
+* **`CategoryDiscount.belongsToTargetCategory(Product)`:** `Violation`
+  * Evidence (lines 76–81 in `CategoryDiscount.java`):
+    ```java
+    private boolean belongsToTargetCategory(Product product) {
+        if (product instanceof Accessory) {
+            return ACCESSORY_CATEGORY.equalsIgnoreCase(targetCategory);
+        }
+        return targetCategory.equalsIgnoreCase(product.getCategory());
+    }
+    ```
+  * Explanation: Explicitly checks `product instanceof Accessory` even though `Accessory` already polymorphically overrides `getCategory()` to return `"ACCESSORY"` (line 90 of `Accessory.java`). Using `instanceof` when a polymorphic method exists violates pure polymorphic dispatch and couples `CategoryDiscount` directly to the `Accessory` subclass.
+* **`Warranty` Hierarchy (`BasicWarranty`, `ExtendedWarranty`):** `Correct`
+  * `getDurationInMonths()`, `getWarrantyType()`, and `getAdditionalCost()` are abstract methods implemented by each warranty type, allowing `Warranty.generateWarrantyCertificate()` to format certificates polymorphically.
+* **`ProductService.listAllProducts()`:** `Violation`
+  * Evidence (lines 24–25, 104–109 in `ProductService.java`):
+    ```java
+    private final List<VideoGame> videoGames = new ArrayList<>();
+    private final List<Console> consoles = new ArrayList<>();
+    ...
+    public List<Product> listAllProducts() {
+        List<Product> products = new ArrayList<>();
+        products.addAll(videoGames);
+        products.addAll(consoles);
+        return products;
+    }
+    ```
+  * Explanation: Instead of managing inventory polymorphically in a single `List<Product>` collection, `ProductService` segregates items into concrete subtype lists (`videoGames` and `consoles`). Consequently, `listAllProducts()` must manually instantiate a new list and merge both collections on every call, breaking polymorphic collection reuse.
+
+---
+
+## 8. Pattern 7: Pure Fabrication
+
+### Principle
+Assign a cohesive set of responsibilities to an artificial or technical class that does not represent a problem domain concept, in order to support Low Coupling, High Cohesion, and clean separation of concerns.
+
+### Audit by Module and Class
+* **`ProductRepository`:** `Correct`
+  * Package: `com.gamezone.persistence` (lines 28–125).
+  * A "repository" does not exist in the physical video game store; it is an artificial technical construct invented to encapsulate file I/O, directory creation and Gson JSON serialization. Without `ProductRepository`, `Product` would be forced to handle file reading and writing, violating High Cohesion.
+* **Validation Layer (`ProductValidator`, `PersonValidator`, `SaleValidator`):** `Correct`
+  * Package: `com.gamezone.validation`.
+  * Dedicated validation classes are Pure Fabrications created to isolate data constraint checks and error triggering, preventing domain entities and services from being bloated with validation procedures.
+* **Exceptions Layer (`com.gamezone.exceptions.*`):** `Correct`
+  * Custom exception classes are technical fabrications that translate domain and persistence errors into a structured error-code hierarchy.
+* **Model Entities (`Product`, `Accessory`, `Promotion`, `Warranty`, `Return`):** `Not applicable`
+  * These classes represent concrete real-world concepts in the store domain, not artificial technical constructs.
