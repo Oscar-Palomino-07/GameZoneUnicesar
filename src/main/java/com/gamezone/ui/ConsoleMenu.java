@@ -303,13 +303,11 @@ public class ConsoleMenu {
         String accessoryIdsInput = readText("Accessory ids (comma separated, optional): ");
         productIds.addAll(parseIds(accessoryIdsInput));
         List<String> extendedWarrantyIds = askExtendedWarranties(productIds);
-        try {
+        runGuarded(() -> {
             Sale sale = saleService.registerSale(customerId, sellerId, productIds, extendedWarrantyIds);
             System.out.println("Venta " + sale.getId() + " registrada.");
             System.out.println(sale.generateReceipt());
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     /**
