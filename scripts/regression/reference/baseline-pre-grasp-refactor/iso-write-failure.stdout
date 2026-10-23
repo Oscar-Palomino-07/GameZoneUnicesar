@@ -1,0 +1,65 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: Product id: Title: Price: Stock: Platform: Genre: Age rating: Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: VideoGame: Halo | platform: Xbox | genre: Shooter | age rating: T | price: $100.0 | stock: 1
+=== PRODUCTS ===
+1. Register video game
+2. Register console
+3. List all products
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: Customer id: First name: Last name: Phone: Email: Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: P-1 | Ana Torres | 3001112233 | ana@mail.com
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!
