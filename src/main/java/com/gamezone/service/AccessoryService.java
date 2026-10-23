@@ -231,6 +231,33 @@ public class AccessoryService {
         save();
     }
 
+    /**
+     * Subtracts the given quantity from the stock of the accessory and
+     * persists the change. It is the opposite of
+     * {@link #restoreStock(String, int)} and is used when accessories are
+     * sold.
+     *
+     * @param accessoryId the identifier of the accessory whose stock decreases
+     * @param quantity    the number of units to subtract from the stock
+     * @throws IllegalArgumentException when the quantity is negative, the
+     *         accessory does not exist or the resulting stock would be
+     *         negative
+     */
+    public void decreaseStock(String accessoryId, int quantity) {
+        if (quantity < 0) {
+            throw new IllegalArgumentException("La cantidad a descontar no puede ser negativa.");
+        }
+        Accessory accessory = findById(accessoryId);
+        if (accessory == null) {
+            throw new IllegalArgumentException("Accesorio no encontrado: " + accessoryId);
+        }
+        if (accessory.getStock() - quantity < 0) {
+            throw new IllegalArgumentException("El stock no puede ser negativo.");
+        }
+        accessory.decreaseStock(quantity);
+        save();
+    }
+
     // Removes blank and repeated console identifiers, keeping the original order.
     private List<String> cleanConsoleIds(List<String> consoleIds) {
         List<String> cleaned = new ArrayList<>();
