@@ -80,6 +80,10 @@ One row for each change. The violation identifiers are those of the consolidated
 | Class | Change made | Violation ID | Principle applied | Commit / PR | Responsible |
 |---|---|---|---|---|---|
 | `scripts/regression` | The scenarios are extended so that the extended warranty (its cost and its refund) and the listing order of the products are verified; the reference run before the correction is added | — (verification of the phase) | — | `e723c75`, `05cda76` | Technical Lead |
+| `Sale`, `ConsoleMenu` | `Sale.hasDiscount()` is added and used by `Sale.generateReceipt` and `ConsoleMenu.printSale`, so the rule that tells when a sale has a discount is in one place | V-06 | Information Expert | `cd3d001` | Technical Lead |
+| `Sale`, `SaleService` | `Sale.applyPromotion(Promotion)` sets the name and the discount together; `SaleService.applyBestPromotion` calls it and the two public setters are removed | V-07 | Information Expert | `4ea510a` | Technical Lead |
+| `Sale` | `countUnits(String)` and `contains(String)` are added, so the services stop reading the product list of the sale (the services are changed by Developer 2) | V-12 | Information Expert | `feb37d2` | Technical Lead |
+| `SaleRepository` | The private `ProductDeserializer` and `LocalDateAdapter` are replaced by shared package-private classes; the repository keeps the same files and the same behavior | V-08 | Pure Fabrication | `0dc6d31` | Technical Lead |
 
 ---
 
@@ -103,6 +107,8 @@ Every class, interface or abstraction that a correction creates is listed here, 
 
 | Class | Package | Created by | Violation ID |
 |---|---|---|---|
+| `LocalDateAdapter` | `com.gamezone.persistence` | Technical Lead | V-08 |
+| `ProductDeserializer` | `com.gamezone.persistence` | Technical Lead | V-08 |
 
 ---
 
