@@ -40,6 +40,14 @@ public class ExtendedWarranty extends Warranty {
     }
 
     /**
+     * @return the stored type code {@code "EXTENDED"}
+     */
+    @Override
+    public String getTypeCode() {
+        return "EXTENDED";
+    }
+
+    /**
      * @return the additional cost of the extension, ten percent of the
      *         covered product price
      */

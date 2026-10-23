@@ -91,6 +91,14 @@ public abstract class Warranty {
     public abstract String getWarrantyType();
 
     /**
+     * Returns the stored type code used to persist the warranty ({@code BASIC}
+     * or {@code EXTENDED}).
+     *
+     * @return the warranty persistence type code
+     */
+    public abstract String getTypeCode();
+
+    /**
      * Returns the additional cost that the warranty adds to its sale.
      *
      * @return the additional cost in currency units
