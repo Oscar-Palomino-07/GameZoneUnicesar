@@ -12,7 +12,9 @@
 
 The three reports audit the same state of the code: commit **`8b0be4b`**, the final state of Requirement 6 (head of `feature/exception-handling`). The Technical Lead's and Developer 2's reports state that commit in their header. Developer 1's report does not state it, so its line numbers were checked against the same commit (section 2).
 
-The source files of `8b0be4b` are the ones that `develop` holds once the pull request of Requirement 6 is merged: that pull request only adds the Requirement 6 work of the Technical Lead (`ConsoleMenu`, `Main`, the non-regression script and documents). The classes of the other team members were already in `develop` before it.
+Requirement 6 was merged into `develop` through pull request #47, with the merge commit **`f612269`** (parents `ab638b4` and `8b0be4b`). The source files (`src/main`) of `f612269` are identical to those of `8b0be4b`, which was checked with `git diff 8b0be4b f612269 -- src/main`, so every line number of the three reports is valid in `develop`.
+
+**Commit of `develop` on which the audit was made: `f612269`.**
 
 ---
 
