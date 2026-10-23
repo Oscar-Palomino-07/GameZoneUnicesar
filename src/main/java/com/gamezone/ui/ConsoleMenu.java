@@ -690,12 +690,8 @@ public class ConsoleMenu {
 
     private void viewWarrantiesExpiringSoon() {
         int daysAhead = readInt("¿Cuántos días de anticipación? ");
-        try {
-            printWarranties(warrantyService.listWarrantiesExpiringSoon(daysAhead),
-                    "No hay garantías que venzan en los próximos " + daysAhead + " días.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        runGuarded(() -> printWarranties(warrantyService.listWarrantiesExpiringSoon(daysAhead),
+                "No hay garantías que venzan en los próximos " + daysAhead + " días."));
     }
 
     private void printWarranties(List<Warranty> warranties, String emptyMessage) {
@@ -763,12 +759,10 @@ public class ConsoleMenu {
         if (startDate == null || endDate == null) {
             return;
         }
-        try {
+        runGuarded(() -> {
             Promotion promotion = promotionService.registerPercentage(name, percentage, startDate, endDate);
             System.out.println("Promoción " + promotion.getId() + " registrada.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void registerCategoryPromotion() {
@@ -783,12 +777,10 @@ public class ConsoleMenu {
         if (startDate == null || endDate == null) {
             return;
         }
-        try {
+        runGuarded(() -> {
             Promotion promotion = promotionService.registerCategory(name, percentage, category, startDate, endDate);
             System.out.println("Promoción " + promotion.getId() + " registrada.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     // Lets the user pick the target category of a category promotion.
@@ -819,13 +811,11 @@ public class ConsoleMenu {
         if (startDate == null || endDate == null) {
             return;
         }
-        try {
+        runGuarded(() -> {
             Promotion promotion = promotionService.registerBulkPurchase(name, percentage, minimumQuantity,
                     startDate, endDate);
             System.out.println("Promoción " + promotion.getId() + " registrada.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void printPromotions(List<Promotion> promotions, String emptyMessage) {
