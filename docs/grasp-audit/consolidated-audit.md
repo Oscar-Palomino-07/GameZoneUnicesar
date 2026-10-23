@@ -171,3 +171,75 @@ There are 19 violations. The identifiers V-01 to V-08 are those of the Technical
 * **Consequence:** The class stays coupled to `Accessory` and the branch is redundant.
 * **Agreed solution:** Remove the `instanceof` branch and compare `targetCategory` with `product.getCategory()` for every product. The result is identical because of the value that `Accessory.getCategory()` returns.
 * **Responsible for the correction:** Developer 1.
+
+### V-11 — Protected Variations
+* **Origin:** `developer1-audit` V-03.
+* **Evidence:** `ProductService.registerVideoGame` lines 59–68 and `registerConsole` lines 90–99.
+* **Explanation:** The service exposes one registration method per product subtype, with its own list of parameters. The common part (validation of the shared data, uniqueness of the identifier, storing and saving) is written twice.
+* **Consequence:** A new product type, which the business already foresees, forces a new public method in the service and a copy of the common steps.
+* **Agreed solution:** `ProductService` gets one `registerProduct(Product)` that validates the shared data, checks that the identifier is unique and stores and saves the product. The creation of each subtype, with the validation of its own fields, moves to a `ProductFactory` in the service layer that keeps the current validation order and messages (shared data first, then the fields of the subtype). The user interface uses the factory and the service, so it never builds a domain object with `new`; the solution proposed in the report (`registerProduct(Product)` called by the menu with a ready-made object) would have made `ConsoleMenu` create domain objects and was not accepted for that reason.
+* **Responsible for the correction:** Developer 1 creates `ProductFactory` and `registerProduct`, keeping the two current methods until the menu stops using them, and removes them afterwards. The Technical Lead changes the calls of the product menu while splitting `ConsoleMenu` (V-05).
+
+### V-12 — Information Expert
+* **Origin:** `developer2-audit` V-01.
+* **Evidence:** `ReturnService.registerReturn` lines 124–126, `originalSale.getProducts().stream().filter(p -> p.getId().equals(productId)).count()`. `WarrantyService.validateWarrantyRequest` lines 291–297, a loop over `sale.getProducts()` that sets `belongsToSale`.
+* **Explanation:** Two services take the product list out of the sale to answer questions that the sale itself should answer.
+* **Consequence:** The same knowledge is repeated in two services, and a change in how a sale stores its items breaks both.
+* **Agreed solution:** Add `countUnits(String productId)` and `contains(String productId)` to `Sale`. The two services call them.
+* **Responsible for the correction:** Technical Lead (`Sale`) and Developer 2 (`ReturnService`, `WarrantyService`). The Technical Lead goes first.
+
+### V-13 — Low Coupling
+* **Origin:** `developer2-audit` V-02.
+* **Evidence:** `ReturnService` field `personService` (line 28), constructor parameter (line 49) and assignment (line 53). No method uses it; the customer and the seller come from the sale (lines 102–103).
+* **Explanation:** The class depends on a service that it does not need.
+* **Consequence:** Any change in `PersonService` or in its construction affects `ReturnService` and `Main` for no reason.
+* **Agreed solution:** Remove the field, the parameter and the assignment. The call in `Main.createMenu()` loses one argument.
+* **Responsible for the correction:** Developer 2 (`ReturnService`) and Technical Lead (`Main`). Both changes go in consecutive commits, because the project does not compile between them.
+
+### V-14 — High Cohesion (also Pure Fabrication)
+* **Origin:** `developer2-audit` V-03.
+* **Evidence:** `ReturnService.calculateMonthlySales` lines 303–312, `calculateMonthlyReturns` lines 324–333, `generateMonthlyBalance` lines 346–348, `validatePeriod` lines 357–364 and `isInPeriod` lines 374–376.
+* **Explanation:** The monthly report of the whole store is a responsibility different from registering and querying returns, and half of it only works with sales.
+* **Consequence:** The return service changes whenever the report changes.
+* **Agreed solution:** Create `MonthlyBalanceService` in the service layer with those five methods, receiving `SaleService` and `ReturnService`. The report menu calls it and prints the same three figures in the same format.
+* **Responsible for the correction:** Developer 2 creates the service. The Technical Lead changes `ConsoleMenu.monthlyBalance()` and `Main`.
+
+### V-15 — Polymorphism (also Protected Variations)
+* **Origin:** `developer2-audit` V-04.
+* **Evidence:** `AccessoryService.matchesType` lines 268–279 (`switch` with `instanceof Controller`, `Cable` and `Memory`), the constants in lines 29–31 and their check in `listAccessoriesByType` lines 149–153.
+* **Explanation:** The type of an accessory is discovered by asking for its concrete class instead of asking the accessory.
+* **Consequence:** A new type of accessory requires editing three places of the service, and forgetting one hides it from the "list by type" query without any error.
+* **Agreed solution:** Add an abstract `getAccessoryType()` to `Accessory`, overridden in `Controller`, `Cable` and `Memory` with the same three codes. `listAccessoriesByType` compares that value. The error message of an invalid type does not change.
+* **Responsible for the correction:** Developer 1 (`Accessory`, `Controller`, `Cable`, `Memory`) and Developer 2 (`AccessoryService`). Developer 1 goes first.
+
+### V-16 — Polymorphism (also Protected Variations)
+* **Origin:** `developer2-audit` V-05.
+* **Evidence:** `WarrantyService.findWarrantyByProduct` line 168, `cancelWarranties` line 208 (`instanceof ExtendedWarranty`), `save()` lines 325–327 (`instanceof` to choose the stored type) and `rebuildWarranties` lines 89–93 (`if` on the type string).
+* **Explanation:** The service asks for the concrete warranty class in four places, although `Warranty` already has polymorphic methods for what varies.
+* **Consequence:** A third type of warranty requires editing every check.
+* **Agreed solution:** Add to `Warranty` an abstract method that returns the stored type code (`BASIC` or `EXTENDED`), and use `getDurationInMonths()` to prefer the longest warranty in `findWarrantyByProduct` and `cancelWarranties`. The creation from a stored record stays in `rebuildWarranties`, which is the point where the type must be chosen. The file content does not change.
+* **Responsible for the correction:** Developer 1 (`Warranty`, `BasicWarranty`, `ExtendedWarranty`) and Developer 2 (`WarrantyService`). Developer 1 goes first.
+
+### V-17 — Protected Variations
+* **Origin:** `developer2-audit` V-06.
+* **Evidence:** `PromotionService` constants `VIDEOGAME_CATEGORY`, `CONSOLE_CATEGORY` and `ACCESSORY_CATEGORY` (lines 28–30) and `normalizeCategory` (lines 209–216). The same values are returned by `getCategory()` in `VideoGame`, `Console` and `Accessory`.
+* **Explanation:** The list of product categories is defined twice, once in the product hierarchy and once in the promotion service.
+* **Consequence:** A new category requires changing both places, and a mismatch makes a category promotion give no discount without any error.
+* **Agreed solution:** Create a `ProductCategory` enum in the model package. `Product.getCategory()` keeps returning the same text, taken from the enum, and `normalizeCategory` validates against it with the same message. The text stored in `promotions.json` does not change.
+* **Responsible for the correction:** Developer 2 creates the enum and changes `PromotionService`. Developer 1 changes `VideoGame`, `Console` and `Accessory` to use it. Developer 2 goes first.
+
+### V-18 — Pure Fabrication
+* **Origin:** `developer2-audit` V-07.
+* **Evidence:** `writeList` and `readList` in `PersonRepository` (lines 90–124), `AccessoryRepository` (lines 85–119), `PromotionRepository` (lines 91–124) and `ReturnRepository` (lines 87–120); `saveAll` and `loadAll` in `WarrantyRepository` (lines 62–94). The same code exists in `ProductRepository` and `SaleRepository`.
+* **Explanation:** Writing a list to a JSON file and reading it back has no class of its own and is copied in seven repositories.
+* **Consequence:** A change in the storage must be repeated in seven places, and the copies have already diverged: three repositories throw `PersistenceException` and four print to `System.err`.
+* **Agreed solution:** Create `JsonFileStore` in the persistence package with `write(...)` and `read(...)`, and make every repository delegate to it. Each repository keeps its current error behavior, so the user sees the same thing.
+* **Responsible for the correction:** Developer 2 creates the class and changes her five repositories. Developer 1 changes `ProductRepository` and the Technical Lead changes `SaleRepository`. It is applied after V-08 and V-09, which change the same repositories.
+
+### V-19 — Pure Fabrication (also High Cohesion)
+* **Origin:** `developer2-audit` V-08.
+* **Evidence:** `AccessoryService.registerCable` lines 86–91, `registerMemory` lines 114–119, `validateCommonFields` lines 246–256 and `normalizeConnectionType` lines 259–265. `PromotionService.registerBulkPurchase` lines 107–109, `validateCommonFields` lines 189–199, `validatePercentage` lines 202–206 and `normalizeCategory` lines 209–216.
+* **Explanation:** The data rules of these two modules live inside the services, while the rest of the system keeps them in the validation layer.
+* **Consequence:** The services mix business operations with validation, and the same kind of rule is written in two styles.
+* **Agreed solution:** Create `AccessoryValidator` and `PromotionValidator` in `com.gamezone.validation`, with static methods that keep the same `IllegalArgumentException` and the same messages, and call them from the services. They do not access files or services.
+* **Responsible for the correction:** Developer 2.
