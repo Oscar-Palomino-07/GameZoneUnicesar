@@ -4,19 +4,12 @@ import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.VideoGame;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -28,7 +21,6 @@ import java.util.List;
  */
 public class ProductRepository {
 
-    private static final String DATA_DIRECTORY = "data";
     private static final String VIDEO_GAMES_FILE = "data/videogames.json";
     private static final String CONSOLES_FILE = "data/consoles.json";
 
@@ -37,7 +29,7 @@ public class ProductRepository {
     private static final Type CONSOLES_TYPE = new TypeToken<List<Console>>() {
     }.getType();
 
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final JsonFileStore store = new JsonFileStore(new GsonBuilder().setPrettyPrinting().create());
 
     /**
      * Saves all products to their respective JSON files (video games and
@@ -127,11 +119,7 @@ public class ProductRepository {
      */
     private void writeList(String fileName, List<?> items, Type type) {
         try {
-            Path path = Paths.get(fileName);
-            Files.createDirectories(Paths.get(DATA_DIRECTORY));
-            try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                gson.toJson(items, type, writer);
-            }
+            store.write(fileName, items, type);
         } catch (IOException e) {
             throw new PersistenceException(fileName, "escritura", e);
         }
@@ -149,13 +137,8 @@ public class ProductRepository {
      *         or parsed
      */
     private <T> List<T> readList(String fileName, Type type) {
-        Path path = Paths.get(fileName);
-        if (!Files.exists(path)) {
-            return new ArrayList<>();
-        }
-        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            List<T> items = gson.fromJson(reader, type);
-            return items != null ? items : new ArrayList<>();
+        try {
+            return store.read(fileName, type);
         } catch (IOException | JsonSyntaxException e) {
             throw new PersistenceException(fileName, "lectura", e);
         }
