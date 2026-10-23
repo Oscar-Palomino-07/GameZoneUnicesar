@@ -1,9 +1,12 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.VideoGame;
 import com.gamezone.persistence.ProductRepository;
+import com.gamezone.validation.ProductValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,9 +38,10 @@ public class ProductService {
     /**
      * Registers a new video game in the system.
      *
-     * <p>The data is validated before the video game is added: no field may
-     * be blank, the id must be unique and the price and stock must not be
-     * negative. Once registered, the inventory is immediately persisted.</p>
+     * <p>The data is validated through {@link ProductValidator} before the
+     * video game is added: no field may be blank, the price must be positive,
+     * the stock must not be negative and the id must be unique. Once
+     * registered, the inventory is immediately persisted.</p>
      *
      * @param id        the unique product identifier
      * @param title     the video game title
@@ -46,15 +50,18 @@ public class ProductService {
      * @param platform  the platform the game is developed for
      * @param genre     the game genre
      * @param ageRating the recommended age rating of the game
-     * @throws IllegalArgumentException when any field is blank, the id already
-     *         belongs to another product, or the price or stock are negative
+     * @throws InvalidDataException  when any field is blank, the price is not
+     *         positive or the stock is negative
+     * @throws BusinessRuleException when the id already belongs to another
+     *         product
      */
     public void registerVideoGame(String id, String title, double price, int stock,
                                   String platform, String genre, String ageRating) {
-        if (isBlank(id) || isBlank(title) || isBlank(platform) || isBlank(genre) || isBlank(ageRating)) {
-            throw new IllegalArgumentException("All video game fields are required.");
-        }
-        validate(id, price, stock);
+        ProductValidator.validateProductData(id, title, price, stock);
+        ProductValidator.validateRequiredField("platform", platform);
+        ProductValidator.validateRequiredField("genre", genre);
+        ProductValidator.validateRequiredField("ageRating", ageRating);
+        ProductValidator.validateUniqueProduct(listAllProducts(), id);
         videoGames.add(new VideoGame(id, title, price, stock, platform, genre, ageRating));
         saveAll();
     }
@@ -62,9 +69,10 @@ public class ProductService {
     /**
      * Registers a new console in the system.
      *
-     * <p>The data is validated before the console is added: no field may be
-     * blank, the id must be unique and the price and stock must not be
-     * negative. Once registered, the inventory is immediately persisted.</p>
+     * <p>The data is validated through {@link ProductValidator} before the
+     * console is added: no field may be blank, the price must be positive,
+     * the stock must not be negative and the id must be unique. Once
+     * registered, the inventory is immediately persisted.</p>
      *
      * @param id         the unique product identifier
      * @param title      the console title or name
@@ -73,15 +81,18 @@ public class ProductService {
      * @param brand      the console manufacturer brand
      * @param model      the console model
      * @param generation the console generation
-     * @throws IllegalArgumentException when any field is blank, the id already
-     *         belongs to another product, or the price or stock are negative
+     * @throws InvalidDataException  when any field is blank, the price is not
+     *         positive or the stock is negative
+     * @throws BusinessRuleException when the id already belongs to another
+     *         product
      */
     public void registerConsole(String id, String title, double price, int stock,
                                 String brand, String model, String generation) {
-        if (isBlank(id) || isBlank(title) || isBlank(brand) || isBlank(model) || isBlank(generation)) {
-            throw new IllegalArgumentException("All console fields are required.");
-        }
-        validate(id, price, stock);
+        ProductValidator.validateProductData(id, title, price, stock);
+        ProductValidator.validateRequiredField("brand", brand);
+        ProductValidator.validateRequiredField("model", model);
+        ProductValidator.validateRequiredField("generation", generation);
+        ProductValidator.validateUniqueProduct(listAllProducts(), id);
         consoles.add(new Console(id, title, price, stock, brand, model, generation));
         saveAll();
     }
@@ -155,35 +166,6 @@ public class ProductService {
         }
         product.updateStock(product.getStock() + quantity);
         saveAll();
-    }
-
-    /**
-     * Validates that the identifier is not already registered and that the
-     * price and stock are not negative.
-     *
-     * @param id    the identifier being registered
-     * @param price the price being registered
-     * @param stock the stock being registered
-     * @throws IllegalArgumentException when the id already belongs to another
-     *         product, or the price or stock are negative
-     */
-    private void validate(String id, double price, int stock) {
-        if (findById(id) != null) {
-            throw new IllegalArgumentException("A product with id " + id + " already exists.");
-        }
-        if (price < 0 || stock < 0) {
-            throw new IllegalArgumentException("Price and stock cannot be negative.");
-        }
-    }
-
-    /**
-     * Tells whether a field should be considered blank or invalid.
-     *
-     * @param value the value to check
-     * @return {@code true} when the value is null or only contains spaces
-     */
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
     }
 
     /**
