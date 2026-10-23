@@ -98,3 +98,36 @@ Assign class B the responsibility of creating instances of class A when B contai
   * The deserializers (`AccessoryRepository` lines 125–142, `PromotionRepository` lines 130–143, `ReturnRepository` lines 128–149) create the concrete objects because they are the classes that hold the serialized data. `WarrantyService.save()` creates the `WarrantyRecord` objects (line 328) because it is the only class that knows both the warranty and the record format.
 * **`Person`, `Customer`, `Seller`:** `Not applicable`
   * They create no objects.
+
+---
+
+## 4. Pattern 3: Controller
+
+### Principle
+Assign the responsibility of receiving and coordinating a system event to a non-UI class that represents a use case.
+
+### Audit by Class
+* **`PersonService`, `AccessoryService`, `PromotionService`, `ReturnService`, `WarrantyService`:** `Correct`
+  * Each service is the use-case controller of its module: the menu only reads the data and calls one method. For example, `ReturnService.registerReturn` (lines 80–174) coordinates the validations, the stock restoration, the warranty cancellation and the persistence of a return, and `PromotionService.registerCategory` (lines 79–89) validates, creates and saves a promotion. None of these services reads input from the console or prints to it.
+* **Model classes and repositories:** `Not applicable`
+  * Entities and file-storage classes do not receive system events.
+
+---
+
+## 5. Pattern 4: Low Coupling
+
+### Principle
+Assign responsibilities so that the dependencies between classes stay low.
+
+### Audit by Class
+* **`ReturnService`:** `Violation`
+  * It receives six collaborators (fields in lines 27–32 and constructor in lines 49–58). One of them, `PersonService` (field in line 28, assigned in line 53), is never used by any method: the customer and the seller are taken from the original sale (lines 102–103). See **V-02**.
+  * The dependencies on `ProductService` and `AccessoryService` (lines 29–30), used only to resolve an item and restore its stock, are already registered by the Technical Lead. See **leader V-02**.
+* **`WarrantyService`:** `Correct`
+  * It depends on `WarrantyRepository`, `SaleRepository` and `ProductService` (lines 39–41). The dependency on `SaleRepository` instead of `SaleService` is the deliberate solution of adjustment A2: it breaks the cycle `SaleService → WarrantyService → SaleService`, and it is documented in the class JavaDoc.
+* **`PersonService`, `AccessoryService`, `PromotionService`:** `Correct`
+  * Each one depends only on its own repository and on its model classes (`PersonService` lines 3–8, `AccessoryService` lines 3–7, `PromotionService` lines 3–8).
+* **Repositories:** `Correct`
+  * They depend only on the model classes they serialize and on Gson. None of them knows a service or the user interface. `WarrantyRepository` does not even depend on the model, because it stores only identifiers (`WarrantyRecord`, lines 131–190).
+* **`Person`, `Customer`, `Seller`:** `Correct`
+  * They have no dependencies outside the class hierarchy.
