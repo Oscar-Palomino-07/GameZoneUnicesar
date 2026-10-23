@@ -120,7 +120,14 @@ When a fragment violates multiple patterns, deciding which pattern guides the re
 
 **Assigned to:** Veronica Padilla (Developer 2).
 
-*Pending.*
+For us, "the same external behavior" means three things: the same inputs give the same results on the console (receipts, lists, amounts and balances), the same messages appear for every error, and the data files under `data/` keep the same names and the same JSON structure. The strategy has four parts.
+
+1. **A fixed verification script, run before any correction.** Before the first refactor commit, we write in `docs/grasp-refactor-log.md` a table with every operation of the eight submenus (products, people, sales, returns, accessories, reports, warranties and promotions). Each row has the input data and the expected result. The script includes the normal flow (for example, a sale with a console, a video game and an accessory with the extended warranty, its partial return and the monthly balance) and the error paths (a customer that does not exist, insufficient stock, a return outside the 30 days, an invalid month), because the error messages are part of what the user sees. We run it on `develop` and keep the output as the reference result.
+2. **Always the same starting data.** The script runs over a copy of the `data/` folder in a temporary directory, never over the files of the repository, so every run starts from the same state and no run changes the real data. Since a sale and a return store the date of the day, the reference run and the final run are compared on the same day or ignoring the date fields.
+3. **Refactor rules that protect the data files.** Gson writes the names of the private attributes into the JSON files, so a correction must not rename or move an attribute of a persisted class (`Sale`, `Return`, the products, the promotions, the people and `WarrantyRecord`). A correction that adds a class or a method does not change the files, but if one of them touches a persisted class, the files written before and after the change are compared.
+4. **A check in every pull request.** Each pull request of the correction phase must compile with `mvn clean compile`, and its author runs again the rows of the script related to the corrected violations and compares the console output and the data files with the reference. The description of the pull request lists the violation identifiers and the rows checked. We applied the same method in Requirement 6: the same scenario was run with the code before and after the change on a copy of `data/`, and the results were compared line by line.
+
+**Evidence at the end.** After the last correction is merged, the whole script is run on `develop`. The evidence is the table of `docs/grasp-refactor-log.md` with, for each operation, the input, the expected result, the reference result and the final result, together with the `develop` commit of each run and the comparison of the data files. In the oral defense the team runs the main scenario live and shows that the results match the table.
 
 ---
 
