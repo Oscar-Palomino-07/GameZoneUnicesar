@@ -3,7 +3,6 @@ package com.gamezone.service;
 import com.gamezone.exceptions.BusinessRuleException;
 import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
-import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
@@ -248,7 +247,8 @@ public class SaleService {
                 throw new BusinessRuleException(
                         "La garantía extendida solo aplica a productos incluidos en la venta: " + requestedId);
             }
-            if (!(resolveItem(requestedId) instanceof Console)) {
+            Product requestedItem = resolveItem(requestedId);
+            if (requestedItem == null || !requestedItem.supportsWarranty()) {
                 throw new BusinessRuleException("Solo las consolas admiten garantía extendida: " + requestedId);
             }
             extendedWarrantyIds.add(requestedId);
@@ -271,7 +271,7 @@ public class SaleService {
     private double assignWarranties(Sale sale, Set<String> extendedWarrantyIds) {
         double extraCost = 0.0;
         for (Product product : sale.getProducts()) {
-            if (product instanceof Console) {
+            if (product.supportsWarranty()) {
                 warrantyService.assignBasicWarranty(product, sale, sale.getDate());
                 if (extendedWarrantyIds.contains(product.getId())) {
                     extraCost += warrantyService.assignExtendedWarranty(product, sale, sale.getDate())
