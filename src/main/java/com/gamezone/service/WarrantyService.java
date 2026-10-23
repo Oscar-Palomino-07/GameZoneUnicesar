@@ -1,7 +1,6 @@
 package com.gamezone.service;
 
 import com.gamezone.model.BasicWarranty;
-import com.gamezone.model.Console;
 import com.gamezone.model.ExtendedWarranty;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
@@ -280,12 +279,12 @@ public class WarrantyService {
     }
 
     // Checks the data needed to create a warranty: nothing missing, the product
-    // is a console and the product belongs to the sale.
+    // supports a warranty and the product belongs to the sale.
     private void validateWarrantyRequest(Product product, Sale sale, LocalDate startDate) {
         if (product == null || sale == null || startDate == null) {
             throw new IllegalArgumentException("El producto, la venta y la fecha de inicio son obligatorios.");
         }
-        if (!(product instanceof Console)) {
+        if (!product.supportsWarranty()) {
             throw new IllegalArgumentException("Solo las consolas admiten garantía: " + product.getId());
         }
         boolean belongsToSale = false;
