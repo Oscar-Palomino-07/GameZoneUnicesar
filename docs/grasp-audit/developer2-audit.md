@@ -131,3 +131,44 @@ Assign responsibilities so that the dependencies between classes stay low.
   * They depend only on the model classes they serialize and on Gson. None of them knows a service or the user interface. `WarrantyRepository` does not even depend on the model, because it stores only identifiers (`WarrantyRecord`, lines 131–190).
 * **`Person`, `Customer`, `Seller`:** `Correct`
   * They have no dependencies outside the class hierarchy.
+
+---
+
+## 6. Pattern 5: High Cohesion
+
+### Principle
+Keep the responsibilities of a class focused and closely related.
+
+### Audit by Class
+* **`ReturnService`:** `Violation`
+  * Besides the return use case (`registerReturn` and the queries, lines 80–291), the class computes the monthly report of the whole store (lines 303–376). `calculateMonthlySales` (lines 303–312) iterates the sales through `saleService.viewAllSales()` (line 306) and has nothing to do with returns. See **V-03**.
+* **`AccessoryService`, `PromotionService`:** `Violation`
+  * Besides registering and querying, each service contains all the validation rules of its data: `AccessoryService` lines 86–91, 114–119, 246–256 and 259–265, and `PromotionService` lines 107–109 and 189–216. The system has a validation layer (`com.gamezone.validation`), but these modules do not use it. See **V-08**.
+* **`PersonService`, `WarrantyService`:** `Correct`
+  * `PersonService` only registers, lists and finds people and delegates the validation to `PersonValidator` (lines 63–64). `WarrantyService` only manages the life cycle of the warranties: creation, rebuilding, queries and cancellation.
+* **Repositories:** `Correct`
+  * Each one reads and writes one file. The repetition of the same read/write code in all of them is reported under Pure Fabrication (**V-07**).
+* **`Person`, `Customer`, `Seller`:** `Correct`
+  * They hold the data of a person and nothing else.
+
+---
+
+## 7. Pattern 6: Polymorphism
+
+### Principle
+When behavior varies by type, assign it to the types through polymorphic operations instead of conditionals on the type.
+
+### Audit by Class
+* **`AccessoryService`:** `Violation`
+  * `matchesType(Accessory, String)` (lines 268–279) is a `switch` over the strings `CONTROLLER`, `CABLE` and `MEMORY` that answers with `instanceof Controller`, `instanceof Cable` and `instanceof Memory`. The same three strings are checked again in `listAccessoriesByType` (lines 149–153). See **V-04**.
+* **`WarrantyService`:** `Violation`
+  * `findWarrantyByProduct` (line 168), `cancelWarranties` (line 208) and `save()` (line 325) ask `instanceof ExtendedWarranty`, and `rebuildWarranties` (lines 89–93) chooses the subclass with an `if` on a type string. The hierarchy already has polymorphic methods (`getDurationInMonths()`, `getAdditionalCost()`, `getWarrantyType()` in `Warranty`), but the service does not use them. See **V-05**.
+  * `validateWarrantyRequest` (line 288, `instanceof Console`) is already registered by the Technical Lead. See **leader V-03**.
+* **`ReturnService`:** `Violation` (registered by the Technical Lead)
+  * `registerReturn` (line 162, `instanceof Console`) and `restoreStock` (line 200, `instanceof Accessory`). See **leader V-03** and **leader V-02**.
+* **`PromotionService`:** `Correct`
+  * `bestPromotionFor` (line 178) calls the abstract `calculateDiscount(...)` and never asks the type of the promotion.
+* **Deserializers (`AccessoryRepository` lines 134–140, `PromotionRepository` lines 135–141, `ReturnRepository` lines 135–147):** `Correct`
+  * Choosing the subclass from the attributes of the JSON happens at the only point where the type must be chosen, which is when the object is rebuilt from the file.
+* **`PersonService`, `Person`, `Customer`, `Seller`:** `Not applicable`
+  * No behavior varies by the type of person: customers and sellers only differ in their data.
