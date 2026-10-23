@@ -95,3 +95,56 @@ Assign the responsibility of handling system events/messages to a non-UI class t
 * **Evidence:**
   * Methods: `registerVideoGame`, `registerConsole`, `listAllProducts`, `findById`, `updateStock`, `restoreStock` (lines 52–158).
   * `ProductService` operates as the Use Case Controller for product management. The UI class `ConsoleMenu` delegates all user inputs to `ProductService`, ensuring that terminal I/O remains isolated from business workflows.
+
+
+---
+
+## 4. Low Coupling
+
+### Principle
+Assign responsibilities to maintain low dependency between classes, minimizing the impact of change and increasing reusability.
+
+### Audit by Class
+
+#### 1. `com.gamezone.model.Product`, `VideoGame`, `Console`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Package: `com.gamezone.model`.
+  * The model classes have zero imports from `service`, `persistence`, `ui`, or external libraries. They depend strictly on standard Java language types, ensuring absolute independence from technological choices.
+
+#### 2. `com.gamezone.persistence.ProductRepository`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Imports (lines 3–20): Only couples to `VideoGame`, `Console`, Google Gson, and standard Java I/O (`java.nio.file`).
+  * The repository does not know `ProductService` or `ConsoleMenu`. It encapsulates third-party JSON serialization entirely, shielding the remainder of the system from changes in the persistence library.
+
+#### 3. `com.gamezone.service.ProductService`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Dependencies (lines 19–21, 29–33): Receives `ProductRepository` via constructor dependency injection.
+  * It does not instantiate repositories directly, nor does it couple to the UI layer. Changes in `ConsoleMenu` do not affect `ProductService`.
+
+---
+
+## 5. High Cohesion
+
+### Principle
+Keep responsibilities focused, understandable and closely related. Avoid bloated classes that perform heterogeneous tasks.
+
+### Audit by Class
+
+#### 1. `com.gamezone.model.Product`, `VideoGame`, `Console`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Each class has a single, well-defined responsibility: modeling the attributes and polymorphic description of its concrete catalog item.
+
+#### 2. `com.gamezone.persistence.ProductRepository`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Focuses exclusively on file I/O operations (reading and writing JSON files). It contains no terminal formatting, user prompts or business calculation logic.
+
+#### 3. `com.gamezone.service.ProductService`
+* **Verdict:** `Violation`
+* **Evidence:**
+  * Methods: `registerVideoGame` (lines 54–57), `registerConsole` (lines 81–84), `validate` (lines 170–177), and `isBlank` (lines 185–187).
+  * `ProductService` mixes business coordination with low-level string sanitization (`isBlank`), primitive range validation (`price < 0 || stock < 0`), and terminal exception message formatting. This dilutes the class's primary role as a use case coordinator.
