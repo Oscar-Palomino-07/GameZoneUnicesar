@@ -157,7 +157,7 @@ public class ReturnService {
         // cancelled once per returned unit and the extended cost is refunded.
         double warrantyRefund = 0.0;
         for (Product product : productsToReturn) {
-            if (product instanceof Console) {
+            if (product.supportsWarranty()) {
                 warrantyRefund += warrantyService.cancelWarranties(product.getId(), saleId);
             }
         }
