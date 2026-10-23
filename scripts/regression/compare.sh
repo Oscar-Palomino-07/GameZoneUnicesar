@@ -40,6 +40,12 @@ for label in "$A" "$B"; do
         -e 's/Balance mensual [0-9]{2}\/[0-9]{4}/Balance mensual <MM\/YYYY>/' \
         -e 's/\([A-Za-z0-9_]+\.java:[0-9]+\)/(<src>)/g' \
         -e 's/\r$//' {} +
+    # Git does not store empty folders, so a scenario that leaves no data file
+    # (for example iso-write-failure) has no <name>.data folder in a clone.
+    # A missing folder and an empty one mean the same, so both are created.
+    for exitFile in "$WORK/$label"/*.exit; do
+        mkdir -p "${exitFile%.exit}.data"
+    done
 done
 
 echo "Reference: $A  ($(meta "$(resolve "$A")"))"
