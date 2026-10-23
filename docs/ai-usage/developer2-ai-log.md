@@ -324,4 +324,15 @@ El enunciado no permite usar IA en esta fase para identificar violaciones ni par
 
 ## Fase 2 — Corrección
 
-*Sin entradas todavía.*
+### Entrada R7-F2-01 — 23-10-2026
+
+| Campo | Detalle |
+|---|---|
+| Fecha | 23-10-2026 |
+| Herramienta | Claude Code (aplicación de escritorio) |
+| Fase y rama | Fase 2 (corrección), oleada 1, rama `feature/grasp-refactor` |
+| Objetivo | Corregir V-17 y V-19, las dos violaciones de mi oleada 1 en la auditoría consolidada, sin cambiar lo que ve el usuario |
+| Consulta | Que implementara V-17 (crear el enum `ProductCategory` y adaptar `PromotionService`) y V-19 (`AccessoryValidator` y `PromotionValidator` con los mismos mensajes), y me entregara un parche por commit |
+| Respuesta | Creó `ProductCategory` en `model` con `VIDEOGAME`, `CONSOLE` y `ACCESSORY` y un método `isValid`; los nombres del enum son los mismos textos que ya están en `promotions.json`, así que el archivo no cambia. `PromotionService` dejó sus tres constantes y valida contra el enum con el mismo mensaje. Creó `AccessoryValidator` y `PromotionValidator` en `validation`, con métodos estáticos que conservan la `IllegalArgumentException`, los mensajes y el orden de las comprobaciones, porque `ConsoleMenu` muestra esos mensajes tal cual y cambiar el tipo de excepción les agregaría un prefijo. Compiló cada commit por separado y corrió `scripts/regression/run.sh`: comparando la rama antes y después de mis cuatro commits, los 15 escenarios dieron comportamiento idéntico. Contra la referencia guardada solo aparece una diferencia en `iso-write-failure`, que también aparece sin mis cambios: la carpeta `.data` de ese escenario queda vacía y Git no guarda carpetas vacías |
+| Decisión | Acepté los cambios. Dejé el texto del mensaje de categoría escrito a mano y no generado desde el enum, porque generarlo cambiaría la redacción ("VIDEOGAME, CONSOLE o ACCESSORY"). Dejé en `AccessoryService` las validaciones de `listAccessoriesByType`, `findAccessoriesCompatibleWith`, `updateStock` y `restoreStock`, porque no forman parte de la evidencia de V-19. Registré las tres clases nuevas en la sección 6 del registro de cambios, porque el Requerimiento 8 se reparte con esa lista, y le avisé al Líder Técnico de la diferencia de `iso-write-failure` |
+| Commit relacionado | `602bc13`, `9a1e109`, `bf9f218`, `6fc72cb` |
