@@ -436,13 +436,11 @@ public class ConsoleMenu {
                 productIds.add(item.trim());
             }
         }
-        try {
+        runGuarded(() -> {
             Return ret = returnService.registerReturn(saleId, productIds);
             System.out.println("Devolución " + ret.getId() + " registrada.");
             System.out.println(ret.generateReturnReceipt());
-        } catch (IllegalArgumentException | IllegalStateException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void viewAllReturns() {
@@ -511,7 +509,7 @@ public class ConsoleMenu {
     private void monthlyBalance() {
         int month = readInt("Mes (1-12): ");
         int year  = readInt("Año (ej. 2026): ");
-        try {
+        runGuarded(() -> {
             double totalSales = returnService.calculateMonthlySales(month, year);
             double totalReturns = returnService.calculateMonthlyReturns(month, year);
             double balance = returnService.generateMonthlyBalance(month, year);
@@ -519,9 +517,7 @@ public class ConsoleMenu {
             System.out.printf("  Total de ventas:       $%.2f%n", totalSales);
             System.out.printf("  Total de devoluciones: $%.2f%n", totalReturns);
             System.out.printf("  Balance neto:          $%.2f%n", balance);
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void accessoryMenu() {
