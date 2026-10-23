@@ -1,8 +1,11 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Seller;
 import com.gamezone.persistence.PersonRepository;
+import com.gamezone.validation.PersonValidator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -41,25 +44,24 @@ public class PersonService {
     /**
      * Registers a new customer in the system.
      *
-     * <p>The data is validated before the customer is added: no field may
-     * be blank and the id must be unique. Once registered, the customer
-     * registry is immediately persisted.</p>
+     * <p>The data is validated through {@link PersonValidator} before the
+     * customer is added: no field may be blank, the email must contain an
+     * at sign and a dot, and the id must be unique. Once registered, the
+     * customer registry is immediately persisted.</p>
      *
      * @param id        the identifier of the customer
      * @param firstName the first name of the customer
      * @param lastName  the last name of the customer
      * @param phone     the contact phone number
      * @param email     the email address of the customer
-     * @throws IllegalArgumentException when any field is blank or the id
-     *         already belongs to another customer
+     * @throws InvalidDataException  when any field is blank or the email has
+     *         an invalid format
+     * @throws BusinessRuleException when the id already belongs to another
+     *         customer
      */
     public void registerCustomer(String id, String firstName, String lastName, String phone, String email) {
-        if (isBlank(id) || isBlank(firstName) || isBlank(lastName) || isBlank(phone) || isBlank(email)) {
-            throw new IllegalArgumentException("All customer fields are required.");
-        }
-        if (findCustomerById(id).isPresent()) {
-            throw new IllegalArgumentException("A customer with id " + id + " already exists.");
-        }
+        PersonValidator.validatePersonData(id, firstName, lastName, email, phone);
+        PersonValidator.validateUniquePerson(customers, id);
         customers.add(new Customer(id, firstName, lastName, phone, email));
         save();
     }
@@ -118,15 +120,5 @@ public class PersonService {
     public void save() {
         repository.saveAllCustomers(customers);
         repository.saveAllSellers(sellers);
-    }
-
-    /**
-     * Tells whether a field should be considered blank or invalid.
-     *
-     * @param value the value to check
-     * @return {@code true} when the value is null or only contains spaces
-     */
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
     }
 }

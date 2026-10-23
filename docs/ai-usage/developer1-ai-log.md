@@ -210,6 +210,21 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Entry 11 — 2026-10-20
+
+| Field | Detail |
+|---|---|
+| Date | 20-10-2026 |
+| AI tool | Antigravity AI Assistant |
+| Phase and branch | Requirement 6 (Validations and Exceptions) — branch `feature/exception-handling` |
+| Goal | Implement the custom exception hierarchy in `com.gamezone.exceptions` and the dedicated static validators in `com.gamezone.validation` |
+| Query | Reviewed the Requirement 6 specification and the Technical Lead's task breakdown for Developer 1: abstract `GameZoneException` with `errorCode` and its four subclasses (`ResourceNotFoundException`, `BusinessRuleException`, `InvalidDataException`, `PersistenceException`), followed by `ProductValidator`, `PersonValidator` and `SaleValidator` with static validation methods |
+| Response | The AI reviewed `ProductService`, `PersonService` and `SaleService` to verify how existing validations and types (such as `List<Customer>` in `PersonService`) interact with the new validator signatures, and provided JavaDoc-annotated implementations strictly aligned with pages 4–6 of the statement |
+| Decision | Pushed the `com.gamezone.exceptions` classes first in three atomic commits (`a2b8a98`, `08c320a`, `a18f2af`) so Developer 2 could start refactoring services and repositories immediately. Declared `validateUniquePerson` with `List<? extends Person>` so it accepts both `List<Person>` and `List<Customer>`/`List<Seller>` without casting. Verified every commit with `mvn -q compile` before pushing |
+| Related commit | `a2b8a98` feat(exceptions): add abstract GameZoneException base class with error code; `08c320a` feat(exceptions): add ResourceNotFoundException and BusinessRuleException; `a18f2af` feat(exceptions): add InvalidDataException and PersistenceException; `1631e35` feat(validation): implement ProductValidator with static validation methods; `8792bed` feat(validation): implement PersonValidator with static validation methods; `eb1f868` feat(validation): implement SaleValidator with static validation methods |
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
