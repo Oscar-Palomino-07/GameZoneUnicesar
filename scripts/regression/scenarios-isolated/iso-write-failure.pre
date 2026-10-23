@@ -1,0 +1,2 @@
+rm -rf data
+echo 'this file blocks the data folder' > data

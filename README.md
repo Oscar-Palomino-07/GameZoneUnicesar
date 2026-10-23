@@ -41,6 +41,12 @@ The system integrates the base store (products, people and sales) with four exte
 - Consult the returns of a customer or of a sale.
 - Monthly balance: total sales (with discounts and extended warranties), total returns and net balance, which can be negative.
 
+**Validation and error handling**
+
+- A cross-cutting layer of custom exceptions replaces the generic `IllegalArgumentException` and `IOException` in the product, person and sale modules. Every exception extends `GameZoneException` and belongs to one of four categories: resource not found, business rule violated, invalid data and persistence failure.
+- The business rules and data checks live in dedicated validators (`ProductValidator`, `PersonValidator`, `SaleValidator`) that the services call before changing anything.
+- The menu tells the user what kind of problem happened, with a different message for each category, and never shows a technical message or a stack trace.
+
 All the information is stored in JSON files and loaded automatically at startup.
 
 ## Requirements
@@ -85,11 +91,38 @@ com.gamezone
 │                 ReturnRepository, PromotionRepository, WarrantyRepository (JSON with Gson)
 ├── service       PersonService, ProductService, AccessoryService, PromotionService,
 │                 WarrantyService, SaleService, ReturnService
+├── validation    ProductValidator, PersonValidator, SaleValidator
+├── exceptions    GameZoneException, ResourceNotFoundException, BusinessRuleException,
+│                 InvalidDataException, PersistenceException
 ├── ui            ConsoleMenu
 └── Main.java     entry point; wires repositories, services and the menu
 ```
 
-The layered architecture restricts the dependencies between layers: the user interface only talks to the services, the services validate the business rules and persist changes through the repositories, the repositories read and write the JSON files, and the model classes contain no file or user interface logic.
+The layered architecture restricts the dependencies between layers: the user interface only talks to the services, the services call the validators and persist changes through the repositories, the repositories read and write the JSON files, and the model classes contain no file or user interface logic.
+
+### Exceptions and validation layer
+
+The `exceptions` package is transversal: any layer can throw its classes. The `validation` package sits between the service and the model layers: the services invoke the validators before any operation, the validators only depend on the model and the exceptions, and they never call the services or the repositories (the data they need is passed to them as parameters).
+
+| Exception | Raised when | Message shown by the menu |
+|---|---|---|
+| `ResourceNotFoundException` | a product, customer, seller or sale does not exist | `No se encontró el recurso solicitado: <detail>` |
+| `BusinessRuleException` | a business rule is broken (insufficient stock, duplicated identifier, sale without products) | `No se puede completar la operación: <detail>` |
+| `InvalidDataException` | an input does not meet the format or range (blank field, non-positive price, negative stock, malformed e-mail) | `Los datos ingresados no son válidos: <detail>` |
+| `PersistenceException` | a data file cannot be read or written | `Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.` |
+
+The repositories of the product, person and sale modules catch `IOException` and rethrow it as `PersistenceException` with the file name and the operation. `ConsoleMenu` handles all the categories in one place (`runGuarded`), and `Main` shows the persistence message if a data file cannot be read at startup. The accessory, promotion, return and warranty modules still report their errors with the standard Java exceptions, and the menu keeps handling them as before.
+
+### Non-regression check
+
+`scripts/regression/` replays the console menu with fixed inputs against a copy of fixed data and compares the output and the data files with a reference run, without touching the real `data/` folder. It needs a Bash shell (Git Bash on Windows), a JDK and the Gson jar from the local Maven repository:
+
+```bash
+bash scripts/regression/run.sh after
+bash scripts/regression/compare.sh pre-exception-handling after
+```
+
+`reference/pre-exception-handling` is the run taken on `develop` before the exception layer. The expected differences are the error messages, the rejection of malformed e-mails and the persistence message.
 
 ## Data files
 
@@ -117,6 +150,7 @@ See `docs/` for the design and analysis artifacts:
 - `integration-analysis.md` — the integration adjustments A1 to A7: cause and solution of each one
 - `integrated-class-diagram.md` — single class diagram of the integrated system with the four layers (Mermaid)
 - `layers-diagram.md` — layered architecture and allowed dependencies (Mermaid)
+- `exception-analysis.md`, `exception-class-diagram.md` — validation and exception layer: design questions and class diagram
 - `ai-usage/` — personal AI usage logs for each team member
 
 ## Team

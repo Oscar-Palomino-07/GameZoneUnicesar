@@ -1,0 +1,222 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): Venta V-1 registrada.
+Recibo de venta V-1
+====================
+Fecha: 2026-10-20
+Cliente: Ana Torres
+Vendedor: Carlos Mendoza
+Productos:
+  - Halo Infinite (V-1): $200000.00
+  - FIFA 25 (V-2): $150000.00
+Subtotal: $350000.00
+Descuento (20% en videojuegos): -$70000.00
+Garantía extendida: $0.00
+Total final: $280000.00
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): ¿Desea garantía extendida para la consola Xbox Series X (1)? (s/n): Venta V-2 registrada.
+Recibo de venta V-2
+====================
+Fecha: 2026-10-20
+Cliente: Luis Perez
+Vendedor: Laura Gomez
+Productos:
+  - Xbox Series X (1): $2500000.00
+  - Cable HDMI 2.1 (A-2): $45000.00
+Subtotal: $2545000.00
+Descuento (Descuento general 15%): -$381750.00
+Garantía extendida: $0.00
+Total final: $2163250.00
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Invalid number. Try again.
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): Venta V-3 registrada.
+Recibo de venta V-3
+====================
+Fecha: 2026-10-20
+Cliente: Luis Perez
+Vendedor: Laura Gomez
+Productos:
+  - Halo Infinite (V-1): $200000.00
+  - Halo Infinite (V-1): $200000.00
+  - FIFA 25 (V-2): $150000.00
+Subtotal: $550000.00
+Descuento (20% en videojuegos): -$110000.00
+Garantía extendida: $0.00
+Total final: $440000.00
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): Customer not found: P-999
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): Seller not found: S-999
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): Product not found: NOEXISTE
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): Not enough stock for product: V-2
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): A sale must include at least one product.
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): ¿Desea garantía extendida para la consola Xbox Series X (1)? (s/n): Venta V-4 registrada.
+Recibo de venta V-4
+====================
+Fecha: 2026-10-20
+Cliente: Ana Torres
+Vendedor: Carlos Mendoza
+Productos:
+  - Xbox Series X (1): $2500000.00
+  - Control inalámbrico Xbox (A-1): $250000.00
+Subtotal: $2750000.00
+Descuento (Descuento general 15%): -$412500.00
+Garantía extendida: $0.00
+Total final: $2337500.00
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Sale V-1 | date: 2026-10-20 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $280000.0 | promoción: 20% en videojuegos (-$70000.0) [returnable]
+Sale V-2 | date: 2026-10-20 | customer: Luis Perez | seller: Laura Gomez | items: 2 | total: $2163250.0 | promoción: Descuento general 15% (-$381750.0) [returnable]
+Sale V-3 | date: 2026-10-20 | customer: Luis Perez | seller: Laura Gomez | items: 3 | total: $440000.0 | promoción: 20% en videojuegos (-$110000.0) [returnable]
+Sale V-4 | date: 2026-10-20 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $2337500.0 | promoción: Descuento general 15% (-$412500.0) [returnable]
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Sale V-1 | date: 2026-10-20 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $280000.0 | promoción: 20% en videojuegos (-$70000.0) [returnable]
+Sale V-4 | date: 2026-10-20 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $2337500.0 | promoción: Descuento general 15% (-$412500.0) [returnable]
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: No sales found for customer P-999.
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Seller id: Sale V-1 | date: 2026-10-20 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $280000.0 | promoción: 20% en videojuegos (-$70000.0) [returnable]
+Sale V-4 | date: 2026-10-20 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $2337500.0 | promoción: Descuento general 15% (-$412500.0) [returnable]
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Seller id: No sales found for seller S-999.
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Id de la venta: Recibo de venta V-1
+====================
+Fecha: 2026-10-20
+Cliente: Ana Torres
+Vendedor: Carlos Mendoza
+Productos:
+  - Halo Infinite (V-1): $200000.00
+  - FIFA 25 (V-2): $150000.00
+Subtotal: $350000.00
+Descuento (20% en videojuegos): -$70000.00
+Garantía extendida: $0.00
+Total final: $280000.00
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Id de la venta: No se encontró la venta S-NOEXISTE.
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!

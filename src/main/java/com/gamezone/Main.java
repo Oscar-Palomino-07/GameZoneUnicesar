@@ -1,5 +1,6 @@
 package com.gamezone;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.persistence.AccessoryRepository;
 import com.gamezone.persistence.PersonRepository;
 import com.gamezone.persistence.ProductRepository;
@@ -32,7 +33,29 @@ import com.gamezone.ui.ConsoleMenu;
  */
 public class Main {
 
+    /**
+     * Starts the application. A failure while loading the data files is shown
+     * to the user as a single message, because the system cannot work safely
+     * with data it could not read.
+     *
+     * @param args the command line arguments, not used
+     */
     public static void main(String[] args) {
+        try {
+            createMenu().start();
+        } catch (PersistenceException e) {
+            System.out.println("Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.");
+        }
+    }
+
+    /**
+     * Creates the repositories and the services in dependency order and builds
+     * the console menu that uses them.
+     *
+     * @return the console menu ready to start
+     * @throws PersistenceException when a data file cannot be read
+     */
+    private static ConsoleMenu createMenu() {
         // Repositories: they only read and write the data files.
         PersonRepository personRepository = new PersonRepository();
         ProductRepository productRepository = new ProductRepository();
@@ -58,8 +81,7 @@ public class Main {
         ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService,
                 accessoryService, warrantyService);
 
-        ConsoleMenu menu = new ConsoleMenu(productService, personService, saleService, returnService,
+        return new ConsoleMenu(productService, personService, saleService, returnService,
                 accessoryService, warrantyService, promotionService);
-        menu.start();
     }
 }
