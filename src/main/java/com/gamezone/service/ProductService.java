@@ -157,7 +157,7 @@ public class ProductService {
         ProductValidator.validateNonNegativeStock(quantity);
         Product product = findById(productId);
         ProductValidator.validateProductExists(product, productId);
-        product.updateStock(product.getStock() + quantity);
+        product.increaseStock(quantity);
         saveAll();
     }
 
