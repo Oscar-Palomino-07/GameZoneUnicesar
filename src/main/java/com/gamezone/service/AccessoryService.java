@@ -226,7 +226,7 @@ public class AccessoryService {
         if (accessory == null) {
             throw new IllegalArgumentException("Accesorio no encontrado: " + accessoryId);
         }
-        accessory.updateStock(accessory.getStock() + quantity);
+        accessory.increaseStock(quantity);
         save();
     }
 
