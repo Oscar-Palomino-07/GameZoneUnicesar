@@ -331,3 +331,16 @@ Identify points of predicted variation or instability; assign responsibilities t
     * `registerVideoGame(id, title, price, stock, platform, genre, ageRating)`
     * `registerConsole(id, title, price, stock, brand, model, generation)`
   * Explanation: `ProductService` hardcodes concrete registration operations with subtype-specific parameter lists instead of providing a unified, polymorphic registration interface (e.g. receiving a `Product` entity or using a factory pattern). Introducing a new product type requires altering `ProductService`'s public interface and modifying `ConsoleMenu`.
+
+
+---
+
+## 11. Consolidated Violations Table (Developer 1 Scope)
+
+Below is the consolidated registry of all verified architectural violations identified within Developer 1's scope, formatted according to team auditing standards.
+
+| Violation ID | Pattern | Module | Evidence (Class, Method, Lines) | Explanation | Consequence | Proposed Solution | Código de otro integrante |
+|---|---|---|---|---|---|---|---|
+| **V-01** | **Polymorphism** | Base Product Module | `ProductService.java` — `listAllProducts()` (lines 24–25, 104–109) | `ProductService` segregates inventory into concrete collections (`List<VideoGame>` and `List<Console>`) instead of managing a unified polymorphic `List<Product>`. | `listAllProducts()` allocates and constructs a new `ArrayList` merging both lists on every call. Adding new product subtypes requires adding more list attributes and modifying `listAllProducts()`. | Refactor `ProductService` to maintain a single polymorphic `List<Product> products` collection and return `Collections.unmodifiableList(products)`. | **No** (Internal to `ProductService`). |
+| **V-02** | **Polymorphism** | Promotion Module | `CategoryDiscount.java` — `belongsToTargetCategory(Product)` (lines 76–81) | Uses explicit runtime type inspection (`product instanceof Accessory`) to match accessories, even though `Accessory` already polymorphically overrides `getCategory()` returning `"ACCESSORY"`. | Bypasses dynamic dispatch, introduces redundant conditional branching, and couples `CategoryDiscount` directly to the concrete `Accessory` class. | Remove the `instanceof Accessory` check and rely exclusively on `targetCategory.equalsIgnoreCase(product.getCategory())`. | **No** (Internal to `CategoryDiscount`). |
+| **V-03** | **Protected Variations** | Base Product Module | `ProductService.java` — `registerVideoGame` and `registerConsole` (lines 59–68, 90–99) | `ProductService` exposes concrete, subtype-specific registration methods with explicit parameter lists instead of a polymorphic registration interface. | Introducing any new catalog item type (e.g. board games, gift cards) forces adding new methods to `ProductService` and altering caller code. | Introduce a unified `registerProduct(Product product)` method in `ProductService` that validates and persists any valid product subclass. | **Yes — `com.gamezone.ui.ConsoleMenu` (Technical Lead - Oscar Palomino)**. Changing registration signatures in `ProductService` requires updating method calls in `ConsoleMenu`. |
