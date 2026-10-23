@@ -101,6 +101,8 @@ One row for each change. The violation identifiers are those of the consolidated
 | `Warranty`, `BasicWarranty`, `ExtendedWarranty` | Abstract `getTypeCode()` is added to `Warranty` and overridden in `BasicWarranty` (`BASIC`) and `ExtendedWarranty` (`EXTENDED`) | V-16 (part) | Polymorphism | `9a22ff4` | Developer 1 |
 | `ProductService`, `ProductRepository` | `ProductService` replaces the two subtype lists with one polymorphic `List<Product>`; `ProductRepository` adds `saveAllProducts` and `loadAllProducts`, keeping video games first and then consoles | V-09 | Polymorphism | `ffe3323` | Developer 1 |
 | `ProductFactory`, `ProductService` | `ProductFactory` is created in `com.gamezone.service` and `ProductService.registerProduct(Product)` is added, keeping the two legacy registration methods until `ConsoleMenu` is split | V-11 (part) | Protected Variations | `7c871cc` | Developer 1 |
+| `VideoGame`, `Console`, `Accessory` | `getCategory()` returns `ProductCategory.VIDEOGAME.name()`, `ProductCategory.CONSOLE.name()` and `ProductCategory.ACCESSORY.name()` instead of hardcoded literals | V-17 (part) | Protected Variations | `bf8150f` | Developer 1 |
+| `ProductService` | `decreaseStock(String, int)` is added to validate the quantity, product existence and non-negative resulting stock, delegate to `Product.decreaseStock(int)` and persist | V-02 (part) | Indirection / Information Expert | `289afa1` | Developer 1 |
 
 ---
 
