@@ -194,3 +194,40 @@ Assign responsibility for receiving and orchestrating system events to a non-UI 
   * Serves as the Use Case Controller between UI (`ConsoleMenu`) and persistence (`ProductRepository`), ensuring `ConsoleMenu` performs no domain logic.
 * **All Other Scoped Classes (Domain Models, Repositories, Exceptions, Validators):** `Not applicable`
   * Domain models represent entities; repositories handle storage; validators enforce data constraints. None coordinate user system events.
+
+
+---
+
+## 5. Pattern 4: Low Coupling
+
+### Principle
+Assign responsibilities so that coupling between classes remains low, reducing the impact of downstream modifications and maximizing component reuse.
+
+### Audit by Module and Class
+* **Model Layer (`Product`, `Accessory`, `Promotion`, `Warranty`, `Return` hierarchies):** `Correct`
+  * Complete absence of dependencies toward `service`, `persistence`, `ui`, or external frameworks. All domain classes rely exclusively on core Java types (`java.time`, `java.util`), establishing clean architectural layer boundaries.
+* **`ProductRepository`:** `Correct`
+  * Lines 3–21: Confines third-party library dependency (`com.google.gson`) and file system I/O (`java.nio.file`) entirely inside the repository package. It does not import or know `ProductService` or `ConsoleMenu`.
+* **`ProductService`:** `Correct`
+  * Lines 2–10, 28–37: Receives `ProductRepository` via constructor dependency injection. Interacts only with model classes, custom exceptions, and static validators. It does not couple to user interface components.
+* **`com.gamezone.validation.*`:** `Correct`
+  * Validators are decoupled from persistence and services; they perform in-memory inspections on arguments and throw typed exceptions without external side effects.
+* **`com.gamezone.exceptions.*`:** `Correct`
+  * Standalone unchecked exception hierarchy without circular dependencies.
+
+---
+
+## 6. Pattern 5: High Cohesion
+
+### Principle
+Keep class responsibilities focused, understandable and closely related. A class must not mix unrelated domain, technical, or formatting concerns.
+
+### Audit by Module and Class
+* **Model Classes (`Product`, `VideoGame`, `Console`, `Accessory`, `Promotion`, `Warranty`, `Return`):** `Correct`
+  * Each domain class is strongly focused on representing its entity state and computing domain-specific results (`calculateDiscount`, `calculateRefundAmount`, `getDescription`).
+* **`ProductRepository`:** `Correct`
+  * Lines 28–125: Dedicated exclusively to persistence mechanisms (serialization, file reading, stream closing). It contains no pricing algorithms, stock rules, or UI presentation logic.
+* **`ProductService`:** `Correct`
+  * Note on Requerimiento 6 refactoring: Prior to Requirement 6, `ProductService` mixed use-case coordination with low-level string blank-checking and range validation (`validate` and `isBlank`). Following the extraction of these checks to `ProductValidator`, `ProductService` exhibits High Cohesion, concentrating solely on orchestrating catalog workflows and synchronizing persistence.
+* **Validation Layer (`ProductValidator`, `PersonValidator`, `SaleValidator`):** `Correct`
+  * High cohesion around input and business rule validation, keeping services clean and preventing duplicated validation logic.
