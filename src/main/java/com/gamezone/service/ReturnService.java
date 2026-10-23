@@ -121,9 +121,7 @@ public class ReturnService {
                 throw new IllegalArgumentException("El producto no existe en el sistema: " + productId);
             }
 
-            long qtyBought = originalSale.getProducts().stream()
-                    .filter(p -> p.getId().equals(productId))
-                    .count();
+            int qtyBought = originalSale.countUnits(productId);
 
             if (qtyBought == 0) {
                 throw new IllegalArgumentException(
