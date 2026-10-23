@@ -1,5 +1,6 @@
 package com.gamezone.persistence;
 
+import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Seller;
 import com.google.gson.Gson;
@@ -84,6 +85,7 @@ public class PersonRepository {
      * @param fileName the path of the destination file
      * @param items    the list of people to persist
      * @param type     the Gson type of the generic list
+     * @throws PersistenceException when the file cannot be written
      */
     private void writeList(String fileName, List<?> items, Type type) {
         try {
@@ -93,7 +95,7 @@ public class PersonRepository {
                 gson.toJson(items, type, writer);
             }
         } catch (IOException e) {
-            System.err.println("Error saving people to " + fileName + ": " + e.getMessage());
+            throw new PersistenceException(fileName, "escritura", e);
         }
     }
 
@@ -104,7 +106,9 @@ public class PersonRepository {
      * @param type     the Gson type of the generic list
      * @param <T>      the concrete person type stored in the file
      * @return the stored people, or an empty list if the file does not
-     *         exist or cannot be parsed
+     *         exist yet
+     * @throws PersistenceException when the file exists but cannot be read
+     *         or parsed
      */
     private <T> List<T> readList(String fileName, Type type) {
         Path path = Paths.get(fileName);
@@ -115,8 +119,7 @@ public class PersonRepository {
             List<T> items = gson.fromJson(reader, type);
             return items != null ? items : new ArrayList<>();
         } catch (IOException | JsonSyntaxException e) {
-            System.err.println("Error loading people from " + fileName + ": " + e.getMessage());
-            return new ArrayList<>();
+            throw new PersistenceException(fileName, "lectura", e);
         }
     }
 }
