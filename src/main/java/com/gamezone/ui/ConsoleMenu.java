@@ -567,12 +567,10 @@ public class ConsoleMenu {
         String connectionType = readText("Connection type (WIRELESS/WIRED): ");
         String consoleIdsInput = readText("Compatible console ids (comma separated): ");
         List<String> consoleIds = parseIds(consoleIdsInput);
-        try {
+        runGuarded(() -> {
             Accessory controller = accessoryService.registerController(title, price, stock, connectionType, consoleIds);
             System.out.println("Controller " + controller.getId() + " registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void registerCable() {
@@ -583,12 +581,10 @@ public class ConsoleMenu {
         String connectorType = readText("Connector type: ");
         String consoleIdsInput = readText("Compatible console ids (comma separated): ");
         List<String> consoleIds = parseIds(consoleIdsInput);
-        try {
+        runGuarded(() -> {
             Accessory cable = accessoryService.registerCable(title, price, stock, lengthInMeters, connectorType, consoleIds);
             System.out.println("Cable " + cable.getId() + " registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void registerMemory() {
@@ -599,12 +595,10 @@ public class ConsoleMenu {
         String memoryType = readText("Memory type: ");
         String consoleIdsInput = readText("Compatible console ids (comma separated): ");
         List<String> consoleIds = parseIds(consoleIdsInput);
-        try {
+        runGuarded(() -> {
             Accessory memory = accessoryService.registerMemory(title, price, stock, capacityInGb, memoryType, consoleIds);
             System.out.println("Memory " + memory.getId() + " registered.");
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void listAllAccessories() {
@@ -620,7 +614,7 @@ public class ConsoleMenu {
 
     private void listAccessoriesByType() {
         String type = readText("Type (CONTROLLER/CABLE/MEMORY): ");
-        try {
+        runGuarded(() -> {
             List<Accessory> accessories = accessoryService.listAccessoriesByType(type);
             if (accessories.isEmpty()) {
                 System.out.println("No accessories of type " + type + " registered.");
@@ -629,14 +623,12 @@ public class ConsoleMenu {
             for (Accessory accessory : accessories) {
                 System.out.println(accessory.getDescription());
             }
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     private void listAccessoriesCompatibleWith() {
         String consoleId = readText("Console id: ");
-        try {
+        runGuarded(() -> {
             List<Accessory> accessories = accessoryService.findAccessoriesCompatibleWith(consoleId);
             if (accessories.isEmpty()) {
                 System.out.println("No accessories compatible with console " + consoleId + ".");
@@ -645,9 +637,7 @@ public class ConsoleMenu {
             for (Accessory accessory : accessories) {
                 System.out.println(accessory.getDescription());
             }
-        } catch (IllegalArgumentException e) {
-            System.out.println(e.getMessage());
-        }
+        });
     }
 
     // -------------------------------------------------------------------------
