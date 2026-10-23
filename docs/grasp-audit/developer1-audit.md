@@ -238,3 +238,47 @@ Assign responsibility to an intermediate object to mediate between other compone
 * **Verdict:** `Correct`
 * **Evidence:**
   * Operates as an indirection boundary between `ConsoleMenu` (UI layer) and `ProductRepository` (persistence layer). The UI never accesses repositories or files directly; it only communicates with `ProductService`. If storage mechanisms change, the UI layer remains completely insulated.
+
+
+---
+
+## 9. Protected Variations
+
+### Principle
+Identify points of predicted variation or instability; assign responsibilities to create a stable interface around them, protecting the rest of the system from ripple effects.
+
+### Audit by Class
+
+#### 1. `com.gamezone.model.Product`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Lines 11–14: All state fields (`id`, `title`, `price`, `stock`) are strictly encapsulated with `private` visibility.
+  * Abstract methods `getDescription()` and `getCategory()` provide a stable polymorphic interface, shielding services and menus from the addition of new catalog item types.
+
+#### 2. `com.gamezone.persistence.ProductRepository`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * File paths (`data/videogames.json`, `data/consoles.json`) and JSON serialization mechanics are private implementation details. If the storage format changes (e.g. from JSON to XML or a relational database), the public methods `saveAllVideoGames`, `loadAllVideoGames`, etc. remain stable, preventing modifications in `ProductService`.
+
+#### 3. `com.gamezone.service.ProductService`
+* **Verdict:** `Violation`
+* **Evidence:**
+  * Methods: `registerVideoGame` (lines 52–60) and `registerConsole` (lines 79–87).
+  * Instead of receiving a polymorphic `Product` or using a factory pattern, `ProductService` hardcodes explicit methods and concrete parameters for each product type. Adding a new product category (e.g. board games or digital subscriptions) forces modification of `ProductService`'s public interface, violating Protected Variations and the Open/Closed Principle.
+
+#### 4. Extension Models (Promotions and Warranties)
+* **Verdict:** `Correct`
+* **Evidence:**
+  * `Promotion`: Declares abstract `calculateDiscount(List<Product>)`, protecting `SaleService` from needing changes when new promotional schemes (e.g. 2-for-1 campaigns) are introduced.
+  * `Warranty`: Declares abstract duration and cost calculations, protecting sales and returns workflows from changes when new warranty tiers are added.
+
+---
+
+## Summary of Identified Violations (Developer 1 Scope)
+
+| Violation ID | Class / Method | Pattern Violated | Description |
+|---|---|---|---|
+| **V-01** | `ProductService.restoreStock(String, int)` (line 156) | **Information Expert** | The service performs arithmetic on the product's stock externally (`product.getStock() + quantity`) instead of calling an encapsulated `increaseStock(quantity)` method on `Product`. |
+| **V-02** | `ProductService` (`validate`, `isBlank`, lines 170–187) | **High Cohesion** | Low-level string validation and error formatting are embedded inline within the service, mixing validation concerns with workflow coordination. |
+| **V-03** | `ProductService.listAllProducts()` (lines 20–21, 92–97) | **Polymorphism** | Inventory is segregated into concrete `List<VideoGame>` and `List<Console>` collections, forcing repetitive collection merging instead of managing a unified `List<Product>`. |
+| **V-04** | `ProductService.registerVideoGame` / `registerConsole` (lines 52–87) | **Protected Variations** | Specific registration methods are tightly bound to concrete product subtypes instead of using a polymorphic contract or factory abstraction. |
