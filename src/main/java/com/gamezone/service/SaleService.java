@@ -238,8 +238,8 @@ public class SaleService {
      * @param requestedIds   the identifiers with an extended warranty request,
      *                       possibly {@code null}
      * @return the distinct identifiers that will receive an extended warranty
-     * @throws IllegalArgumentException when a requested item is not part of
-     *         the sale or is not a console
+     * @throws BusinessRuleException when a requested item is not part of the
+     *         sale or is not a console
      */
     private Set<String> validateExtendedWarrantyRequest(List<String> productIds, List<String> requestedIds) {
         Set<String> extendedWarrantyIds = new HashSet<>();
@@ -248,11 +248,11 @@ public class SaleService {
         }
         for (String requestedId : requestedIds) {
             if (!productIds.contains(requestedId)) {
-                throw new IllegalArgumentException(
+                throw new BusinessRuleException(
                         "La garantía extendida solo aplica a productos incluidos en la venta: " + requestedId);
             }
             if (!(resolveItem(requestedId) instanceof Console)) {
-                throw new IllegalArgumentException("Solo las consolas admiten garantía extendida: " + requestedId);
+                throw new BusinessRuleException("Solo las consolas admiten garantía extendida: " + requestedId);
             }
             extendedWarrantyIds.add(requestedId);
         }
