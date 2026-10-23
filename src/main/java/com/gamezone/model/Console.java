@@ -60,6 +60,14 @@ public class Console extends Product {
     }
 
     /**
+     * @return {@code true}, because consoles are covered by warranties
+     */
+    @Override
+    public boolean supportsWarranty() {
+        return true;
+    }
+
+    /**
      * Builds a description that integrates the common attributes with the
      * attributes particular to consoles.
      *

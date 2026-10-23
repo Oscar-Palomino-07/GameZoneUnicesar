@@ -65,6 +65,18 @@ public abstract class Product {
     public abstract String getCategory();
 
     /**
+     * Tells whether this product is eligible for warranties. By default a
+     * product does not support warranties; subclasses that do must override
+     * this method.
+     *
+     * @return {@code true} when the product supports warranties, {@code false}
+     *         otherwise
+     */
+    public boolean supportsWarranty() {
+        return false;
+    }
+
+    /**
      * Updates the available stock to the given quantity.
      *
      * @param quantity the new quantity available in inventory
