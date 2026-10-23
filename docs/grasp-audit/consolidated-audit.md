@@ -66,3 +66,22 @@ The system has 43 classes. Each one was audited by the team member who is respon
 
 **Result:** 43 of 43 classes audited by their responsible. The cross-references of Developer 2's report to the Technical Lead's findings ("see leader V-XX") are references, not second audits.
 
+---
+
+## 4. Team Verdict for Each Pattern
+
+The verdict of the team for a pattern is `Violation` when at least one of the three reports registers one, and `Correct` when the three reports find it correctly applied or not applicable.
+
+| Pattern | Technical Lead | Developer 1 | Developer 2 | **Team verdict** | Definitive violations |
+|---|---|---|---|---|---|
+| Information Expert | Violation | Correct | Violation | **Violation** | V-01, V-06, V-07, V-12 |
+| Creator | Correct | Correct | Correct | **Correct** | — |
+| Controller | Violation | Correct | Correct | **Violation** | V-04 |
+| Low Coupling | Violation | Correct | Violation | **Violation** | V-05, V-13 (also V-02) |
+| High Cohesion | Violation | Correct | Violation | **Violation** | V-05, V-14 |
+| Polymorphism | Violation | Violation | Violation | **Violation** | V-03, V-09, V-10, V-15, V-16 (also V-02 and V-04) |
+| Pure Fabrication | Violation | Correct | Violation | **Violation** | V-08, V-18, V-19 (also V-05 and V-14) |
+| Indirection | Violation | Correct | Correct | **Violation** | V-02 |
+| Protected Variations | Violation | Violation | Violation | **Violation** | V-03, V-05, V-11, V-17 (also V-02, V-15 and V-16) |
+
+When a fragment breaks more than one pattern, the violation is registered once, under the pattern that guides its correction, and the other patterns are named in the explanation. Creator is the only pattern that the three reports find correct.
