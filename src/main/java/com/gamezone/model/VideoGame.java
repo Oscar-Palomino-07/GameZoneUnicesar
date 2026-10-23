@@ -56,7 +56,7 @@ public class VideoGame extends Product {
      */
     @Override
     public String getCategory() {
-        return "VIDEOGAME";
+        return ProductCategory.VIDEOGAME.name();
     }
 
     /**

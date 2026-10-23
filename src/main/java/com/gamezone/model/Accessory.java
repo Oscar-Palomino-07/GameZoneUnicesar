@@ -88,7 +88,7 @@ public abstract class Accessory extends Product {
      */
     @Override
     public String getCategory() {
-        return "ACCESSORY";
+        return ProductCategory.ACCESSORY.name();
     }
 
     /**

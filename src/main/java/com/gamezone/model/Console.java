@@ -56,7 +56,7 @@ public class Console extends Product {
      */
     @Override
     public String getCategory() {
-        return "CONSOLE";
+        return ProductCategory.CONSOLE.name();
     }
 
     /**
