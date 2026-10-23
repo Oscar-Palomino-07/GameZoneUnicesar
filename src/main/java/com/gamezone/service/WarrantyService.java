@@ -287,14 +287,7 @@ public class WarrantyService {
         if (!product.supportsWarranty()) {
             throw new IllegalArgumentException("Solo las consolas admiten garantía: " + product.getId());
         }
-        boolean belongsToSale = false;
-        for (Product saleProduct : sale.getProducts()) {
-            if (saleProduct.getId().equals(product.getId())) {
-                belongsToSale = true;
-                break;
-            }
-        }
-        if (!belongsToSale) {
+        if (!sale.contains(product.getId())) {
             throw new IllegalArgumentException("El producto " + product.getId()
                     + " no pertenece a la venta " + sale.getId() + ".");
         }
