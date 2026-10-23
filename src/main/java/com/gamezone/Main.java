@@ -15,7 +15,21 @@ import com.gamezone.service.PromotionService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 import com.gamezone.service.WarrantyService;
+import com.gamezone.ui.AccessoryMenu;
+import com.gamezone.ui.ConsoleErrorReporter;
+import com.gamezone.ui.ConsoleInput;
 import com.gamezone.ui.ConsoleMenu;
+import com.gamezone.ui.Menu;
+import com.gamezone.ui.PersonMenu;
+import com.gamezone.ui.ProductMenu;
+import com.gamezone.ui.PromotionMenu;
+import com.gamezone.ui.ReportMenu;
+import com.gamezone.ui.ReturnMenu;
+import com.gamezone.ui.SaleMenu;
+import com.gamezone.ui.WarrantyMenu;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Entry point of the GameZone Unicesar application.
@@ -81,7 +95,19 @@ public class Main {
         ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService,
                 accessoryService, warrantyService);
 
-        return new ConsoleMenu(productService, personService, saleService, returnService,
-                accessoryService, warrantyService, promotionService);
+        // The menus share one reader of the input and one reporter of errors;
+        // the order of the list is the order of the options of the main menu.
+        ConsoleInput input = new ConsoleInput();
+        ConsoleErrorReporter errorReporter = new ConsoleErrorReporter();
+        List<Menu> menus = Arrays.asList(
+                new ProductMenu(productService, input, errorReporter),
+                new PersonMenu(personService, input, errorReporter),
+                new SaleMenu(saleService, input, errorReporter),
+                new ReturnMenu(returnService, input, errorReporter),
+                new AccessoryMenu(accessoryService, input, errorReporter),
+                new ReportMenu(returnService, input, errorReporter),
+                new WarrantyMenu(warrantyService, input, errorReporter),
+                new PromotionMenu(promotionService, input, errorReporter));
+        return new ConsoleMenu(input, menus);
     }
 }
