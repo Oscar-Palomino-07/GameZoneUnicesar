@@ -5,14 +5,8 @@ import com.gamezone.model.Return;
 import com.google.gson.*;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
@@ -32,13 +26,12 @@ import java.util.List;
  */
 public class ReturnRepository {
 
-    private static final String DATA_DIRECTORY = "data";
     private static final String RETURN_FILE = "data/return.json";
 
     private static final Type RETURN_TYPE = new TypeToken<List<Return>>() {
     }.getType();
 
-    private final Gson gson;
+    private final JsonFileStore store;
 
     /**
      * Creates the return repository and configures the Gson instance with the
@@ -48,7 +41,7 @@ public class ReturnRepository {
         GsonBuilder builder = new GsonBuilder().setPrettyPrinting();
         builder.registerTypeAdapter(Product.class, new ProductDeserializer());
         builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
-        this.gson = builder.create();
+        this.store = new JsonFileStore(builder.create());
     }
 
     /**
@@ -81,11 +74,7 @@ public class ReturnRepository {
      */
     private void writeList(String fileName, List<?> items, Type type) {
         try {
-            Path path = Paths.get(fileName);
-            Files.createDirectories(Paths.get(DATA_DIRECTORY));
-            try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                gson.toJson(items, type, writer);
-            }
+            store.write(fileName, items, type);
         } catch (IOException e) {
             System.err.println("Error saving returns to " + fileName + ": " + e.getMessage());
         }
@@ -101,13 +90,8 @@ public class ReturnRepository {
      *         or cannot be parsed
      */
     private <T> List<T> readList(String fileName, Type type) {
-        Path path = Paths.get(fileName);
-        if (!Files.exists(path)) {
-            return new ArrayList<>();
-        }
-        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            List<T> items = gson.fromJson(reader, type);
-            return items != null ? items : new ArrayList<>();
+        try {
+            return store.read(fileName, type);
         } catch (IOException | JsonSyntaxException e) {
             System.err.println("Error loading returns from " + fileName + ": " + e.getMessage());
             return new ArrayList<>();
