@@ -285,3 +285,44 @@ A partir de esta sección cada interacción se registra con los campos que exige
 | Respuesta | El 22 de octubre la IA revisó el primer informe de Manuel contra el código y me dio los motivos para devolverlo (líneas anteriores al Req. 6, una violación que era mía, alcance incompleto y campos que faltaban). El 23 de octubre comprobó 20 referencias del informe de Veronica contra los servicios y la cobertura de las 43 clases entre los tres informes. Redactó `docs/grasp-audit/consolidated-audit.md`: commit auditado, validación de la evidencia, tabla de cobertura, veredicto por patrón, 19 violaciones definitivas con su responsable, fronteras, orden de corrección en cinco oleadas y cinco defectos fuera de alcance. Redactó mis respuestas Q2 y Q5. Verificó que `src/main` de `f612269` es idéntico al de `8b0be4b` |
 | Decisión | Acepté los 19 hallazgos. Cambié dos soluciones propuestas: la V-09 de Manuel (una lista única alteraría el orden del listado, hoy videojuegos antes que consolas) y la V-11 (haría que `ConsoleMenu` creara objetos de dominio, una violación nueva). Unifiqué como una sola violación las cuatro que se encontraron desde los dos lados. Debo poder explicar estas decisiones de la consolidación en la sustentación |
 | Commit relacionado | `6ed49f4`, `3a4bc48`, `6bde5db`, `53c9012`, `28f8b24`, `22c34f3`, `c03bcd1`, `28ba3c4`, `3d5f764`, `f7ec5f9`, `602ac86` |
+
+### Fase 2 — Corrección
+
+#### Entrada 20
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-23 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Requerimiento 7, Fase 2, `feature/grasp-refactor` (preparación) |
+| Objetivo | Dejar listo el arranque de la corrección: rama, referencia de no regresión antes de la primera corrección, estrategia de verificación y diagrama de clases "antes" |
+| Consulta | "listo" (la Fase 1 ya estaba fusionada), "Oscar: en compare.sh, iso-write-failure [data] siempre sale como DIFF…" |
+| Respuesta | La IA creó la rama, tomó la referencia sobre `develop` (`1a27972`) y al revisarla encontró un hueco de mi script: la garantía extendida no se ejercitaba nunca, porque una línea en blanco consumía la respuesta `s`. Lo corrigió antes de fijar la referencia y añadió un caso que detecta el orden del listado de productos. Redactó `docs/grasp-refactor-log.md` (estrategia de cinco partes coherente con la Q4, tabla de las 31 operaciones, tablas de cambios, clases nuevas, hallazgos fuera de alcance) y `docs/grasp-class-diagram.md` con el diagrama "antes" (validó que el Mermaid se interpreta). Después arregló dos falsos `DIFF` del comparador: la carpeta de datos vacía que Git no guarda y los marcos de las trazas de pila |
+| Decisión | Adopté esa estrategia y esa referencia para todo el equipo. Los comités son míos y la IA no figura como coautora; el uso queda documentado aquí. Debo poder explicar qué cubre cada escenario del script |
+| Commit relacionado | `e723c75`, `05cda76`, `a6d71eb`, `46a29f6`, `2740f61`, `1566cc3` |
+
+#### Entrada 21
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-23 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Requerimiento 7, Fase 2, `feature/grasp-refactor` (correcciones del Líder Técnico) |
+| Objetivo | Corregir las violaciones asignadas al Líder Técnico en la consolidada: V-01 (`restoreStock` y `discountStock`), V-02, V-03, V-04, V-05, V-06, V-07, V-08, V-11 (menú), V-12 (`Sale`), V-13 (`Main`), V-14 (menú y `Main`) y V-18 (`SaleRepository`) |
+| Consulta | "haz mi parte del requerimiento 7" y "avancemos" (las correcciones, oleada por oleada) |
+| Respuesta | La IA implementó cada corrección en un commit y, tras cada una, compiló y corrió los 15 escenarios contra la referencia. En `Sale` añadió `hasDiscount`, `applyPromotion`, `countUnits` y `contains`; creó `InventoryService` (busca el artículo primero en productos y después en accesorios, sin `instanceof`), `LocalDateAdapter` y `ProductDeserializer` compartidos; hizo que `SaleService` use `InventoryService` y `supportsWarranty`, y que ofrezca al menú los artículos con garantía extendida; y partió `ConsoleMenu` en `ConsoleInput`, `ConsoleErrorReporter`, la interfaz `Menu` y ocho menús, dejando el bucle principal en 53 líneas |
+| Decisión | Acepté `InventoryService` por búsqueda en lugar de por tipo, y que `ConsoleMenu` reciba una lista de menús para que añadir un módulo no la modifique. Dejé la parte de `ProductService.decreaseStock` y `AccessoryService.decreaseStock` a sus responsables (Manuel y Veronica), como indica la regla de asignación. Los comités son míos y la IA no figura como coautora; debo poder explicar cada corrección y su patrón |
+| Commit relacionado | `cd3d001`, `4ea510a`, `feb37d2`, `0dc6d31`, `6b03367`, `9883d43`, `880a7d4`, `b8266ca`, `5867dd1`, `e5dcbc8`, `a16b1db`, `9fe03f7`, `0506034`, `208045d`, `d511741`, `d61f115`, `c0e5150`, `029e7b3`, `5c01090`, `17f9001` |
+
+#### Entrada 22
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-23 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Requerimiento 7, Fase 2, cierre en `feature/grasp-refactor` |
+| Objetivo | Cerrar la fase: comprobar que las 19 violaciones están corregidas, hacer la verificación final de no regresión sobre `develop`, completar la bitácora de cambios, el diagrama "después" y el README |
+| Consulta | "listo ya quedo lo de mis desarrolladores cerremos nosotros" |
+| Respuesta | La IA buscó en el código de `develop` el patrón de cada una de las 19 violaciones y confirmó que ya no está. Compiló `develop` en `0bb107d` con `mvn clean compile` (BUILD SUCCESS, 63 archivos) y corrió el script: 15 de 15 escenarios idénticos a la referencia anterior a la corrección. Calculó en qué pull request (#49 o #50) entró cada commit de la bitácora y detectó que faltaba mi fila de V-13. Redactó la sección de verificación final, el diagrama "después" (validó el Mermaid) y la actualización del README |
+| Decisión | Verifiqué los resultados antes de aceptar el cierre. El profesor pidió no borrar ninguna rama, así que no se elimina `feature/grasp-refactor`. El pull request final solo lleva documentos, porque el código ya estaba fusionado. Debo poder explicar los resultados de la verificación y cada fila de la bitácora en la sustentación |
+| Commit relacionado | `499ca71`, `9464880`, `4a8c4ab` |
