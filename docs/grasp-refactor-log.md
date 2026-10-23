@@ -108,6 +108,10 @@ One row for each change. The violation identifiers are those of the consolidated
 
 | Class | Change made | Violation ID | Principle applied | Commit / PR | Responsible |
 |---|---|---|---|---|---|
+| `ProductCategory` | The enum is created in `com.gamezone.model` with `VIDEOGAME`, `CONSOLE` and `ACCESSORY` as the single list of product categories, and `isValid(String)` checks a category name; the names are the texts already stored in `promotions.json` | V-17 (part) | Protected Variations | `602bc13` | Developer 2 |
+| `PromotionService` | The three category constants are removed and the target category of a category promotion is validated with `ProductCategory.isValid`, with the same message | V-17 (part) | Protected Variations | `9a1e109` | Developer 2 |
+| `AccessoryValidator`, `AccessoryService` | `AccessoryValidator` is created in `com.gamezone.validation` with `validateCommonData`, `normalizeConnectionType`, `validateCableData` and `validateMemoryData`; `AccessoryService` calls it from the three registration methods, with the same `IllegalArgumentException`, messages and order of the checks | V-19 (part) | Pure Fabrication | `bf9f218` | Developer 2 |
+| `PromotionValidator`, `PromotionService` | `PromotionValidator` is created in `com.gamezone.validation` with `validateCommonData`, `validatePercentage`, `validateMinimumQuantity` and `normalizeCategory`; `PromotionService` calls it from the three registration methods, with the same `IllegalArgumentException`, messages and order of the checks | V-19 (part) | Pure Fabrication | `6fc72cb` | Developer 2 |
 
 ---
 
@@ -120,6 +124,9 @@ Every class, interface or abstraction that a correction creates is listed here, 
 | `LocalDateAdapter` | `com.gamezone.persistence` | Technical Lead | V-08 |
 | `ProductDeserializer` | `com.gamezone.persistence` | Technical Lead | V-08 |
 | `ProductFactory` | `com.gamezone.service` | Developer 1 | V-11 |
+| `ProductCategory` | `com.gamezone.model` | Developer 2 | V-17 |
+| `AccessoryValidator` | `com.gamezone.validation` | Developer 2 | V-19 |
+| `PromotionValidator` | `com.gamezone.validation` | Developer 2 | V-19 |
 
 ---
 
