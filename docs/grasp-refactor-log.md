@@ -87,6 +87,8 @@ One row for each change. The violation identifiers are those of the consolidated
 | `ProductService` | `restoreStock` calls `Product.increaseStock` instead of adding to the stock outside the entity; the validations and the persistence stay as they were (the `SaleService.discountStock` part of the violation is made together with V-02) | V-01 (part) | Information Expert | `6b03367` | Technical Lead |
 | `SaleService` | `validateExtendedWarrantyRequest` and `assignWarranties` ask `supportsWarranty()` instead of checking for `Console`; a missing item is still rejected with the same message | V-03 | Polymorphism | `9883d43` | Technical Lead |
 | `SaleService`, `ConsoleMenu` | `SaleService.findItemsEligibleForExtendedWarranty` returns the items that can receive the extended warranty, and `ConsoleMenu.askExtendedWarranties` only asks the user about them, with the same prompt and order | V-04 | Controller | `880a7d4` | Technical Lead |
+| `ConsoleMenu`, `Main` | `ConsoleMenu` keeps only the main loop and receives the list of submenus; the input reading, the error reporting and each of the eight modules move to their own classes, and `Main` creates them and passes the list. Prompts, messages and order of the options are the same | V-05 | High Cohesion | `634763d`, `5867dd1`, `ae6e00b`, `a16b1db`, `9fe03f7`, `0506034`, `208045d` | Technical Lead |
+| `scripts/regression` | The comparison ignores the frames of the stack traces (it still compares the exception and its message), because the frames name the classes that moved | — (verification of the phase) | — | `1566cc3` | Technical Lead |
 
 ---
 
@@ -132,6 +134,17 @@ Every class, interface or abstraction that a correction creates is listed here, 
 |---|---|---|---|
 | `LocalDateAdapter` | `com.gamezone.persistence` | Technical Lead | V-08 |
 | `ProductDeserializer` | `com.gamezone.persistence` | Technical Lead | V-08 |
+| `ConsoleInput` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `ConsoleErrorReporter` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `Menu` (interface) | `com.gamezone.ui` | Technical Lead | V-05 |
+| `ProductMenu` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `PersonMenu` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `SaleMenu` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `ReturnMenu` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `ReportMenu` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `AccessoryMenu` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `WarrantyMenu` | `com.gamezone.ui` | Technical Lead | V-05 |
+| `PromotionMenu` | `com.gamezone.ui` | Technical Lead | V-05 |
 | `ProductFactory` | `com.gamezone.service` | Developer 1 | V-11 |
 | `ProductCategory` | `com.gamezone.model` | Developer 2 | V-17 |
 | `AccessoryValidator` | `com.gamezone.validation` | Developer 2 | V-19 |
