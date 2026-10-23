@@ -10,9 +10,6 @@ import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
@@ -139,23 +136,6 @@ public class PromotionRepository {
                 return context.deserialize(json, BulkPurchaseDiscount.class);
             }
             return context.deserialize(json, PercentageDiscount.class);
-        }
-    }
-
-    /**
-     * Serializes {@link LocalDate} values as ISO-8601 strings instead of the
-     * default Gson object representation.
-     */
-    private static class LocalDateAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
-
-        @Override
-        public JsonElement serialize(LocalDate date, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(date.toString());
-        }
-
-        @Override
-        public LocalDate deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-            return LocalDate.parse(json.getAsString());
         }
     }
 }
