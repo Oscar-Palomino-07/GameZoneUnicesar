@@ -188,3 +188,53 @@ When related behaviors vary by type (class), assign responsibility for the behav
 * **Evidence:**
   * `Accessory.getDescription()` is implemented polymorphically across `Controller`, `Cable`, and `Memory`.
   * `Promotion.calculateDiscount(List<Product>)` is an abstract method in `Promotion` implemented polymorphically by `PercentageDiscount`, `CategoryDiscount`, and `BulkPurchaseDiscount`. `SaleService` evaluates active promotions through dynamic dispatch without checking concrete promotion classes.
+
+
+---
+
+## 7. Pure Fabrication
+
+### Principle
+Assign a cohesive set of responsibilities to an artificial or technical class that does not represent a problem domain concept, in order to support Low Coupling, High Cohesion, and clean separation of concerns.
+
+### Audit by Class
+
+#### 1. `com.gamezone.model.Product`, `VideoGame`, `Console`
+* **Verdict:** `Not applicable`
+* **Evidence:** These classes directly mirror real-world entities in the video game store domain, not artificial software constructs.
+
+#### 2. `com.gamezone.persistence.ProductRepository`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Package: `com.gamezone.persistence` (lines 28–125).
+  * A "repository" is not a physical concept in a game store, but an artificial technical abstraction invented to encapsulate file I/O, directory creation and Gson JSON serialization. Without `ProductRepository`, `Product` would be forced to handle file reading and writing, violating High Cohesion and Information Expert.
+
+#### 3. `com.gamezone.service.ProductService`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Package: `com.gamezone.service` (lines 17–196).
+  * Application services are Pure Fabrications designed to coordinate workflows, enforce business policies, and orchestrate persistence across multiple domain objects without attaching procedural workflow logic to entities.
+
+---
+
+## 8. Indirection
+
+### Principle
+Assign responsibility to an intermediate object to mediate between other components or services, preventing direct coupling between them.
+
+### Audit by Class
+
+#### 1. `com.gamezone.model.Product`, `VideoGame`, `Console`
+* **Verdict:** `Not applicable`
+* **Evidence:** Domain model entities do not act as intermediaries between separate subsystems.
+
+#### 2. `com.gamezone.persistence.ProductRepository`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Methods: `saveAllVideoGames`, `loadAllVideoGames`, `saveAllConsoles`, `loadAllConsoles` (lines 47–79).
+  * Serves as an indirection layer between in-memory product models and physical disk storage (`data/videogames.json` and `data/consoles.json`).
+
+#### 3. `com.gamezone.service.ProductService`
+* **Verdict:** `Correct`
+* **Evidence:**
+  * Operates as an indirection boundary between `ConsoleMenu` (UI layer) and `ProductRepository` (persistence layer). The UI never accesses repositories or files directly; it only communicates with `ProductService`. If storage mechanisms change, the UI layer remains completely insulated.
