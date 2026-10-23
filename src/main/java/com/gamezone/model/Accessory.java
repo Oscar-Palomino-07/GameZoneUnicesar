@@ -88,8 +88,16 @@ public abstract class Accessory extends Product {
      */
     @Override
     public String getCategory() {
-        return "ACCESSORY";
+        return ProductCategory.ACCESSORY.name();
     }
+
+    /**
+     * Returns the type code of the concrete accessory ({@code CONTROLLER},
+     * {@code CABLE} or {@code MEMORY}).
+     *
+     * @return the accessory type code
+     */
+    public abstract String getAccessoryType();
 
     /**
      * Builds the part of the description shared by every accessory. Concrete

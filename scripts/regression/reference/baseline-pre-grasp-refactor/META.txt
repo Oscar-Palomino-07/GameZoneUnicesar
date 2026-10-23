@@ -1,0 +1,5 @@
+label:  baseline-pre-grasp-refactor
+branch: feature/grasp-refactor
+commit: 1a27972
+dirty:  0 changed file(s) under src/
+date:   2026-10-23 09:26:08

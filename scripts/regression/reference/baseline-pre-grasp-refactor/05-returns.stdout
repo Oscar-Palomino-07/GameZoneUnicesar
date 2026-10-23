@@ -1,0 +1,236 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): Devolución D-1 registrada.
+Recibo de devolución
+====================
+ID: D-1
+Venta: V-1
+Fecha: 2026-10-23
+Cliente: P-1
+Vendedor: P-100
+Productos:
+  - Halo Infinite (V-1)
+      Precio de lista: $200000.00
+      Descuento proporcional: -$40000.00
+      Reembolso: $160000.00
+Garantías anuladas (reembolso): $0.00
+Total reembolsado: $160000.00
+
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): El producto V-1 de la venta V-1 ya tiene 1 unidad(es) devuelta(s) de 1 compradas; no se pueden devolver 1 más.
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): El producto no existe en el sistema: V-3
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): No se encontró la venta original: S-NOEXISTE
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): El identificador de la venta es obligatorio.
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): La devolución debe incluir al menos un producto.
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): Devolución D-2 registrada.
+Recibo de devolución
+====================
+ID: D-2
+Venta: V-2
+Fecha: 2026-10-23
+Cliente: P-2
+Vendedor: P-101
+Productos:
+  - Xbox Series X (1)
+      Precio de lista: $2500000.00
+      Descuento proporcional: -$375000.00
+      Reembolso: $2125000.00
+Garantías anuladas (reembolso): $250000.00
+Total reembolsado: $2375000.00
+
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): Devolución D-3 registrada.
+Recibo de devolución
+====================
+ID: D-3
+Venta: V-3
+Fecha: 2026-10-23
+Cliente: P-2
+Vendedor: P-101
+Productos:
+  - Halo Infinite (V-1)
+      Precio de lista: $200000.00
+      Descuento proporcional: -$40000.00
+      Reembolso: $160000.00
+  - Halo Infinite (V-1)
+      Precio de lista: $200000.00
+      Descuento proporcional: -$40000.00
+      Reembolso: $160000.00
+Garantías anuladas (reembolso): $0.00
+Total reembolsado: $320000.00
+
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id to return: Product ids to return (comma separated): Devolución D-4 registrada.
+Recibo de devolución
+====================
+ID: D-4
+Venta: V-5
+Fecha: 2026-10-23
+Cliente: P-1
+Vendedor: P-100
+Productos:
+  - Xbox Series X (1)
+      Precio de lista: $2500000.00
+      Descuento proporcional: -$375000.00
+      Reembolso: $2125000.00
+Garantías anuladas (reembolso): $250000.00
+Total reembolsado: $2375000.00
+
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Return D-1 | date: 2026-10-23 | customer: Ana Torres | items: 1 | refund: $160000.0
+Return D-2 | date: 2026-10-23 | customer: Luis Perez | items: 1 | refund: $2375000.0
+Return D-3 | date: 2026-10-23 | customer: Luis Perez | items: 2 | refund: $320000.0
+Return D-4 | date: 2026-10-23 | customer: Ana Torres | items: 1 | refund: $2375000.0
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Customer id: Return D-1 | date: 2026-10-23 | customer: Ana Torres | items: 1 | refund: $160000.0
+Return D-4 | date: 2026-10-23 | customer: Ana Torres | items: 1 | refund: $2375000.0
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Customer id: Return D-2 | date: 2026-10-23 | customer: Luis Perez | items: 1 | refund: $2375000.0
+Return D-3 | date: 2026-10-23 | customer: Luis Perez | items: 2 | refund: $320000.0
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Customer id: No returns found for customer P-999.
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id: Return D-1 | date: 2026-10-23 | customer: Ana Torres | items: 1 | refund: $160000.0
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id: Return D-2 | date: 2026-10-23 | customer: Luis Perez | items: 1 | refund: $2375000.0
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: Sale id: No returns found for sale S-NOEXISTE.
+=== RETURNS ===
+1. Register return
+2. View all returns
+3. View returns by customer
+4. View returns by sale
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === REPORTS ===
+1. Balance mensual (ventas - devoluciones)
+0. Back
+Choose an option: Mes (1-12): Año (ej. 2026): Balance mensual 10/2026
+  Total de ventas:       $10220750,00
+  Total de devoluciones: $5230000,00
+  Balance neto:          $4990750,00
+=== REPORTS ===
+1. Balance mensual (ventas - devoluciones)
+0. Back
+Choose an option: Mes (1-12): Año (ej. 2026): Mes inválido: 13. Debe estar entre 1 y 12.
+=== REPORTS ===
+1. Balance mensual (ventas - devoluciones)
+0. Back
+Choose an option: Mes (1-12): Año (ej. 2026): Año inválido: 1999. Debe ser 2000 o posterior.
+=== REPORTS ===
+1. Balance mensual (ventas - devoluciones)
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!

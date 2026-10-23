@@ -56,7 +56,15 @@ public class Console extends Product {
      */
     @Override
     public String getCategory() {
-        return "CONSOLE";
+        return ProductCategory.CONSOLE.name();
+    }
+
+    /**
+     * @return {@code true}, because consoles are covered by warranties
+     */
+    @Override
+    public boolean supportsWarranty() {
+        return true;
     }
 
     /**

@@ -6,14 +6,8 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,7 +27,6 @@ import com.google.gson.JsonObject;
  */
 public class AccessoryRepository {
 
-    private static final String DATA_DIRECTORY = "data";
     private static final String ACCESSORIES_FILE = "data/accessories.json";
 
 
@@ -41,7 +34,7 @@ public class AccessoryRepository {
     }.getType();
 
 
-    private final Gson gson;
+    private final JsonFileStore store;
 
     /**
      * Creates the accessory repository and configures the Gson instance with
@@ -51,7 +44,7 @@ public class AccessoryRepository {
         GsonBuilder builder = new GsonBuilder().setPrettyPrinting();
 
         builder.registerTypeAdapter(Accessory.class, new AccessoryDeserializer());
-        this.gson = builder.create();
+        this.store = new JsonFileStore(builder.create());
     }
 
     /**
@@ -84,12 +77,7 @@ public class AccessoryRepository {
      */
     private void writeList(String fileName, List<?> items, Type type) {
         try {
-            Path path = Paths.get(fileName);
-            Files.createDirectories(Paths.get(DATA_DIRECTORY));
-
-            try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                gson.toJson(items, type, writer); // lista Java → texto JSON
-            }
+            store.write(fileName, items, type);
         } catch (IOException e) {
             System.err.println("Error saving accessories to " + fileName + ": " + e.getMessage());
         }
@@ -105,13 +93,8 @@ public class AccessoryRepository {
      *         exist or cannot be parsed
      */
     private <T> List<T> readList(String fileName, Type type) {
-        Path path = Paths.get(fileName);
-        if (!Files.exists(path)) {
-            return new ArrayList<>();
-        }
-        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            List<T> items = gson.fromJson(reader, type); // texto JSON → lista Java
-            return items != null ? items : new ArrayList<>();
+        try {
+            return store.read(fileName, type);
         } catch (IOException | JsonSyntaxException e) {
             System.err.println("Error loading accessories from " + fileName + ": " + e.getMessage());
             return new ArrayList<>();

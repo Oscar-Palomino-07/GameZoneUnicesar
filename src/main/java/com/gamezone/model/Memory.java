@@ -63,6 +63,14 @@ public class Memory extends Accessory {
     }
 
     /**
+     * @return the accessory type code {@code MEMORY}
+     */
+    @Override
+    public String getAccessoryType() {
+        return "MEMORY";
+    }
+
+    /**
      * Builds a description that integrates the common accessory attributes
      * with the capacity and type of the memory.
      *

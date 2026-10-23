@@ -1,35 +1,15 @@
 package com.gamezone.persistence;
 
 import com.gamezone.exceptions.PersistenceException;
-import com.gamezone.model.Cable;
-import com.gamezone.model.Console;
-import com.gamezone.model.Controller;
-import com.gamezone.model.Memory;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
-import com.gamezone.model.VideoGame;
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -38,21 +18,21 @@ import java.util.List;
  * serialized with Gson. If the file does not exist yet, the repository loads
  * an empty list.
  *
- * <p>The repository registers custom serializers because the default Gson
- * behavior is not enough for this module: {@link LocalDate} values are
- * written as ISO-8601 strings and every {@link Product} is rebuilt as its
- * concrete subtype ({@link VideoGame} or {@link Console}) when a file is
- * loaded.</p>
+ * <p>The repository registers two shared serializers because the default Gson
+ * behavior is not enough for this module: {@link LocalDateAdapter} writes
+ * {@link LocalDate} values as ISO-8601 strings and {@link ProductDeserializer}
+ * rebuilds every {@link Product} as its concrete subtype when a file is
+ * loaded. The reading and the writing of the file are done by the shared
+ * {@link JsonFileStore}.</p>
  */
 public class SaleRepository {
 
-    private static final String DATA_DIRECTORY = "data";
     private static final String SALES_FILE = "data/sales.json";
 
     private static final Type SALES_TYPE = new TypeToken<List<Sale>>() {
     }.getType();
 
-    private final Gson gson;
+    private final JsonFileStore store;
 
     /**
      * Creates the sale repository and configures the Gson instance with the
@@ -62,117 +42,38 @@ public class SaleRepository {
         GsonBuilder builder = new GsonBuilder().setPrettyPrinting();
         builder.registerTypeAdapter(Product.class, new ProductDeserializer());
         builder.registerTypeAdapter(LocalDate.class, new LocalDateAdapter());
-        this.gson = builder.create();
+        this.store = new JsonFileStore(builder.create());
     }
 
     /**
      * Saves all sales to the sales JSON file, overwriting its previous
-     * contents.
+     * contents and creating the data directory and the file when they do not
+     * exist yet.
      *
      * @param sales the list of sales to persist
+     * @throws PersistenceException when the file cannot be written
      */
     public void saveAll(List<Sale> sales) {
-        writeList(SALES_FILE, sales, SALES_TYPE);
+        try {
+            store.write(SALES_FILE, sales, SALES_TYPE);
+        } catch (IOException e) {
+            throw new PersistenceException(SALES_FILE, "escritura", e);
+        }
     }
 
     /**
      * Loads all sales from the sales JSON file.
      *
-     * @return the list of stored sales, or an empty list if the file does
-     *         not exist or cannot be parsed
-     */
-    public List<Sale> loadAll() {
-        return readList(SALES_FILE, SALES_TYPE);
-    }
-
-    /**
-     * Serializes the given list to the given JSON file, creating the data
-     * directory and the file when they do not exist yet.
-     *
-     * @param fileName the path of the destination file
-     * @param items    the list of sales to persist
-     * @param type     the Gson type of the generic list
-     * @throws PersistenceException when the file cannot be written
-     */
-    private void writeList(String fileName, List<?> items, Type type) {
-        try {
-            Path path = Paths.get(fileName);
-            Files.createDirectories(Paths.get(DATA_DIRECTORY));
-            try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                gson.toJson(items, type, writer);
-            }
-        } catch (IOException e) {
-            throw new PersistenceException(fileName, "escritura", e);
-        }
-    }
-
-    /**
-     * Deserializes a list of sales from the given JSON file.
-     *
-     * @param fileName the path of the source file
-     * @param type     the Gson type of the generic list
-     * @param <T>      the concrete type stored in the file
      * @return the stored sales, or an empty list if the file does not exist
      *         yet
      * @throws PersistenceException when the file exists but cannot be read
      *         or parsed
      */
-    private <T> List<T> readList(String fileName, Type type) {
-        Path path = Paths.get(fileName);
-        if (!Files.exists(path)) {
-            return new ArrayList<>();
-        }
-        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            List<T> items = gson.fromJson(reader, type);
-            return items != null ? items : new ArrayList<>();
+    public List<Sale> loadAll() {
+        try {
+            return store.read(SALES_FILE, SALES_TYPE);
         } catch (IOException | JsonSyntaxException e) {
-            throw new PersistenceException(fileName, "lectura", e);
-        }
-    }
-
-    /**
-     * Rebuilds a {@link Product} from its JSON representation, choosing the
-     * concrete subtype ({@link VideoGame}, {@link Console}, {@link Controller},
-     * {@link Cable} or {@link Memory}) based on the attributes present in the
-     * serialized object.
-     */
-    private static class ProductDeserializer implements JsonDeserializer<Product> {
-
-        private final Gson typeGson = new Gson();
-
-        @Override
-        public Product deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-            JsonObject object = json.getAsJsonObject();
-            if (object.has("connectionType")) {
-                return typeGson.fromJson(json, Controller.class);
-            }
-            if (object.has("lengthInMeters") || object.has("connectorType")) {
-                return typeGson.fromJson(json, Cable.class);
-            }
-            if (object.has("capacityInGb") || object.has("memoryType")) {
-                return typeGson.fromJson(json, Memory.class);
-            }
-            if (object.has("platform") || object.has("genre") || object.has("ageRating")) {
-                return typeGson.fromJson(json, VideoGame.class);
-            }
-            return typeGson.fromJson(json, Console.class);
-        }
-    }
-
-    /**
-     * Serializes {@link LocalDate} values as ISO-8601 strings instead of the
-     * default Gson object representation.
-     */
-    private static class LocalDateAdapter implements JsonSerializer<LocalDate>, JsonDeserializer<LocalDate> {
-
-        @Override
-        public JsonElement serialize(LocalDate date, Type typeOfSrc, JsonSerializationContext context) {
-            return new JsonPrimitive(date.toString());
-        }
-
-        @Override
-        public LocalDate deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context) {
-            return LocalDate.parse(json.getAsString());
+            throw new PersistenceException(SALES_FILE, "lectura", e);
         }
     }
 }

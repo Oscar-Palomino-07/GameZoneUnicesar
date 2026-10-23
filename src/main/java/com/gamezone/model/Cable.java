@@ -63,6 +63,14 @@ public class Cable extends Accessory {
     }
 
     /**
+     * @return the accessory type code {@code CABLE}
+     */
+    @Override
+    public String getAccessoryType() {
+        return "CABLE";
+    }
+
+    /**
      * Builds a description that integrates the common accessory attributes
      * with the length and connector type of the cable.
      *

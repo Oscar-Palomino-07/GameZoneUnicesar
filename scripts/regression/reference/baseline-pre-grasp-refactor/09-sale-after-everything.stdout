@@ -1,0 +1,119 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Customer id: Seller id: Product ids (comma separated): Accessory ids (comma separated, optional): Venta V-6 registrada.
+Recibo de venta V-6
+====================
+Fecha: 2026-10-23
+Cliente: Ana Torres
+Vendedor: Carlos Mendoza
+Productos:
+  - Halo Infinite (V-1): $200000.00
+  - Control inalámbrico Xbox (A-1): $250000.00
+Subtotal: $450000.00
+Descuento (Descuento general 15%): -$67500.00
+Garantía extendida: $0.00
+Total final: $382500.00
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Sale V-1 | date: 2026-10-23 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $280000.0 | promoción: 20% en videojuegos (-$70000.0) [returnable]
+Sale V-2 | date: 2026-10-23 | customer: Luis Perez | seller: Laura Gomez | items: 2 | total: $2413250.0 | promoción: Descuento general 15% (-$381750.0) [returnable]
+Sale V-3 | date: 2026-10-23 | customer: Luis Perez | seller: Laura Gomez | items: 3 | total: $440000.0 | promoción: 20% en videojuegos (-$110000.0) [returnable]
+Sale V-4 | date: 2026-10-23 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $2337500.0 | promoción: Descuento general 15% (-$412500.0) [returnable]
+Sale V-5 | date: 2026-10-23 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $4750000.0 | promoción: Descuento general 15% (-$750000.0) [returnable]
+Sale V-6 | date: 2026-10-23 | customer: Ana Torres | seller: Carlos Mendoza | items: 2 | total: $382500.0 | promoción: Descuento general 15% (-$67500.0) [returnable]
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Id de la venta: Recibo de venta V-2
+====================
+Fecha: 2026-10-23
+Cliente: Luis Perez
+Vendedor: Laura Gomez
+Productos:
+  - Xbox Series X (1): $2500000.00
+  - Cable HDMI 2.1 (A-2): $45000.00
+Subtotal: $2545000.00
+Descuento (Descuento general 15%): -$381750.00
+Garantía extendida: $250000.00
+Total final: $2413250.00
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: Id de la venta: Recibo de venta V-4
+====================
+Fecha: 2026-10-23
+Cliente: Ana Torres
+Vendedor: Carlos Mendoza
+Productos:
+  - Xbox Series X (1): $2500000.00
+  - Control inalámbrico Xbox (A-1): $250000.00
+Subtotal: $2750000.00
+Descuento (Descuento general 15%): -$412500.00
+Garantía extendida: $0.00
+Total final: $2337500.00
+=== SALES ===
+1. Register sale
+2. View all sales
+3. View sales by customer
+4. View sales by seller
+5. Ver detalle de una venta (recibo)
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === REPORTS ===
+1. Balance mensual (ventas - devoluciones)
+0. Back
+Choose an option: Mes (1-12): Año (ej. 2026): Balance mensual 10/2026
+  Total de ventas:       $10603250,00
+  Total de devoluciones: $5230000,00
+  Balance neto:          $5373250,00
+=== REPORTS ===
+1. Balance mensual (ventas - devoluciones)
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!

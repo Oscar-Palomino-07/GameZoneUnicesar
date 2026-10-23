@@ -65,12 +65,42 @@ public abstract class Product {
     public abstract String getCategory();
 
     /**
+     * Tells whether this product is eligible for warranties. By default a
+     * product does not support warranties; subclasses that do must override
+     * this method.
+     *
+     * @return {@code true} when the product supports warranties, {@code false}
+     *         otherwise
+     */
+    public boolean supportsWarranty() {
+        return false;
+    }
+
+    /**
      * Updates the available stock to the given quantity.
      *
      * @param quantity the new quantity available in inventory
      */
     public void updateStock(int quantity) {
         this.stock = quantity;
+    }
+
+    /**
+     * Increases the available stock by the given quantity.
+     *
+     * @param quantity the number of units to add to the current stock
+     */
+    public void increaseStock(int quantity) {
+        this.stock += quantity;
+    }
+
+    /**
+     * Decreases the available stock by the given quantity.
+     *
+     * @param quantity the number of units to subtract from the current stock
+     */
+    public void decreaseStock(int quantity) {
+        this.stock -= quantity;
     }
 
     /**

@@ -2,8 +2,6 @@ package com.gamezone.service;
 
 import com.gamezone.exceptions.BusinessRuleException;
 import com.gamezone.exceptions.ResourceNotFoundException;
-import com.gamezone.model.Accessory;
-import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
 import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
@@ -17,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,7 +27,7 @@ import java.util.Set;
  * must contain at least one product, the customer, the seller and every
  * product must be registered, and the available stock must cover the quantity
  * requested for each product. When a sale is accepted, the stock of the
- * purchased products is discounted through the {@link ProductService} and the
+ * purchased products is discounted through the {@link InventoryService} and the
  * sale is persisted immediately. Every console in the sale also receives an
  * automatic basic warranty, and the extended warranty can be requested for it
  * through the {@link WarrantyService}.</p>
@@ -40,8 +39,7 @@ public class SaleService {
 
     private final SaleRepository saleRepository;
     private final PersonService personService;
-    private final ProductService productService;
-    private final AccessoryService accessoryService;
+    private final InventoryService inventoryService;
     private final WarrantyService warrantyService;
     private final PromotionService promotionService;
     private final List<Sale> sales;
@@ -52,22 +50,19 @@ public class SaleService {
      *
      * @param saleRepository  the repository used to persist sales
      * @param personService   the service used to locate customers and sellers
-     * @param productService  the service used to locate products and update
-     *                        their stock
-     * @param accessoryService the service used to locate accessories and
-     *                        update their stock
+     * @param inventoryService the service used to find the items of a sale
+     *                        (products or accessories) and update their stock
      * @param warrantyService the service used to assign the warranties of the
      *                        consoles included in a sale
      * @param promotionService the service used to find the best promotion
      *                        for a sale
      */
-    public SaleService(SaleRepository saleRepository, PersonService personService, ProductService productService,
-            AccessoryService accessoryService, WarrantyService warrantyService,
+    public SaleService(SaleRepository saleRepository, PersonService personService,
+            InventoryService inventoryService, WarrantyService warrantyService,
             PromotionService promotionService) {
         this.saleRepository = saleRepository;
         this.personService = personService;
-        this.productService = productService;
-        this.accessoryService = accessoryService;
+        this.inventoryService = inventoryService;
         this.warrantyService = warrantyService;
         this.promotionService = promotionService;
         this.sales = new ArrayList<>(saleRepository.loadAll());
@@ -114,8 +109,8 @@ public class SaleService {
      *       extended warranties, adding their cost.</li>
      *   <li>Calculate the final total: subtotal - discount + cost of the
      *       extended warranties.</li>
-     *   <li>Update the inventory through {@link ProductService} or
-     *       {@link AccessoryService}, according to the type of each item.</li>
+     *   <li>Update the inventory through {@link InventoryService}, which
+     *       changes the stock where each item is kept.</li>
      *   <li>Persist the sale.</li>
      * </ol>
      *
@@ -203,13 +198,13 @@ public class SaleService {
             quantities.merge(productId, 1, Integer::sum);
         }
         for (Map.Entry<String, Integer> entry : quantities.entrySet()) {
-            Product item = resolveItem(entry.getKey());
+            Product item = inventoryService.findItem(entry.getKey());
             ProductValidator.validateProductExists(item, entry.getKey());
             ProductValidator.validateStockAvailability(item, entry.getValue());
         }
         List<Product> items = new ArrayList<>();
         for (String productId : productIds) {
-            items.add(resolveItem(productId));
+            items.add(inventoryService.findItem(productId));
         }
         return items;
     }
@@ -224,10 +219,28 @@ public class SaleService {
      * @param sale the sale that was just created
      */
     private void applyBestPromotion(Sale sale) {
-        promotionService.bestPromotionFor(sale.getProducts()).ifPresent(promotion -> {
-            sale.setAppliedPromotionName(promotion.getName());
-            sale.setDiscountAmount(promotion.calculateDiscount(sale.getProducts()));
-        });
+        promotionService.bestPromotionFor(sale.getProducts()).ifPresent(sale::applyPromotion);
+    }
+
+    /**
+     * Finds the items of a sale request that can receive an extended
+     * warranty, so the user interface can offer it without knowing which
+     * items have a warranty.
+     *
+     * @param itemIds the identifiers of the items entered for the sale
+     * @return the distinct items that support a warranty, in the order in
+     *         which they first appear; identifiers that match no item are
+     *         ignored
+     */
+    public List<Product> findItemsEligibleForExtendedWarranty(List<String> itemIds) {
+        List<Product> eligibleItems = new ArrayList<>();
+        for (String itemId : new LinkedHashSet<>(itemIds)) {
+            Product item = inventoryService.findItem(itemId);
+            if (item != null && item.supportsWarranty()) {
+                eligibleItems.add(item);
+            }
+        }
+        return eligibleItems;
     }
 
     /**
@@ -251,7 +264,8 @@ public class SaleService {
                 throw new BusinessRuleException(
                         "La garantía extendida solo aplica a productos incluidos en la venta: " + requestedId);
             }
-            if (!(resolveItem(requestedId) instanceof Console)) {
+            Product requestedItem = inventoryService.findItem(requestedId);
+            if (requestedItem == null || !requestedItem.supportsWarranty()) {
                 throw new BusinessRuleException("Solo las consolas admiten garantía extendida: " + requestedId);
             }
             extendedWarrantyIds.add(requestedId);
@@ -274,7 +288,7 @@ public class SaleService {
     private double assignWarranties(Sale sale, Set<String> extendedWarrantyIds) {
         double extraCost = 0.0;
         for (Product product : sale.getProducts()) {
-            if (product instanceof Console) {
+            if (product.supportsWarranty()) {
                 warrantyService.assignBasicWarranty(product, sale, sale.getDate());
                 if (extendedWarrantyIds.contains(product.getId())) {
                     extraCost += warrantyService.assignExtendedWarranty(product, sale, sale.getDate())
@@ -286,35 +300,14 @@ public class SaleService {
     }
 
     /**
-     * Resolves a sale item either from the product inventory or from the
-     * accessory inventory, so a single sale can include video games, consoles
-     * and accessories.
-     *
-     * @param itemIdthe identifier of the item to resolve
-     * @return the matching item, or {@code null} when no product or accessory
-     *         matches the identifier
-     */
-    private Product resolveItem(String itemId) {
-        Product item = productService.findById(itemId);
-        if (item == null) {
-            item = accessoryService.findById(itemId);
-        }
-        return item;
-    }
-
-    /**
      * Discounts one unit of stock from a sold item, delegating to the
-     * inventory service that owns the item (products or accessories).
+     * inventory service, which changes the stock in the inventory that owns
+     * the item (products or accessories).
      *
      * @param item the sold item whose stock must be decreased
      */
     private void discountStock(Product item) {
-        int newStock = item.getStock() - 1;
-        if (item instanceof Accessory) {
-            accessoryService.updateStock(item.getId(), newStock);
-        } else {
-            productService.updateStock(item.getId(), newStock);
-        }
+        inventoryService.decreaseStock(item.getId(), 1);
     }
 
     /**

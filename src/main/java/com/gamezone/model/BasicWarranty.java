@@ -39,6 +39,14 @@ public class BasicWarranty extends Warranty {
     }
 
     /**
+     * @return the stored type code {@code "BASIC"}
+     */
+    @Override
+    public String getTypeCode() {
+        return "BASIC";
+    }
+
+    /**
      * @return the additional cost of the basic warranty ({@code 0.0})
      */
     @Override

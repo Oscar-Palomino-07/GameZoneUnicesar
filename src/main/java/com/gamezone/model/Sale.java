@@ -83,6 +83,33 @@ public class Sale {
     }
 
     /**
+     * Counts how many units of a product were bought in this sale.
+     *
+     * @param productId the identifier of the product to count
+     * @return the number of units of that product in the sale, zero when the
+     *         product is not part of it
+     */
+    public int countUnits(String productId) {
+        int units = 0;
+        for (Product product : products) {
+            if (product.getId().equals(productId)) {
+                units++;
+            }
+        }
+        return units;
+    }
+
+    /**
+     * Tells whether a product is part of this sale.
+     *
+     * @param productId the identifier of the product to look for
+     * @return {@code true} when at least one unit of the product was bought
+     */
+    public boolean contains(String productId) {
+        return countUnits(productId) > 0;
+    }
+
+    /**
      * @return the extra cost added to the sale by extended warranties
      */
     public double getWarrantyExtraCost() {
@@ -107,13 +134,15 @@ public class Sale {
     }
 
     /**
-     * Sets the name of the promotion applied to the sale.
+     * Applies a promotion to the sale: records its name and the discount that
+     * it grants over the products of the sale, so both values are always set
+     * together.
      *
-     * @param appliedPromotionName the promotion name, or {@code null} when no
-     *                             promotion was applied
+     * @param promotion the promotion that grants the discount
      */
-    public void setAppliedPromotionName(String appliedPromotionName) {
-        this.appliedPromotionName = appliedPromotionName;
+    public void applyPromotion(Promotion promotion) {
+        this.appliedPromotionName = promotion.getName();
+        this.discountAmount = promotion.calculateDiscount(products);
     }
 
     /**
@@ -125,12 +154,13 @@ public class Sale {
     }
 
     /**
-     * Sets the monetary discount granted by the applied promotion.
+     * Tells whether a promotion granted a discount to this sale.
      *
-     * @param discountAmount the discount amount, never negative
+     * @return {@code true} when a promotion was applied and its discount is
+     *         greater than zero
      */
-    public void setDiscountAmount(double discountAmount) {
-        this.discountAmount = discountAmount;
+    public boolean hasDiscount() {
+        return appliedPromotionName != null && discountAmount > 0;
     }
 
     /**
@@ -181,7 +211,7 @@ public class Sale {
                     .append("): $").append(formatAmount(product.getPrice())).append("\n");
         }
         receipt.append("Subtotal: $").append(formatAmount(calculateSubtotal())).append("\n");
-        if (appliedPromotionName != null && discountAmount > 0) {
+        if (hasDiscount()) {
             receipt.append("Descuento (").append(appliedPromotionName).append("): -$")
                     .append(formatAmount(discountAmount)).append("\n");
         } else {

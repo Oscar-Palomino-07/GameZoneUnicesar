@@ -9,13 +9,29 @@ import com.gamezone.persistence.ReturnRepository;
 import com.gamezone.persistence.SaleRepository;
 import com.gamezone.persistence.WarrantyRepository;
 import com.gamezone.service.AccessoryService;
+import com.gamezone.service.InventoryService;
+import com.gamezone.service.MonthlyBalanceService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
 import com.gamezone.service.ReturnService;
 import com.gamezone.service.SaleService;
 import com.gamezone.service.WarrantyService;
+import com.gamezone.ui.AccessoryMenu;
+import com.gamezone.ui.ConsoleErrorReporter;
+import com.gamezone.ui.ConsoleInput;
 import com.gamezone.ui.ConsoleMenu;
+import com.gamezone.ui.Menu;
+import com.gamezone.ui.PersonMenu;
+import com.gamezone.ui.ProductMenu;
+import com.gamezone.ui.PromotionMenu;
+import com.gamezone.ui.ReportMenu;
+import com.gamezone.ui.ReturnMenu;
+import com.gamezone.ui.SaleMenu;
+import com.gamezone.ui.WarrantyMenu;
+
+import java.util.Arrays;
+import java.util.List;
 
 /**
  * Entry point of the GameZone Unicesar application.
@@ -71,17 +87,33 @@ public class Main {
         AccessoryService accessoryService = new AccessoryService(accessoryRepository);
         PromotionService promotionService = new PromotionService(promotionRepository);
 
+        // The inventory service lets the sales and the returns find items and change their stock
+        // without knowing which of the two inventories holds each item.
+        InventoryService inventoryService = new InventoryService(productService, accessoryService);
+
         // The warranty service resolves the stored sale and product references,
         // so the sale repository and the product service must exist first.
         WarrantyService warrantyService = new WarrantyService(warrantyRepository, saleRepository, productService);
 
         // The sale service assigns the warranties of every console it sells.
-        SaleService saleService = new SaleService(saleRepository, personService, productService, accessoryService,
+        SaleService saleService = new SaleService(saleRepository, personService, inventoryService,
                 warrantyService, promotionService);
-        ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService,
-                accessoryService, warrantyService);
+        ReturnService returnService = new ReturnService(returnRepository, saleService, inventoryService,
+                warrantyService);
 
-        return new ConsoleMenu(productService, personService, saleService, returnService,
-                accessoryService, warrantyService, promotionService);
+        // The menus share one reader of the input and one reporter of errors;
+        // the order of the list is the order of the options of the main menu.
+        ConsoleInput input = new ConsoleInput();
+        ConsoleErrorReporter errorReporter = new ConsoleErrorReporter();
+        List<Menu> menus = Arrays.asList(
+                new ProductMenu(productService, input, errorReporter),
+                new PersonMenu(personService, input, errorReporter),
+                new SaleMenu(saleService, input, errorReporter),
+                new ReturnMenu(returnService, input, errorReporter),
+                new AccessoryMenu(accessoryService, input, errorReporter),
+                new ReportMenu(new MonthlyBalanceService(saleService, returnService), input, errorReporter),
+                new WarrantyMenu(warrantyService, input, errorReporter),
+                new PromotionMenu(promotionService, input, errorReporter));
+        return new ConsoleMenu(input, menus);
     }
 }

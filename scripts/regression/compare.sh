@@ -9,7 +9,9 @@
 #
 # Before comparing, values that legitimately change between runs are masked:
 # dates (sales and warranties use today's date), the month/year typed in the
-# monthly balance, and the line numbers of Java stack traces.
+# monthly balance, and the frames of Java stack traces (only the line with the
+# exception and its message is compared, because the frames name the classes
+# that moved in a refactor).
 set -u
 
 A="${1:?usage: compare.sh <reference-label> <new-label>}"
@@ -40,6 +42,13 @@ for label in "$A" "$B"; do
         -e 's/Balance mensual [0-9]{2}\/[0-9]{4}/Balance mensual <MM\/YYYY>/' \
         -e 's/\([A-Za-z0-9_]+\.java:[0-9]+\)/(<src>)/g' \
         -e 's/\r$//' {} +
+    find "$WORK/$label" -name '*.stderr' -exec sed -i -E '/^[[:space:]]+at /d' {} +
+    # Git does not store empty folders, so a scenario that leaves no data file
+    # (for example iso-write-failure) has no <name>.data folder in a clone.
+    # A missing folder and an empty one mean the same, so both are created.
+    for exitFile in "$WORK/$label"/*.exit; do
+        mkdir -p "${exitFile%.exit}.data"
+    done
 done
 
 echo "Reference: $A  ($(meta "$(resolve "$A")"))"

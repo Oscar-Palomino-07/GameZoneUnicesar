@@ -44,6 +44,14 @@ public class Controller extends Accessory {
     }
 
     /**
+     * @return the accessory type code {@code CONTROLLER}
+     */
+    @Override
+    public String getAccessoryType() {
+        return "CONTROLLER";
+    }
+
+    /**
      * Builds a description that integrates the common accessory attributes
      * with the connection type of the controller.
      *

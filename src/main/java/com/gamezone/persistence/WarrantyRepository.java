@@ -1,18 +1,11 @@
 package com.gamezone.persistence;
 
-import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
-import java.io.BufferedReader;
-import java.io.BufferedWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -35,7 +28,6 @@ import java.util.List;
  */
 public class WarrantyRepository {
 
-    private static final String DATA_DIRECTORY = "data";
     private static final String WARRANTIES_FILE = "data/warranties.json";
     private static final String BASIC = "BASIC";
     private static final String EXTENDED = "EXTENDED";
@@ -43,7 +35,7 @@ public class WarrantyRepository {
     private static final Type RECORDS_TYPE = new TypeToken<List<WarrantyRecord>>() {
     }.getType();
 
-    private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+    private final JsonFileStore store = new JsonFileStore(new GsonBuilder().setPrettyPrinting().create());
 
     /**
      * Creates the warranty repository. It has no dependencies on purpose: the
@@ -61,11 +53,7 @@ public class WarrantyRepository {
      */
     public void saveAll(List<WarrantyRecord> records) {
         try {
-            Path path = Paths.get(WARRANTIES_FILE);
-            Files.createDirectories(Paths.get(DATA_DIRECTORY));
-            try (BufferedWriter writer = Files.newBufferedWriter(path, StandardCharsets.UTF_8)) {
-                gson.toJson(records, RECORDS_TYPE, writer);
-            }
+            store.write(WARRANTIES_FILE, records, RECORDS_TYPE);
         } catch (IOException e) {
             System.err.println("Error saving warranties to " + WARRANTIES_FILE + ": " + e.getMessage());
         }
@@ -80,13 +68,8 @@ public class WarrantyRepository {
      *         or cannot be parsed
      */
     public List<WarrantyRecord> loadAll() {
-        Path path = Paths.get(WARRANTIES_FILE);
-        if (!Files.exists(path)) {
-            return new ArrayList<>();
-        }
-        try (BufferedReader reader = Files.newBufferedReader(path, StandardCharsets.UTF_8)) {
-            List<WarrantyRecord> records = gson.fromJson(reader, RECORDS_TYPE);
-            return records != null ? records : new ArrayList<>();
+        try {
+            return store.read(WARRANTIES_FILE, RECORDS_TYPE);
         } catch (IOException | JsonSyntaxException e) {
             System.err.println("Error loading warranties from " + WARRANTIES_FILE + ": " + e.getMessage());
             return new ArrayList<>();

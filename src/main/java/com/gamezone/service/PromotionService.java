@@ -6,6 +6,7 @@ import com.gamezone.model.PercentageDiscount;
 import com.gamezone.model.Product;
 import com.gamezone.model.Promotion;
 import com.gamezone.persistence.PromotionRepository;
+import com.gamezone.validation.PromotionValidator;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
@@ -17,17 +18,13 @@ import java.util.Optional;
  * Provides the business operations for the promotion module of GameZone
  * Unicesar. Promotion identifiers are generated automatically following the
  * PR-N sequence, and every change is persisted immediately through the
- * {@link PromotionRepository}.
+ * {@link PromotionRepository}. The data of a new promotion is checked by
+ * {@link PromotionValidator} before it is registered.
  */
 public class PromotionService {
 
     // Prefix of the promotion identifiers: PR-1, PR-2, PR-3...
     private static final String ID_PREFIX = "PR-";
-
-    // Allowed values for the target category of a category promotion.
-    private static final String VIDEOGAME_CATEGORY = "VIDEOGAME";
-    private static final String CONSOLE_CATEGORY = "CONSOLE";
-    private static final String ACCESSORY_CATEGORY = "ACCESSORY";
 
     private final PromotionRepository repository;
     // In-memory list of promotions, loaded once when the service is created.
@@ -55,8 +52,8 @@ public class PromotionService {
      */
     public PercentageDiscount registerPercentage(String name, double percentage,
                                                  LocalDate startDate, LocalDate endDate) {
-        validateCommonFields(name, startDate, endDate);
-        validatePercentage(percentage);
+        PromotionValidator.validateCommonData(name, startDate, endDate);
+        PromotionValidator.validatePercentage(percentage);
         PercentageDiscount promotion = new PercentageDiscount(nextPromotionId(), name.trim(),
                 startDate, endDate, percentage);
         promotions.add(promotion);
@@ -70,7 +67,7 @@ public class PromotionService {
      *
      * @param name           the promotion name shown on the receipt
      * @param percentage     the discount percentage, between 0 and 100
-     * @param targetCategory VIDEOGAME, CONSOLE or ACCESSORY, case insensitive
+     * @param targetCategory the name of a product category, case insensitive
      * @param startDate      the first day the promotion is active
      * @param endDate        the last day the promotion is active
      * @return the registered promotion
@@ -78,9 +75,9 @@ public class PromotionService {
      */
     public CategoryDiscount registerCategory(String name, double percentage, String targetCategory,
                                              LocalDate startDate, LocalDate endDate) {
-        validateCommonFields(name, startDate, endDate);
-        validatePercentage(percentage);
-        String category = normalizeCategory(targetCategory);
+        PromotionValidator.validateCommonData(name, startDate, endDate);
+        PromotionValidator.validatePercentage(percentage);
+        String category = PromotionValidator.normalizeCategory(targetCategory);
         CategoryDiscount promotion = new CategoryDiscount(nextPromotionId(), name.trim(),
                 startDate, endDate, percentage, category);
         promotions.add(promotion);
@@ -102,11 +99,9 @@ public class PromotionService {
      */
     public BulkPurchaseDiscount registerBulkPurchase(String name, double percentage, int minimumQuantity,
                                                      LocalDate startDate, LocalDate endDate) {
-        validateCommonFields(name, startDate, endDate);
-        validatePercentage(percentage);
-        if (minimumQuantity <= 0) {
-            throw new IllegalArgumentException("La cantidad mínima de productos debe ser mayor que cero.");
-        }
+        PromotionValidator.validateCommonData(name, startDate, endDate);
+        PromotionValidator.validatePercentage(percentage);
+        PromotionValidator.validateMinimumQuantity(minimumQuantity);
         BulkPurchaseDiscount promotion = new BulkPurchaseDiscount(nextPromotionId(), name.trim(),
                 startDate, endDate, percentage, minimumQuantity);
         promotions.add(promotion);
@@ -183,36 +178,6 @@ public class PromotionService {
             }
         }
         return Optional.ofNullable(bestPromotion);
-    }
-
-    // Validates the attributes shared by every promotion.
-    private void validateCommonFields(String name, LocalDate startDate, LocalDate endDate) {
-        if (name == null || name.isBlank()) {
-            throw new IllegalArgumentException("El nombre de la promoción es obligatorio.");
-        }
-        if (startDate == null || endDate == null) {
-            throw new IllegalArgumentException("Las fechas de inicio y fin son obligatorias.");
-        }
-        if (startDate.isAfter(endDate)) {
-            throw new IllegalArgumentException("La fecha de inicio no puede ser posterior a la fecha de fin.");
-        }
-    }
-
-    // Checks that a percentage is between 0 and 100.
-    private void validatePercentage(double percentage) {
-        if (percentage < 0 || percentage > 100) {
-            throw new IllegalArgumentException("El porcentaje debe estar entre 0 y 100.");
-        }
-    }
-
-    // Converts the category to upper case and checks it is VIDEOGAME, CONSOLE or ACCESSORY.
-    private String normalizeCategory(String category) {
-        String value = category == null ? "" : category.trim().toUpperCase();
-        if (!value.equals(VIDEOGAME_CATEGORY) && !value.equals(CONSOLE_CATEGORY)
-                && !value.equals(ACCESSORY_CATEGORY)) {
-            throw new IllegalArgumentException("La categoría debe ser VIDEOGAME, CONSOLE o ACCESSORY.");
-        }
-        return value;
     }
 
     // Returns the next identifier of the PR-N sequence, based on the highest existing number.
