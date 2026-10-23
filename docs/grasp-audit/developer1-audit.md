@@ -293,3 +293,41 @@ Assign a cohesive set of responsibilities to an artificial or technical class th
   * Custom exception classes are technical fabrications that translate domain and persistence errors into a structured error-code hierarchy.
 * **Model Entities (`Product`, `Accessory`, `Promotion`, `Warranty`, `Return`):** `Not applicable`
   * These classes represent concrete real-world concepts in the store domain, not artificial technical constructs.
+
+
+---
+
+## 9. Pattern 8: Indirection
+
+### Principle
+Assign responsibility to an intermediate object to mediate between other components or services, preventing direct coupling between them.
+
+### Audit by Module and Class
+* **`ProductService`:** `Correct`
+  * Lines 17–171: Operates as an indirection boundary between the presentation layer (`ConsoleMenu`) and the persistence layer (`ProductRepository`). The user interface never invokes file I/O operations directly; it interacts solely with `ProductService`. If storage mechanisms or file schemas change, `ConsoleMenu` remains unaffected.
+* **`ProductRepository`:** `Correct`
+  * Lines 28–125: Mediates between in-memory product objects and physical disk files (`data/videogames.json` and `data/consoles.json`).
+* **Validation Layer (`ProductValidator`, `PersonValidator`, `SaleValidator`):** `Correct`
+  * Acts as an indirection layer for constraint enforcement, mediating between caller input parameters and domain execution.
+* **Model Entities (`Product`, `Accessory`, `Promotion`, `Warranty`, `Return`):** `Not applicable`
+  * Domain entities do not mediate between other architectural subsystems.
+
+---
+
+## 10. Pattern 9: Protected Variations
+
+### Principle
+Identify points of predicted variation or instability; assign responsibilities to create a stable interface around them, protecting the rest of the system from ripple effects.
+
+### Audit by Module and Class
+* **`Product` Abstract Class:** `Correct`
+  * Lines 11–14, 65, 82: All internal fields are `private` with accessor methods. Abstract operations (`getDescription()`, `getCategory()`) establish a stable polymorphic interface, allowing new product categories to be introduced without modifying calling code.
+* **`Accessory`, `Promotion`, `Warranty` Hierarchies:** `Correct`
+  * Abstract base classes protect caller workflows from changes. For instance, `Promotion.calculateDiscount(List<Product>)` allows introducing new promotion types without touching `SaleService`.
+* **`ProductRepository`:** `Correct`
+  * File paths, directory creation, and Gson serialization details are private implementation details. If the underlying storage engine changes from JSON files to a relational database or remote API, the public methods (`saveAllVideoGames`, `loadAllVideoGames`, etc.) remain identical.
+* **`ProductService.registerVideoGame` and `registerConsole`:** `Violation`
+  * Evidence (lines 59–68 and 90–99 in `ProductService.java`):
+    * `registerVideoGame(id, title, price, stock, platform, genre, ageRating)`
+    * `registerConsole(id, title, price, stock, brand, model, generation)`
+  * Explanation: `ProductService` hardcodes concrete registration operations with subtype-specific parameter lists instead of providing a unified, polymorphic registration interface (e.g. receiving a `Product` entity or using a factory pattern). Introducing a new product type requires altering `ProductService`'s public interface and modifying `ConsoleMenu`.
