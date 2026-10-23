@@ -261,6 +261,25 @@ answer the `analysis.md` questions, or write complete classes to copy and paste.
 
 ---
 
+## Phase 2 — Requirement 7: GRASP Refactoring
+
+## Entry 14 — 2026-10-23
+
+| Field | Detail |
+|---|---|
+| Date | 23-10-2026 |
+| AI tool | Antigravity AI Assistant |
+| Phase and branch | Phase 2 (GRASP Refactoring, Waves 1–3) — branch `feature/grasp-refactor` |
+| Goal | Implement Developer 1's assigned GRASP refactorings for V-01, V-03, V-09, V-10, V-11, V-15, and V-16 while preserving 100% external behavior |
+| Query | Guidance on preserving the product listing order (`01-products`) when unifying `ProductService` into a single `List<Product>` without reintroducing type checks in the service (`V-09`), and structuring `ProductFactory` (`V-11`) |
+| Legitimate-use category | Code review of my own refactorings; Java/Maven guidance; non-regression script execution and Git rebase coordination |
+| What I did myself | Implemented `increaseStock`/`decreaseStock` in `Product` (`e3920ab`, V-01), `supportsWarranty` in `Product`/`Console` (`5081f80`, V-03), removed `instanceof Accessory` in `CategoryDiscount` (`978ffa7`, V-10), added `getAccessoryType` in `Accessory` hierarchy (`cf301e9`, V-15) and `getTypeCode` in `Warranty` hierarchy (`9a22ff4`, V-16), unified `ProductService` to a single `List<Product>` with `ProductRepository.saveAllProducts`/`loadAllProducts` (`ffe3323`, V-09), created `ProductFactory` and `ProductService.registerProduct` (`7c871cc`, V-11), ran `scripts/regression/run.sh` and `compare.sh` verifying `01-products` and all scenarios pass, and logged all changes in `docs/grasp-refactor-log.md` (`73edbb5`) |
+| What the AI provided | Confirmed that keeping subtype separation inside `ProductRepository.saveAllProducts` maintains the video-games-first listing order in `01-products` while keeping `ProductService` free of `instanceof` checks, and assisted with running the regression suite on Windows Git Bash |
+| Output used? | Yes — committed across atomic commits `e3920ab`, `5081f80`, `978ffa7`, `cf301e9`, `9a22ff4`, `ffe3323`, `7c871cc`, and `73edbb5` |
+| Fully understood? | Yes — I can explain every refactoring, why `ProductService` has no subtype checks, and how `ProductFactory` protects variations |
+
+---
+
 ## Future entries
 
 (Template to keep filling throughout the project.)
