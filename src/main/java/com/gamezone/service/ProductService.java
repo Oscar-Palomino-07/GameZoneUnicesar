@@ -10,6 +10,7 @@ import com.gamezone.persistence.ProductRepository;
 import com.gamezone.validation.ProductValidator;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -21,8 +22,7 @@ import java.util.List;
 public class ProductService {
 
     private final ProductRepository repository;
-    private final List<VideoGame> videoGames = new ArrayList<>();
-    private final List<Console> consoles = new ArrayList<>();
+    private final List<Product> products = new ArrayList<>();
 
     /**
      * Creates a product service that uses the given repository and loads the
@@ -32,8 +32,7 @@ public class ProductService {
      */
     public ProductService(ProductRepository repository) {
         this.repository = repository;
-        this.videoGames.addAll(repository.loadAllVideoGames());
-        this.consoles.addAll(repository.loadAllConsoles());
+        this.products.addAll(repository.loadAllProducts());
     }
 
     /**
@@ -62,8 +61,8 @@ public class ProductService {
         ProductValidator.validateRequiredField("platform", platform);
         ProductValidator.validateRequiredField("genre", genre);
         ProductValidator.validateRequiredField("ageRating", ageRating);
-        ProductValidator.validateUniqueProduct(listAllProducts(), id);
-        videoGames.add(new VideoGame(id, title, price, stock, platform, genre, ageRating));
+        ProductValidator.validateUniqueProduct(products, id);
+        products.add(new VideoGame(id, title, price, stock, platform, genre, ageRating));
         saveAll();
     }
 
@@ -93,19 +92,16 @@ public class ProductService {
         ProductValidator.validateRequiredField("brand", brand);
         ProductValidator.validateRequiredField("model", model);
         ProductValidator.validateRequiredField("generation", generation);
-        ProductValidator.validateUniqueProduct(listAllProducts(), id);
-        consoles.add(new Console(id, title, price, stock, brand, model, generation));
+        ProductValidator.validateUniqueProduct(products, id);
+        products.add(new Console(id, title, price, stock, brand, model, generation));
         saveAll();
     }
 
     /**
-     * @return the list of all products currently available in inventory
+     * @return an unmodifiable view of all products currently available in inventory
      */
     public List<Product> listAllProducts() {
-        List<Product> products = new ArrayList<>();
-        products.addAll(videoGames);
-        products.addAll(consoles);
-        return products;
+        return Collections.unmodifiableList(products);
     }
 
     /**
@@ -116,7 +112,7 @@ public class ProductService {
      * @return the matching product, or {@code null} if it is not registered
      */
     public Product findById(String id) {
-        for (Product product : listAllProducts()) {
+        for (Product product : products) {
             if (product.getId().equals(id)) {
                 return product;
             }
@@ -162,10 +158,9 @@ public class ProductService {
     }
 
     /**
-     * Persists the current inventory of video games and consoles.
+     * Persists the current inventory of products.
      */
     private void saveAll() {
-        repository.saveAllVideoGames(videoGames);
-        repository.saveAllConsoles(consoles);
+        repository.saveAllProducts(products);
     }
 }

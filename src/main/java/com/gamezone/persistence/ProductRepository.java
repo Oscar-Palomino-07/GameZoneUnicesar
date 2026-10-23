@@ -2,6 +2,7 @@ package com.gamezone.persistence;
 
 import com.gamezone.exceptions.PersistenceException;
 import com.gamezone.model.Console;
+import com.gamezone.model.Product;
 import com.gamezone.model.VideoGame;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -37,6 +38,43 @@ public class ProductRepository {
     }.getType();
 
     private final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+    /**
+     * Saves all products to their respective JSON files (video games and
+     * consoles), separating them by subtype and keeping the passed list
+     * aligned with the persisted order (video games first, then consoles).
+     *
+     * @param products the list of products to persist
+     */
+    public void saveAllProducts(List<Product> products) {
+        List<VideoGame> videoGames = new ArrayList<>();
+        List<Console> consoles = new ArrayList<>();
+        for (Product product : products) {
+            if (product instanceof VideoGame) {
+                videoGames.add((VideoGame) product);
+            } else if (product instanceof Console) {
+                consoles.add((Console) product);
+            }
+        }
+        saveAllVideoGames(videoGames);
+        saveAllConsoles(consoles);
+        products.clear();
+        products.addAll(videoGames);
+        products.addAll(consoles);
+    }
+
+    /**
+     * Loads all stored products from disk, returning video games followed by
+     * consoles.
+     *
+     * @return the unified list of stored products
+     */
+    public List<Product> loadAllProducts() {
+        List<Product> products = new ArrayList<>();
+        products.addAll(loadAllVideoGames());
+        products.addAll(loadAllConsoles());
+        return products;
+    }
 
     /**
      * Saves all video games to the video games JSON file, overwriting its
