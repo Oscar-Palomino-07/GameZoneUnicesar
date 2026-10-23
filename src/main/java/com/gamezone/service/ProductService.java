@@ -3,9 +3,7 @@ package com.gamezone.service;
 import com.gamezone.exceptions.BusinessRuleException;
 import com.gamezone.exceptions.InvalidDataException;
 import com.gamezone.exceptions.ResourceNotFoundException;
-import com.gamezone.model.Console;
 import com.gamezone.model.Product;
-import com.gamezone.model.VideoGame;
 import com.gamezone.persistence.ProductRepository;
 import com.gamezone.validation.ProductValidator;
 
@@ -15,9 +13,9 @@ import java.util.List;
 
 /**
  * Provides the business operations for the product module of GameZone Unicesar:
- * registering video games and consoles, listing the inventory, finding a
- * product by identifier and updating its stock. Every successful change is
- * persisted immediately through the {@link ProductRepository}.
+ * registering products, listing the inventory, finding a product by identifier
+ * and updating its stock. Every successful change is persisted immediately
+ * through the {@link ProductRepository}.
  */
 public class ProductService {
 
@@ -36,12 +34,28 @@ public class ProductService {
     }
 
     /**
-     * Registers a new video game in the system.
+     * Registers a new product in the system after validating its common data
+     * and verifying that its identifier is unique.
      *
-     * <p>The data is validated through {@link ProductValidator} before the
-     * video game is added: no field may be blank, the price must be positive,
-     * the stock must not be negative and the id must be unique. Once
-     * registered, the inventory is immediately persisted.</p>
+     * @param product the product to register
+     * @throws InvalidDataException  when the product is null or its common
+     *         fields are invalid
+     * @throws BusinessRuleException when the id already belongs to another
+     *         product
+     */
+    public void registerProduct(Product product) {
+        if (product == null) {
+            throw new InvalidDataException("product", "el producto es obligatorio");
+        }
+        ProductValidator.validateProductData(
+                product.getId(), product.getTitle(), product.getPrice(), product.getStock());
+        ProductValidator.validateUniqueProduct(products, product.getId());
+        products.add(product);
+        saveAll();
+    }
+
+    /**
+     * Registers a new video game in the system.
      *
      * @param id        the unique product identifier
      * @param title     the video game title
@@ -57,22 +71,12 @@ public class ProductService {
      */
     public void registerVideoGame(String id, String title, double price, int stock,
                                   String platform, String genre, String ageRating) {
-        ProductValidator.validateProductData(id, title, price, stock);
-        ProductValidator.validateRequiredField("platform", platform);
-        ProductValidator.validateRequiredField("genre", genre);
-        ProductValidator.validateRequiredField("ageRating", ageRating);
-        ProductValidator.validateUniqueProduct(products, id);
-        products.add(new VideoGame(id, title, price, stock, platform, genre, ageRating));
-        saveAll();
+        registerProduct(ProductFactory.createVideoGame(
+                id, title, price, stock, platform, genre, ageRating));
     }
 
     /**
      * Registers a new console in the system.
-     *
-     * <p>The data is validated through {@link ProductValidator} before the
-     * console is added: no field may be blank, the price must be positive,
-     * the stock must not be negative and the id must be unique. Once
-     * registered, the inventory is immediately persisted.</p>
      *
      * @param id         the unique product identifier
      * @param title      the console title or name
@@ -88,13 +92,8 @@ public class ProductService {
      */
     public void registerConsole(String id, String title, double price, int stock,
                                 String brand, String model, String generation) {
-        ProductValidator.validateProductData(id, title, price, stock);
-        ProductValidator.validateRequiredField("brand", brand);
-        ProductValidator.validateRequiredField("model", model);
-        ProductValidator.validateRequiredField("generation", generation);
-        ProductValidator.validateUniqueProduct(products, id);
-        products.add(new Console(id, title, price, stock, brand, model, generation));
-        saveAll();
+        registerProduct(ProductFactory.createConsole(
+                id, title, price, stock, brand, model, generation));
     }
 
     /**
