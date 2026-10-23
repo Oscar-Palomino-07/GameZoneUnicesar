@@ -84,18 +84,21 @@ On the first run the application is ready to use: it loads the preloaded data of
 
 ```
 com.gamezone
-├── model         Person, Customer, Seller, Product, VideoGame, Console, Accessory, Controller, Cable, Memory,
-│                 Sale, Return, Warranty, BasicWarranty, ExtendedWarranty,
+├── model         Person, Customer, Seller, Product, ProductCategory, VideoGame, Console, Accessory, Controller,
+│                 Cable, Memory, Sale, Return, Warranty, BasicWarranty, ExtendedWarranty,
 │                 Promotion, PercentageDiscount, CategoryDiscount, BulkPurchaseDiscount
 ├── persistence   PersonRepository, ProductRepository, AccessoryRepository, SaleRepository,
-│                 ReturnRepository, PromotionRepository, WarrantyRepository (JSON with Gson)
-├── service       PersonService, ProductService, AccessoryService, PromotionService,
-│                 WarrantyService, SaleService, ReturnService
-├── validation    ProductValidator, PersonValidator, SaleValidator
+│                 ReturnRepository, PromotionRepository, WarrantyRepository (JSON with Gson),
+│                 JsonFileStore, LocalDateAdapter, ProductDeserializer (shared by the repositories)
+├── service       PersonService, ProductService, ProductFactory, AccessoryService, PromotionService,
+│                 WarrantyService, SaleService, ReturnService, InventoryService, MonthlyBalanceService
+├── validation    ProductValidator, PersonValidator, SaleValidator, AccessoryValidator, PromotionValidator
 ├── exceptions    GameZoneException, ResourceNotFoundException, BusinessRuleException,
 │                 InvalidDataException, PersistenceException
-├── ui            ConsoleMenu
-└── Main.java     entry point; wires repositories, services and the menu
+├── ui            ConsoleMenu (main loop), Menu, ConsoleInput, ConsoleErrorReporter, and one menu per module:
+│                 ProductMenu, PersonMenu, SaleMenu, ReturnMenu, ReportMenu, AccessoryMenu, WarrantyMenu,
+│                 PromotionMenu
+└── Main.java     entry point; wires repositories, services and the menus
 ```
 
 The layered architecture restricts the dependencies between layers: the user interface only talks to the services, the services call the validators and persist changes through the repositories, the repositories read and write the JSON files, and the model classes contain no file or user interface logic.
@@ -111,7 +114,24 @@ The `exceptions` package is transversal: any layer can throw its classes. The `v
 | `InvalidDataException` | an input does not meet the format or range (blank field, non-positive price, negative stock, malformed e-mail) | `Los datos ingresados no son válidos: <detail>` |
 | `PersistenceException` | a data file cannot be read or written | `Ocurrió un problema al acceder a los datos del sistema. Contacte al administrador.` |
 
-The repositories of the product, person and sale modules catch `IOException` and rethrow it as `PersistenceException` with the file name and the operation. `ConsoleMenu` handles all the categories in one place (`runGuarded`), and `Main` shows the persistence message if a data file cannot be read at startup. The accessory, promotion, return and warranty modules still report their errors with the standard Java exceptions, and the menu keeps handling them as before.
+The repositories of the product, person and sale modules catch `IOException` and rethrow it as `PersistenceException` with the file name and the operation. `ConsoleErrorReporter.runGuarded` handles all the categories in one place, and `Main` shows the persistence message if a data file cannot be read at startup. The accessory, promotion, return and warranty modules still report their errors with the standard Java exceptions, and the menu keeps handling them as before.
+
+### GRASP correction (Requirement 7)
+
+The code was audited against the nine GRASP patterns (`docs/grasp-audit/consolidated-audit.md`, 19 violations) and corrected without changing what the user sees. The design changes, grouped by theme:
+
+| Theme | Change | Patterns |
+|---|---|---|
+| Stock | `Product.increaseStock` and `decreaseStock` replace the arithmetic that the services did outside the entity. `InventoryService` finds an item in the product or accessory inventory and changes its stock where it is kept, so `SaleService` and `ReturnService` no longer know the two inventories | Information Expert, Indirection |
+| Warranties and types | `Product.supportsWarranty()`, `Accessory.getAccessoryType()` and `Warranty.getTypeCode()` replace the `instanceof` checks; `CategoryDiscount` uses `getCategory()` only | Polymorphism |
+| Products | `ProductService` keeps one `List<Product>` and registers any product with `registerProduct`; `ProductFactory` builds each subtype; `ProductCategory` is the single list of categories | Polymorphism, Protected Variations |
+| Sales | `Sale.hasDiscount()`, `applyPromotion()`, `countUnits()` and `contains()` answer what the services and the menu used to compute; `SaleService` tells the menu which items can receive an extended warranty | Information Expert, Controller |
+| Reports | `MonthlyBalanceService` builds the monthly report that `ReturnService` used to contain; `ReturnService` no longer depends on `PersonService` | High Cohesion, Low Coupling |
+| Persistence | `JsonFileStore` reads and writes the data files for the repositories, and `LocalDateAdapter` and `ProductDeserializer` are shared | Pure Fabrication |
+| Validation | `AccessoryValidator` and `PromotionValidator` hold the data rules that the two services contained | Pure Fabrication, High Cohesion |
+| User interface | `ConsoleMenu` only runs the main loop; each module has its own menu behind the `Menu` interface, and `ConsoleInput` and `ConsoleErrorReporter` hold the input reading and the error messages | High Cohesion, Protected Variations |
+
+Every change is recorded with its violation, pattern, commit and responsible in `docs/grasp-refactor-log.md`, and the classes before and after are in `docs/grasp-class-diagram.md`.
 
 ### Non-regression check
 
@@ -119,10 +139,10 @@ The repositories of the product, person and sale modules catch `IOException` and
 
 ```bash
 bash scripts/regression/run.sh after
-bash scripts/regression/compare.sh pre-exception-handling after
+bash scripts/regression/compare.sh baseline-pre-grasp-refactor after
 ```
 
-`reference/pre-exception-handling` is the run taken on `develop` before the exception layer. The expected differences are the error messages, the rejection of malformed e-mails and the persistence message.
+`reference/baseline-pre-grasp-refactor` is the run taken on `develop` before the GRASP correction, and the expected result is no difference in any of the 15 scenarios. `reference/pre-exception-handling` is the older run taken before the exception layer of Requirement 6, kept as a record; its scenarios are not the same as the current ones.
 
 ## Data files
 
@@ -151,6 +171,10 @@ See `docs/` for the design and analysis artifacts:
 - `integrated-class-diagram.md` — single class diagram of the integrated system with the four layers (Mermaid)
 - `layers-diagram.md` — layered architecture and allowed dependencies (Mermaid)
 - `exception-analysis.md`, `exception-class-diagram.md` — validation and exception layer: design questions and class diagram
+- `grasp-analysis.md` — answers to the five orienting questions of the GRASP audit
+- `grasp-audit/` — the individual GRASP audit reports and the consolidated audit of the team
+- `grasp-refactor-log.md` — non-regression strategy, change log of the GRASP correction and final verification
+- `grasp-class-diagram.md` — classes involved in the violations, before and after the correction (Mermaid)
 - `ai-usage/` — personal AI usage logs for each team member
 
 ## Team
