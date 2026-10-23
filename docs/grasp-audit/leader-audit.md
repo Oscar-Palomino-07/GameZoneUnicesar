@@ -240,3 +240,64 @@ Identify the points of predicted variation or instability and create a stable in
   * A change in the way a service is built affects only the wiring in `createMenu()`.
 * **`ProductService.restoreStock(String, int)`:** `Correct`
   * `ReturnService` depends on the operation and not on how the stock is stored.
+
+---
+
+## 11. Summary of Verdicts (Technical Lead Scope)
+
+| Pattern | Verdict | Violations |
+|---|---|---|
+| Information Expert | `Violation` | V-01, V-06, V-07 |
+| Creator | `Correct` | — |
+| Controller | `Violation` | V-04 |
+| Low Coupling | `Violation` | V-02, V-05 |
+| High Cohesion | `Violation` | V-05 |
+| Polymorphism | `Violation` | V-03 (also V-02 and V-04) |
+| Pure Fabrication | `Violation` | V-08 (also V-05) |
+| Indirection | `Violation` | V-02 |
+| Protected Variations | `Violation` | V-03, V-05 (also V-02) |
+
+When a fragment breaks more than one pattern, it is registered once, under the pattern that guides its correction, and the other patterns are named in the explanation.
+
+---
+
+## 12. Consolidated Violations Table (Technical Lead Scope)
+
+| Violation ID | Pattern | Module | Evidence (Class, Method, Lines) | Explanation | Consequence | Proposed Solution | Code of another team member |
+|---|---|---|---|---|---|---|---|
+| **V-01** | **Information Expert** | Returns (Req. 3), Sales and Accessories (integration) | `ProductService.restoreStock` — line 160, `product.updateStock(product.getStock() + quantity);`. `SaleService.discountStock` — line 312, `int newStock = item.getStock() - 1;`. The same operation appears in `AccessoryService.restoreStock` — line 241. | The stock belongs to `Product`, but the services read it, do the arithmetic outside the entity and write the result back with `updateStock(...)`. | The rule of how the stock grows or shrinks is repeated in three places. Any change (for example, reserved stock) must be applied to every caller. | Add `increaseStock(int)` and `decreaseStock(int)` to `Product` and make the three callers delegate to them. The services keep the validation and the persistence they have today. | **Yes.** `Product` (Developer 1) receives the two methods. `AccessoryService.restoreStock` (Developer 2) must call `increaseStock`. |
+| **V-02** | **Indirection** (also Polymorphism and Low Coupling) | Accessories (integration), Sales, Returns | `SaleService.resolveItem` (lines 297–303) and `discountStock` (lines 311–318, `instanceof Accessory` at line 313). Duplicated in `ReturnService.resolveItem` (line 184) and `ReturnService.restoreStock` (lines 199–205, `instanceof Accessory` at line 200). Fields `productService` and `accessoryService` in lines 43–44. | There is no intermediate object between the use cases and the two inventories. Each use case looks the item up in both services and chooses by type which one must change the stock. | Adding a new category of sellable items requires editing `SaleService` and `ReturnService`. Both classes are coupled to two services and to the concrete class `Accessory`. | Create an `InventoryService` in the service layer with `findItem(String)`, `decreaseStock(String, int)` and `restoreStock(String, int)`, which delegates to `ProductService` or `AccessoryService` according to where the item is found. `SaleService` and `ReturnService` use only it, and `Main` wires it. | **Yes.** `ReturnService` (Developer 2) must replace its own `resolveItem` and `restoreStock`. `AccessoryService` (Developer 2) may need a method to decrease the stock. |
+| **V-03** | **Polymorphism** (also Protected Variations) | Warranties (Req. 4), Sales, Returns | `SaleService.validateExtendedWarrantyRequest` — line 254, `instanceof Console`. `SaleService.assignWarranties` — line 277, `instanceof Console`. The same decision is repeated in `WarrantyService` (line 288) and `ReturnService` (line 162). | Which items have a warranty is decided by asking for the concrete class instead of asking the item. | A new product type with a warranty requires finding and editing four places. Forgetting one gives a wrong behavior without any error. | Add `supportsWarranty()` to `Product`, returning `false`, and override it in `Console` to return `true`. The four callers use `item.supportsWarranty()`. | **Yes.** `Product` and `Console` (Developer 1) receive the method. `WarrantyService` and `ReturnService` (Developer 2) must use it. |
+| **V-04** | **Controller** (also Polymorphism) | Warranties (Req. 4), user interface | `ConsoleMenu.askExtendedWarranties` — lines 321–334. Line 324, `productService.findById(itemId)`, and line 325, `item instanceof Console`. The same rule is enforced in `SaleService.validateExtendedWarrantyRequest` (line 254). | The user interface decides which items are offered an extended warranty. That is a business rule, and the menu must only capture the answer. | The rule lives in two classes, which can disagree. The menu has to know the domain classes `Product` and `Console`. | Make `SaleService` provide the identifiers of the items that can receive an extended warranty (using `supportsWarranty()` from V-03). `ConsoleMenu` only asks the user about each one. | **No.** Both classes belong to the Technical Lead. It depends on V-03. |
+| **V-05** | **High Cohesion** (also Pure Fabrication, Low Coupling and Protected Variations) | User interface, all modules | `ConsoleMenu` — the whole class: 923 lines and 48 methods. Eight submenus (`productMenu` at line 126 to `promotionMenu` at line 717), input helpers (`readDate` at line 842 and `parseIds`, `readText`, `readInt`, `readDouble` at lines 880–923), error handling `runGuarded` (lines 864–878) and four `print*` methods. Seven services (lines 42–48) and nine model imports (lines 7–15). `start()` `switch` in lines 91–121. | One class has the responsibilities of eight modules and of several technical tasks. | Any change in any module edits this class. The three developers collide in the same file. Adding a module requires editing `start()`. No menu can be understood or tested apart. | Extract `ConsoleInput` (input and parsing) and `ConsoleErrorReporter` (`runGuarded`) as Pure Fabrications. Create one menu class per module, each with only its own services, behind a common `Menu` interface. `ConsoleMenu` keeps only the main loop. | **No.** `ConsoleMenu` belongs to the Technical Lead. It must be coordinated with Developer 1's V-03, which changes the calls to the product registration. |
+| **V-06** | **Information Expert** | Promotions (Req. 2), user interface | `ConsoleMenu.printSale` — lines 388–390, the condition `getAppliedPromotionName() != null && getDiscountAmount() > 0`. The same rule is in `Sale.generateReceipt` — line 184. | `Sale` knows when it has a discount, but the menu repeats the rule instead of asking the sale. | If the rule changes, the receipt and the sales list can show different information. | Add `hasDiscount()` to `Sale` and use it in `generateReceipt` and in `printSale`. | **No.** |
+| **V-07** | **Information Expert** | Promotions (Req. 2) | `SaleService.applyBestPromotion` — lines 226–231. Line 229, `sale.getProducts()` and `promotion.calculateDiscount(...)`, and lines 228–229, the two setters `setAppliedPromotionName` and `setDiscountAmount`. | The service takes data from the sale, computes with it and writes the result back in two separate calls. The sale owns the products, the name and the discount. | The two values can be left inconsistent (a name without discount or the opposite), and the setters are public for any class. | Add `applyPromotion(Promotion)` to `Sale`, which sets the name and the discount together. The two setters become unnecessary. | **No.** |
+| **V-08** | **Pure Fabrication** | Sales, Returns, Promotions (persistence) | `SaleRepository.ProductDeserializer` (lines 139–160) and `SaleRepository.LocalDateAdapter` (lines 166–177). Copies in `ReturnRepository` (lines 128 and 155) and `PromotionRepository` (line 149). | The technical task of converting dates and rebuilding products from JSON is repeated in three repositories instead of having one class. | A change in the date format or a new product type must be repeated in each copy. | Extract package-private `LocalDateAdapter` and `ProductDeserializer` classes in the persistence package and use them from the three repositories. | **Yes.** `ReturnRepository` and `PromotionRepository` (Developer 2). |
+
+---
+
+## 13. Notes for the Consolidation
+
+### Boundary findings (code of more than one team member)
+* **V-01:** `Product` (Developer 1), `AccessoryService` (Developer 2), `ProductService.restoreStock` and `SaleService` (Technical Lead).
+* **V-02:** `ReturnService` and `AccessoryService` (Developer 2), `SaleService` and `Main` (Technical Lead).
+* **V-03:** `Product` and `Console` (Developer 1), `WarrantyService` and `ReturnService` (Developer 2), `SaleService` (Technical Lead).
+* **V-08:** `ReturnRepository` and `PromotionRepository` (Developer 2), `SaleRepository` (Technical Lead).
+
+### Relations with other reports
+* **Developer 1, V-03** (`ProductService.registerVideoGame`/`registerConsole` as a polymorphic registration): the correction changes the calls in `ConsoleMenu`. It must be applied after the split of V-05, or on the product menu that V-05 creates.
+* **Developer 1, V-02** (`CategoryDiscount` uses `instanceof Accessory`): it has the same cause as V-03 of this report, but it affects a different class, so it stays as a separate violation.
+* **Overlaps inside this report:** V-01 and V-02 both touch `SaleService.discountStock`, and V-03 and V-04 both touch the `instanceof Console` check. They are kept apart because each one needs a different change.
+
+### Suggested correction order
+1. V-01 and V-03 first, because they add methods to `Product` and `Console` that the other corrections use.
+2. V-02, after V-01, because `InventoryService` uses the new stock methods.
+3. V-04, after V-03.
+4. V-06, V-07 and V-08, which are independent.
+5. V-05 last, because it moves code that the other corrections change.
+
+### Functional defects noticed (outside the scope of this requirement)
+They are not corrected here, because correcting them changes what the user sees.
+* **Blank identifier in the returns queries:** `ConsoleMenu.viewReturnsByCustomer` (lines 457–467) and `viewReturnsBySale` (lines 469–479) have no error handling, so an empty identifier ends the program with a stack trace. It already happened before Requirement 6.
+* **Price zero:** `ProductValidator.validateProductData` (line 38, `price <= 0`) rejects a price of zero. Before Requirement 6 only negative prices were rejected. It is code of Developer 1.
+* **Memory and file out of sync on a write failure:** `SaleService.registerSale` adds the sale to the in-memory list (line 181) and then saves (line 182); if saving fails, the sale and the stock decrease stay in memory but not in the file. `ProductService` has the same order when registering a product.
