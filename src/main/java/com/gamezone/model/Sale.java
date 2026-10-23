@@ -107,13 +107,15 @@ public class Sale {
     }
 
     /**
-     * Sets the name of the promotion applied to the sale.
+     * Applies a promotion to the sale: records its name and the discount that
+     * it grants over the products of the sale, so both values are always set
+     * together.
      *
-     * @param appliedPromotionName the promotion name, or {@code null} when no
-     *                             promotion was applied
+     * @param promotion the promotion that grants the discount
      */
-    public void setAppliedPromotionName(String appliedPromotionName) {
-        this.appliedPromotionName = appliedPromotionName;
+    public void applyPromotion(Promotion promotion) {
+        this.appliedPromotionName = promotion.getName();
+        this.discountAmount = promotion.calculateDiscount(products);
     }
 
     /**
@@ -132,15 +134,6 @@ public class Sale {
      */
     public boolean hasDiscount() {
         return appliedPromotionName != null && discountAmount > 0;
-    }
-
-    /**
-     * Sets the monetary discount granted by the applied promotion.
-     *
-     * @param discountAmount the discount amount, never negative
-     */
-    public void setDiscountAmount(double discountAmount) {
-        this.discountAmount = discountAmount;
     }
 
     /**

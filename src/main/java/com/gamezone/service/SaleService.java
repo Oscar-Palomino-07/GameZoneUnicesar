@@ -224,10 +224,7 @@ public class SaleService {
      * @param sale the sale that was just created
      */
     private void applyBestPromotion(Sale sale) {
-        promotionService.bestPromotionFor(sale.getProducts()).ifPresent(promotion -> {
-            sale.setAppliedPromotionName(promotion.getName());
-            sale.setDiscountAmount(promotion.calculateDiscount(sale.getProducts()));
-        });
+        promotionService.bestPromotionFor(sale.getProducts()).ifPresent(sale::applyPromotion);
     }
 
     /**
