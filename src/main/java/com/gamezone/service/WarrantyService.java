@@ -12,7 +12,9 @@ import com.gamezone.persistence.WarrantyRepository.WarrantyRecord;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Provides the business operations for the warranty module of GameZone
@@ -151,8 +153,8 @@ public class WarrantyService {
 
     /**
      * Finds the warranty of a product within a specific sale. When the product
-     * has both a basic and an extended warranty in that sale, the extended one
-     * is returned because it offers the widest coverage.
+     * has more than one warranty in that sale, the one with the longest
+     * coverage is returned (the extended warranty over the basic one).
      *
      * @param productId the identifier of the product
      * @param saleId    the identifier of the sale
@@ -163,13 +165,10 @@ public class WarrantyService {
         for (Warranty warranty : warranties) {
             boolean sameProduct = warranty.getProduct().getId().equals(productId);
             boolean sameSale = warranty.getSale().getId().equals(saleId);
-            if (sameProduct && sameSale) {
-                if (warranty instanceof ExtendedWarranty) {
-                    return warranty;
-                }
-                if (found == null) {
-                    found = warranty;
-                }
+            // Strictly longer, so the first warranty of the longest coverage wins.
+            if (sameProduct && sameSale
+                    && (found == null || warranty.getDurationInMonths() > found.getDurationInMonths())) {
+                found = warranty;
             }
         }
         return found;
@@ -183,8 +182,8 @@ public class WarrantyService {
      * once per returned unit keeps the warranties of the units the customer
      * kept. The removal is persisted immediately.
      *
-     * <p>The basic warranty is free, so it refunds nothing; the extended
-     * warranty refunds the additional cost the customer paid for it.</p>
+     * <p>Each warranty refunds its own additional cost: zero for the basic
+     * warranty and the price paid for the extended one.</p>
      *
      * @param productId the identifier of the returned product
      * @param saleId    the identifier of the sale in which it was bought
@@ -196,31 +195,21 @@ public class WarrantyService {
         if (productId == null || productId.isBlank() || saleId == null || saleId.isBlank()) {
             throw new IllegalArgumentException("El producto y la venta son obligatorios para anular garantías.");
         }
-        Warranty basic = null;
-        Warranty extended = null;
+        // At most one warranty of each type: the first one found for the unit.
+        Map<String, Warranty> toCancel = new LinkedHashMap<>();
         for (Warranty warranty : warranties) {
             boolean sameProduct = warranty.getProduct().getId().equals(productId);
             boolean sameSale = warranty.getSale().getId().equals(saleId);
-            if (!sameProduct || !sameSale) {
-                continue;
-            }
-            if (warranty instanceof ExtendedWarranty) {
-                if (extended == null) {
-                    extended = warranty;
-                }
-            } else if (basic == null) {
-                basic = warranty;
+            if (sameProduct && sameSale) {
+                toCancel.putIfAbsent(warranty.getTypeCode(), warranty);
             }
         }
         double refund = 0.0;
-        if (basic != null) {
-            warranties.remove(basic);
+        for (Warranty warranty : toCancel.values()) {
+            warranties.remove(warranty);
+            refund += warranty.getAdditionalCost();
         }
-        if (extended != null) {
-            warranties.remove(extended);
-            refund += extended.getAdditionalCost();
-        }
-        if (basic != null || extended != null) {
+        if (!toCancel.isEmpty()) {
             save();
         }
         return refund;
@@ -314,10 +303,7 @@ public class WarrantyService {
     private void save() {
         List<WarrantyRecord> records = new ArrayList<>();
         for (Warranty warranty : warranties) {
-            String type = warranty instanceof ExtendedWarranty
-                    ? WarrantyRepository.extendedType()
-                    : WarrantyRepository.basicType();
-            records.add(new WarrantyRecord(type, warranty.getId(), warranty.getProduct().getId(),
+            records.add(new WarrantyRecord(warranty.getTypeCode(), warranty.getId(), warranty.getProduct().getId(),
                     warranty.getSale().getId(), warranty.getStartDate().toString()));
         }
         warrantyRepository.saveAll(records);
