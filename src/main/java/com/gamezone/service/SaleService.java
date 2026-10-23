@@ -1,5 +1,7 @@
 package com.gamezone.service;
 
+import com.gamezone.exceptions.BusinessRuleException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Accessory;
 import com.gamezone.model.Console;
 import com.gamezone.model.Customer;
@@ -7,6 +9,9 @@ import com.gamezone.model.Product;
 import com.gamezone.model.Sale;
 import com.gamezone.model.Seller;
 import com.gamezone.persistence.SaleRepository;
+import com.gamezone.validation.PersonValidator;
+import com.gamezone.validation.ProductValidator;
+import com.gamezone.validation.SaleValidator;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -81,9 +86,10 @@ public class SaleService {
      * @param sellerId   the identifier of the seller attending the customer
      * @param productIds the identifiers of the purchased products
      * @return the created sale
-     * @throws IllegalArgumentException when the product list is empty, when
-     *         the customer, the seller or a product cannot be found, or when
-     *         the available stock of a product cannot cover the sale
+     * @throws BusinessRuleException     when the product list is empty or the
+     *         available stock of a product cannot cover the sale
+     * @throws ResourceNotFoundException when the customer, the seller or a
+     *         product cannot be found
      */
     public Sale registerSale(String customerId, String sellerId, List<String> productIds) {
         return registerSale(customerId, sellerId, productIds, Collections.emptyList());
@@ -131,25 +137,27 @@ public class SaleService {
      *                                      requested; {@code null} or empty
      *                                      when none was requested
      * @return the created sale
-     * @throws IllegalArgumentException when the product list is empty, when
-     *         the customer, the seller or a product cannot be found, when the
-     *         available stock cannot cover the sale, or when the extended
+     * @throws BusinessRuleException     when the product list is empty, when
+     *         the available stock cannot cover the sale, or when the extended
      *         warranty is requested for an item that is not a console of the
      *         sale
+     * @throws ResourceNotFoundException when the customer, the seller or a
+     *         product cannot be found
      */
     public Sale registerSale(String customerId, String sellerId, List<String> productIds,
             List<String> productIdsWithExtendedWarranty) {
-        if (productIds == null || productIds.isEmpty()) {
-            throw new IllegalArgumentException("A sale must include at least one product.");
-        }
-        Customer customer = personService.findCustomerById(customerId)
-                .orElseThrow(() -> new IllegalArgumentException("Customer not found: " + customerId));
-        Seller seller = personService.findSellerById(sellerId)
-                .orElseThrow(() -> new IllegalArgumentException("Seller not found: " + sellerId));
+        // Step 1: the sale must have at least one item, and the customer and
+        // the seller must be registered.
+        SaleValidator.validateProductIdsNotEmpty(productIds);
+        Customer customer = personService.findCustomerById(customerId).orElse(null);
+        PersonValidator.validatePersonExists(customer, customerId);
+        Seller seller = personService.findSellerById(sellerId).orElse(null);
+        PersonValidator.validatePersonExists(seller, sellerId);
 
         // Step 2: resolve each item as a product or an accessory and validate
         // its stock. Nothing is modified until every validation has passed.
         List<Product> products = resolveAndValidateItems(productIds);
+        SaleValidator.validateSaleData(customer, seller, products);
         Set<String> extendedWarrantyIds = validateExtendedWarrantyRequest(productIds, productIdsWithExtendedWarranty);
 
         // Step 3: create the sale; its subtotal is the sum of the item prices.
@@ -185,8 +193,9 @@ public class SaleService {
      *                   per unit
      * @return the resolved items, one entry per requested unit and in the
      *         same order as the identifiers
-     * @throws IllegalArgumentException when an item cannot be found or its
-     *         stock cannot cover the requested units
+     * @throws ResourceNotFoundException when an item cannot be found
+     * @throws BusinessRuleException     when the stock of an item cannot cover
+     *         the requested units
      */
     private List<Product> resolveAndValidateItems(List<String> productIds) {
         Map<String, Integer> quantities = new HashMap<>();
@@ -195,12 +204,8 @@ public class SaleService {
         }
         for (Map.Entry<String, Integer> entry : quantities.entrySet()) {
             Product item = resolveItem(entry.getKey());
-            if (item == null) {
-                throw new IllegalArgumentException("Product not found: " + entry.getKey());
-            }
-            if (item.getStock() < entry.getValue()) {
-                throw new IllegalArgumentException("Not enough stock for product: " + entry.getKey());
-            }
+            ProductValidator.validateProductExists(item, entry.getKey());
+            ProductValidator.validateStockAvailability(item, entry.getValue());
         }
         List<Product> items = new ArrayList<>();
         for (String productId : productIds) {
