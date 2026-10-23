@@ -55,48 +55,6 @@ public class ProductService {
     }
 
     /**
-     * Registers a new video game in the system.
-     *
-     * @param id        the unique product identifier
-     * @param title     the video game title
-     * @param price     the unit price of the video game
-     * @param stock     the quantity available in inventory
-     * @param platform  the platform the game is developed for
-     * @param genre     the game genre
-     * @param ageRating the recommended age rating of the game
-     * @throws InvalidDataException  when any field is blank, the price is not
-     *         positive or the stock is negative
-     * @throws BusinessRuleException when the id already belongs to another
-     *         product
-     */
-    public void registerVideoGame(String id, String title, double price, int stock,
-                                  String platform, String genre, String ageRating) {
-        registerProduct(ProductFactory.createVideoGame(
-                id, title, price, stock, platform, genre, ageRating));
-    }
-
-    /**
-     * Registers a new console in the system.
-     *
-     * @param id         the unique product identifier
-     * @param title      the console title or name
-     * @param price      the unit price of the console
-     * @param stock      the quantity available in inventory
-     * @param brand      the console manufacturer brand
-     * @param model      the console model
-     * @param generation the console generation
-     * @throws InvalidDataException  when any field is blank, the price is not
-     *         positive or the stock is negative
-     * @throws BusinessRuleException when the id already belongs to another
-     *         product
-     */
-    public void registerConsole(String id, String title, double price, int stock,
-                                String brand, String model, String generation) {
-        registerProduct(ProductFactory.createConsole(
-                id, title, price, stock, brand, model, generation));
-    }
-
-    /**
      * @return an unmodifiable view of all products currently available in inventory
      */
     public List<Product> listAllProducts() {
