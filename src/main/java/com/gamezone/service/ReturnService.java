@@ -25,7 +25,6 @@ import java.util.*;
 public class ReturnService {
 
     private final SaleService saleService;
-    private final PersonService personService;
     private final ProductService productService;
     private final AccessoryService accessoryService;
     private final WarrantyService warrantyService;
@@ -38,7 +37,6 @@ public class ReturnService {
      *
      * @param returnRepository the repository used to persist returns
      * @param saleService      the service used to locate the original sales
-     * @param personService    the service used to locate customers and sellers
      * @param productService   the service used to locate products and restore
      *                         their stock
      * @param accessoryService the service used to locate accessories and
@@ -46,11 +44,10 @@ public class ReturnService {
      * @param warrantyService  the service used to cancel the warranties of
      *                         the returned consoles
      */
-    public ReturnService(ReturnRepository returnRepository, SaleService saleService, PersonService personService,
+    public ReturnService(ReturnRepository returnRepository, SaleService saleService,
             ProductService productService, AccessoryService accessoryService, WarrantyService warrantyService) {
         this.saleService = saleService;
         this.returnRepository = returnRepository;
-        this.personService = personService;
         this.productService = productService;
         this.accessoryService = accessoryService;
         this.warrantyService = warrantyService;
