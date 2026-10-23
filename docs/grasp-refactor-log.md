@@ -84,6 +84,9 @@ One row for each change. The violation identifiers are those of the consolidated
 | `Sale`, `SaleService` | `Sale.applyPromotion(Promotion)` sets the name and the discount together; `SaleService.applyBestPromotion` calls it and the two public setters are removed | V-07 | Information Expert | `4ea510a` | Technical Lead |
 | `Sale` | `countUnits(String)` and `contains(String)` are added, so the services stop reading the product list of the sale (the services are changed by Developer 2) | V-12 | Information Expert | `feb37d2` | Technical Lead |
 | `SaleRepository` | The private `ProductDeserializer` and `LocalDateAdapter` are replaced by shared package-private classes; the repository keeps the same files and the same behavior | V-08 | Pure Fabrication | `0dc6d31` | Technical Lead |
+| `ProductService` | `restoreStock` calls `Product.increaseStock` instead of adding to the stock outside the entity; the validations and the persistence stay as they were (the `SaleService.discountStock` part of the violation is made together with V-02) | V-01 (part) | Information Expert | `6b03367` | Technical Lead |
+| `SaleService` | `validateExtendedWarrantyRequest` and `assignWarranties` ask `supportsWarranty()` instead of checking for `Console`; a missing item is still rejected with the same message | V-03 | Polymorphism | `9883d43` | Technical Lead |
+| `SaleService`, `ConsoleMenu` | `SaleService.findItemsEligibleForExtendedWarranty` returns the items that can receive the extended warranty, and `ConsoleMenu.askExtendedWarranties` only asks the user about them, with the same prompt and order | V-04 | Controller | `880a7d4` | Technical Lead |
 
 ---
 
