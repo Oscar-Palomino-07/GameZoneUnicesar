@@ -255,3 +255,33 @@ A partir de esta sección cada interacción se registra con los campos que exige
 | Respuesta | La IA revisó el remoto y comprobó con el script que `develop` compilaba pero se caía con una traza en el primer error de validación, porque `ConsoleMenu` solo capturaba `IllegalArgumentException`. Propuso y aplicó un método `runGuarded(Runnable)` con un `catch` por tipo (de lo específico a lo general) usado por las 15 acciones del menú, en lugar de repetir los bloques 15 veces, y un último `catch` para las excepciones estándar de los módulos no migrados. Aplicó el cambio por secciones (productos, clientes, ventas, devoluciones y reportes, accesorios, garantías y promociones), corrió el script y verificó que las únicas diferencias fueran los mensajes, el rechazo de correos inválidos y el mensaje de persistencia. Añadió el manejo de `PersistenceException` en `Main`, porque los archivos se leen al crear los servicios, antes de que exista el menú. Redactó `docs/exception-analysis.md`, `docs/exception-class-diagram.md` (validó que el Mermaid se interpreta sin errores) y la sección del README |
 | Decisión | Acepté `runGuarded` en lugar de repetir los bloques, y el manejo en `Main`. Dejé fuera del alcance dos hallazgos para el Requerimiento 7: devolver con un identificador vacío todavía cierra el programa con una traza (ya ocurría antes), y `ProductValidator` rechaza el precio 0 (`price <= 0`) cuando antes solo se rechazaban los negativos. Los comités son míos y la IA no figura como coautora; el uso queda documentado aquí. Debo estudiar el código y los documentos antes de la sustentación |
 | Commit relacionado | `2e84e34`, `dbf95d6`, `128cc4a`, `8620af5`, `4b8b983`, `4eccd00`, `122e7ab`, `957b1d4`, `d8ac6d2`, `bee1fe8`, `e78b50d` |
+
+## Requerimiento 7 — Auditoría y corrección GRASP (formato de 8 campos)
+
+### Fase 1 — Auditoría
+
+#### Entrada 18
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-22 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Requerimiento 7, Fase 1, `feature/grasp-audit` |
+| Objetivo | Auditar mi propio código frente a los nueve patrones GRASP y repartir las preguntas orientadoras entre los tres |
+| Consulta | "haz mi parte del requerimiento 7" |
+| Respuesta | La IA revisó el remoto y vio que el Requerimiento 6 todavía no estaba fusionado, por lo que auditó el estado final de esa rama (`8b0be4b`). Leyó `Sale`, `SaleRepository`, `SaleService`, `ConsoleMenu`, `Main` y `ProductService.restoreStock`, contó las líneas, métodos y dependencias de `ConsoleMenu`, buscó los `instanceof`, la aritmética del stock y las clases de ayuda duplicadas en todo el código, y comprobó cada línea citada contra los archivos. Redactó `docs/grasp-audit/leader-audit.md` (alcance, un veredicto por patrón con líneas exactas y ocho violaciones, V-01 a V-08) y `docs/grasp-analysis.md` (reparto de las cinco preguntas y mi respuesta a la Q1) |
+| Decisión | El profesor autorizó por mensaje el uso de la IA en los requerimientos 6, 7 y 8, a condición de conocer el código en la sustentación; la auditoría es mi trabajo y debo poder explicar cada veredicto y cada línea. Los commits son míos y la IA no figura como coautora; el uso queda documentado aquí. Dejé como defectos fuera de alcance los hallazgos que cambiarían lo que ve el usuario |
+| Commit relacionado | `9ad4246`, `7281d19`, `190087e`, `0240b0b`, `58be6ae`, `8d6ea28`, `9c22be2`, `42ebee4` |
+
+#### Entrada 19
+
+| Campo | Contenido |
+|---|---|
+| Fecha | 2026-10-23 |
+| Herramienta | Claude Code (Claude Sonnet 5.5) |
+| Fase y rama | Requerimiento 7, Fase 1, consolidación en `feature/grasp-audit` |
+| Objetivo | Validar los informes de los desarrolladores y producir la auditoría consolidada del equipo |
+| Consulta | "revisa el remoto y dime en qué punto vamos", "listo ya vero subió su parte, cierra los pendientes" y "listo" |
+| Respuesta | El 22 de octubre la IA revisó el primer informe de Manuel contra el código y me dio los motivos para devolverlo (líneas anteriores al Req. 6, una violación que era mía, alcance incompleto y campos que faltaban). El 23 de octubre comprobó 20 referencias del informe de Veronica contra los servicios y la cobertura de las 43 clases entre los tres informes. Redactó `docs/grasp-audit/consolidated-audit.md`: commit auditado, validación de la evidencia, tabla de cobertura, veredicto por patrón, 19 violaciones definitivas con su responsable, fronteras, orden de corrección en cinco oleadas y cinco defectos fuera de alcance. Redactó mis respuestas Q2 y Q5. Verificó que `src/main` de `f612269` es idéntico al de `8b0be4b` |
+| Decisión | Acepté los 19 hallazgos. Cambié dos soluciones propuestas: la V-09 de Manuel (una lista única alteraría el orden del listado, hoy videojuegos antes que consolas) y la V-11 (haría que `ConsoleMenu` creara objetos de dominio, una violación nueva). Unifiqué como una sola violación las cuatro que se encontraron desde los dos lados. Debo poder explicar estas decisiones de la consolidación en la sustentación |
+| Commit relacionado | `6ed49f4`, `3a4bc48`, `6bde5db`, `53c9012`, `28f8b24`, `22c34f3`, `c03bcd1`, `28ba3c4`, `3d5f764`, `f7ec5f9`, `602ac86` |
