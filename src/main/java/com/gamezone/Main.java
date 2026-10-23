@@ -9,6 +9,7 @@ import com.gamezone.persistence.ReturnRepository;
 import com.gamezone.persistence.SaleRepository;
 import com.gamezone.persistence.WarrantyRepository;
 import com.gamezone.service.AccessoryService;
+import com.gamezone.service.MonthlyBalanceService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
 import com.gamezone.service.PromotionService;
@@ -105,7 +106,7 @@ public class Main {
                 new SaleMenu(saleService, input, errorReporter),
                 new ReturnMenu(returnService, input, errorReporter),
                 new AccessoryMenu(accessoryService, input, errorReporter),
-                new ReportMenu(returnService, input, errorReporter),
+                new ReportMenu(new MonthlyBalanceService(saleService, returnService), input, errorReporter),
                 new WarrantyMenu(warrantyService, input, errorReporter),
                 new PromotionMenu(promotionService, input, errorReporter));
         return new ConsoleMenu(input, menus);

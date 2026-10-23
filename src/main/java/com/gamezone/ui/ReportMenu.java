@@ -1,26 +1,27 @@
 package com.gamezone.ui;
 
-import com.gamezone.service.ReturnService;
+import com.gamezone.service.MonthlyBalanceService;
 
 /**
  * Submenu of the reports module: shows the monthly balance of the store. Every
- * option delegates to the {@link ReturnService}.
+ * option delegates to the {@link MonthlyBalanceService}.
  */
 public class ReportMenu implements Menu {
 
-    private final ReturnService returnService;
+    private final MonthlyBalanceService monthlyBalanceService;
     private final ConsoleInput input;
     private final ConsoleErrorReporter errorReporter;
 
     /**
      * Creates the reports menu.
      *
-     * @param returnService the service that calculates the monthly balance
-     * @param input         the reader of the user input
-     * @param errorReporter the reporter that turns errors into messages
+     * @param monthlyBalanceService the service that calculates the monthly balance
+     * @param input                 the reader of the user input
+     * @param errorReporter         the reporter that turns errors into messages
      */
-    public ReportMenu(ReturnService returnService, ConsoleInput input, ConsoleErrorReporter errorReporter) {
-        this.returnService = returnService;
+    public ReportMenu(MonthlyBalanceService monthlyBalanceService, ConsoleInput input,
+                      ConsoleErrorReporter errorReporter) {
+        this.monthlyBalanceService = monthlyBalanceService;
         this.input = input;
         this.errorReporter = errorReporter;
     }
@@ -55,9 +56,9 @@ public class ReportMenu implements Menu {
         int month = input.readInt("Mes (1-12): ");
         int year  = input.readInt("Año (ej. 2026): ");
         errorReporter.runGuarded(() -> {
-            double totalSales = returnService.calculateMonthlySales(month, year);
-            double totalReturns = returnService.calculateMonthlyReturns(month, year);
-            double balance = returnService.generateMonthlyBalance(month, year);
+            double totalSales = monthlyBalanceService.calculateMonthlySales(month, year);
+            double totalReturns = monthlyBalanceService.calculateMonthlyReturns(month, year);
+            double balance = monthlyBalanceService.generateMonthlyBalance(month, year);
             System.out.printf("Balance mensual %02d/%d%n", month, year);
             System.out.printf("  Total de ventas:       $%.2f%n", totalSales);
             System.out.printf("  Total de devoluciones: $%.2f%n", totalReturns);
