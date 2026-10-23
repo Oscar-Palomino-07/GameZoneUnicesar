@@ -109,6 +109,8 @@ One row for each change. The violation identifiers are those of the consolidated
 | `ProductFactory`, `ProductService` | `ProductFactory` is created in `com.gamezone.service` and `ProductService.registerProduct(Product)` is added, keeping the two legacy registration methods until `ConsoleMenu` is split | V-11 (part) | Protected Variations | `7c871cc` | Developer 1 |
 | `VideoGame`, `Console`, `Accessory` | `getCategory()` returns `ProductCategory.VIDEOGAME.name()`, `ProductCategory.CONSOLE.name()` and `ProductCategory.ACCESSORY.name()` instead of hardcoded literals | V-17 (part) | Protected Variations | `bf8150f` | Developer 1 |
 | `ProductService` | `decreaseStock(String, int)` is added to validate the quantity, product existence and non-negative resulting stock, delegate to `Product.decreaseStock(int)` and persist | V-02 (part) | Indirection / Information Expert | `289afa1` | Developer 1 |
+| `ProductService` | `registerVideoGame` and `registerConsole` are removed once `ProductMenu` uses `ProductFactory` and `registerProduct` | V-11 (part) | Protected Variations | `aca7bbc` | Developer 1 |
+| `ProductRepository` | `writeList` and `readList` delegate to `JsonFileStore`, keeping the video-games-first order, the two files and the same `PersistenceException` behavior | V-18 (part) | Pure Fabrication | `ce53ab8` | Developer 1 |
 
 ---
 
