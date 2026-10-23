@@ -141,7 +141,8 @@ public class AccessoryService {
         }
         List<Accessory> result = new ArrayList<>();
         for (Accessory accessory : accessories) {
-            if (matchesType(accessory, normalizedType)) {
+            // Polymorphism: each accessory reports its own type code.
+            if (accessory.getAccessoryType().equals(normalizedType)) {
                 result.add(accessory);
             }
         }
@@ -228,20 +229,6 @@ public class AccessoryService {
         }
         accessory.increaseStock(quantity);
         save();
-    }
-
-    // Tells whether an accessory belongs to the given type using its real class.
-    private boolean matchesType(Accessory accessory, String type) {
-        switch (type) {
-            case CONTROLLER_TYPE:
-                return accessory instanceof Controller;
-            case CABLE_TYPE:
-                return accessory instanceof Cable;
-            case MEMORY_TYPE:
-                return accessory instanceof Memory;
-            default:
-                return false;
-        }
     }
 
     // Removes blank and repeated console identifiers, keeping the original order.
