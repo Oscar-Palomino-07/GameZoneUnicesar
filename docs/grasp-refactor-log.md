@@ -94,6 +94,13 @@ One row for each change. The violation identifiers are those of the consolidated
 
 | Class | Change made | Violation ID | Principle applied | Commit / PR | Responsible |
 |---|---|---|---|---|---|
+| `Product` | `increaseStock(int)` and `decreaseStock(int)` are added so services stop computing stock arithmetic outside the entity | V-01 (part) | Information Expert | `e3920ab` | Developer 1 |
+| `Product`, `Console` | `supportsWarranty()` is added to `Product` (returns `false`) and overridden in `Console` (returns `true`) | V-03 (part) | Polymorphism | `5081f80` | Developer 1 |
+| `CategoryDiscount` | `belongsToTargetCategory` removes the redundant `instanceof Accessory` branch and relies on `product.getCategory()` for all products | V-10 | Polymorphism | `978ffa7` | Developer 1 |
+| `Accessory`, `Controller`, `Cable`, `Memory` | Abstract `getAccessoryType()` is added to `Accessory` and overridden in `Controller` (`CONTROLLER`), `Cable` (`CABLE`) and `Memory` (`MEMORY`) | V-15 (part) | Polymorphism | `cf301e9` | Developer 1 |
+| `Warranty`, `BasicWarranty`, `ExtendedWarranty` | Abstract `getTypeCode()` is added to `Warranty` and overridden in `BasicWarranty` (`BASIC`) and `ExtendedWarranty` (`EXTENDED`) | V-16 (part) | Polymorphism | `9a22ff4` | Developer 1 |
+| `ProductService`, `ProductRepository` | `ProductService` replaces the two subtype lists with one polymorphic `List<Product>`; `ProductRepository` adds `saveAllProducts` and `loadAllProducts`, keeping video games first and then consoles | V-09 | Polymorphism | `ffe3323` | Developer 1 |
+| `ProductFactory`, `ProductService` | `ProductFactory` is created in `com.gamezone.service` and `ProductService.registerProduct(Product)` is added, keeping the two legacy registration methods until `ConsoleMenu` is split | V-11 (part) | Protected Variations | `7c871cc` | Developer 1 |
 
 ---
 
@@ -112,6 +119,7 @@ Every class, interface or abstraction that a correction creates is listed here, 
 |---|---|---|---|
 | `LocalDateAdapter` | `com.gamezone.persistence` | Technical Lead | V-08 |
 | `ProductDeserializer` | `com.gamezone.persistence` | Technical Lead | V-08 |
+| `ProductFactory` | `com.gamezone.service` | Developer 1 | V-11 |
 
 ---
 
