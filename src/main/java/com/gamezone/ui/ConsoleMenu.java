@@ -385,7 +385,7 @@ public class ConsoleMenu {
                 + " | seller: " + sale.getSeller().getFirstName() + " " + sale.getSeller().getLastName()
                 + " | items: " + sale.getProducts().size()
                 + " | total: $" + sale.calculateTotal()
-                + (sale.getAppliedPromotionName() != null && sale.getDiscountAmount() > 0
+                + (sale.hasDiscount()
                         ? " | promoción: " + sale.getAppliedPromotionName() + " (-$" + sale.getDiscountAmount() + ")"
                         : "")
                 + (sale.canBeReturned() ? " [returnable]" : " [return expired]"));

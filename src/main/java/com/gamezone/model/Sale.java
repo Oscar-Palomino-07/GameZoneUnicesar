@@ -125,6 +125,16 @@ public class Sale {
     }
 
     /**
+     * Tells whether a promotion granted a discount to this sale.
+     *
+     * @return {@code true} when a promotion was applied and its discount is
+     *         greater than zero
+     */
+    public boolean hasDiscount() {
+        return appliedPromotionName != null && discountAmount > 0;
+    }
+
+    /**
      * Sets the monetary discount granted by the applied promotion.
      *
      * @param discountAmount the discount amount, never negative
@@ -181,7 +191,7 @@ public class Sale {
                     .append("): $").append(formatAmount(product.getPrice())).append("\n");
         }
         receipt.append("Subtotal: $").append(formatAmount(calculateSubtotal())).append("\n");
-        if (appliedPromotionName != null && discountAmount > 0) {
+        if (hasDiscount()) {
             receipt.append("Descuento (").append(appliedPromotionName).append("): -$")
                     .append(formatAmount(discountAmount)).append("\n");
         } else {
