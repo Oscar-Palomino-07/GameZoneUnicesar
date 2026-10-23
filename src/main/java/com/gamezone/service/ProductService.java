@@ -2,6 +2,7 @@ package com.gamezone.service;
 
 import com.gamezone.exceptions.BusinessRuleException;
 import com.gamezone.exceptions.InvalidDataException;
+import com.gamezone.exceptions.ResourceNotFoundException;
 import com.gamezone.model.Console;
 import com.gamezone.model.Product;
 import com.gamezone.model.VideoGame;
@@ -129,17 +130,13 @@ public class ProductService {
      *
      * @param productId the identifier of the product to update
      * @param quantity  the new quantity available in inventory
-     * @throws IllegalArgumentException when no product matches the given id or
-     *         the quantity is negative
+     * @throws ResourceNotFoundException when no product matches the given id
+     * @throws InvalidDataException      when the quantity is negative
      */
     public void updateStock(String productId, int quantity) {
         Product product = findById(productId);
-        if (product == null) {
-            throw new IllegalArgumentException("Product not found: " + productId);
-        }
-        if (quantity < 0) {
-            throw new IllegalArgumentException("Stock cannot be negative.");
-        }
+        ProductValidator.validateProductExists(product, productId);
+        ProductValidator.validateNonNegativeStock(quantity);
         product.updateStock(quantity);
         saveAll();
     }
@@ -153,17 +150,13 @@ public class ProductService {
      *
      * @param productId the identifier of the product whose stock is restored
      * @param quantity  the number of units to add back to the stock
-     * @throws IllegalArgumentException when no product matches the given id or
-     *         the quantity is negative
+     * @throws InvalidDataException      when the quantity is negative
+     * @throws ResourceNotFoundException when no product matches the given id
      */
     public void restoreStock(String productId, int quantity) {
-        if (quantity < 0) {
-            throw new IllegalArgumentException("Quantity to restore cannot be negative.");
-        }
+        ProductValidator.validateNonNegativeStock(quantity);
         Product product = findById(productId);
-        if (product == null) {
-            throw new IllegalArgumentException("Product not found: " + productId);
-        }
+        ProductValidator.validateProductExists(product, productId);
         product.updateStock(product.getStock() + quantity);
         saveAll();
     }
