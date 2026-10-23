@@ -23,7 +23,7 @@ The author checked every line number against `8b0be4b` before publishing it. The
 
 ### Developer 1 (`developer1-audit.md`): returned once, accepted after correction
 The first version was returned to its author on 2026-10-22 for four reasons, and the corrected version was merged:
-* Its line numbers belonged to the code before Requirement 6 (for example, the methods `validate` and `isBlank` of `ProductService` no longer existed), and one violation, V-02, described code that Requirement 6 had already corrected.
+* Its line numbers belonged to the code before Requirement 6 (for example, the methods `validate` and `isBlank` of `ProductService` no longer existed), and one violation (V-02 of the first version) described code that Requirement 6 had already corrected.
 * Its violation V-01 was about `ProductService.restoreStock`, which the responsibility table assigns to the Technical Lead.
 * It did not audit `Return`, `Sale.canBeReturned`, the hierarchies of accessories, promotions and warranties, nor the packages `exceptions` and `validation`.
 * The violation table lacked fields required by the requirement, and the solution of one violation required changing `ConsoleMenu` without saying so.
@@ -35,3 +35,34 @@ Twenty references to the four services of the report were checked on `8b0be4b`: 
 
 ### Classification
 No finding was reclassified. In two cases the agreed solution differs from the proposed one, because the proposed one would have changed the behavior of the system or introduced a new violation (V-09 and V-11, section 5).
+
+---
+
+## 3. Coverage Table
+
+The system has 43 classes. Each one was audited by the team member who is responsible for it according to the responsibility table of the requirement. No class was left without audit, and no method was audited twice: when a class has code of more than one member, the methods are split as shown in the last column.
+
+| Package | Class | Audited by | Notes |
+|---|---|---|---|
+| `com.gamezone` | `Main` | Technical Lead | |
+| `exceptions` | `GameZoneException`, `ResourceNotFoundException`, `BusinessRuleException`, `InvalidDataException`, `PersistenceException` | Developer 1 | Requirement 6 |
+| `validation` | `ProductValidator`, `PersonValidator`, `SaleValidator` | Developer 1 | Requirement 6 |
+| `model` | `Product`, `VideoGame`, `Console` | Developer 1 | |
+| `model` | `Person`, `Customer`, `Seller` | Developer 2 | |
+| `model` | `Sale` | Technical Lead | `canBeReturned()` is Developer 1's (Requirement 3) |
+| `model` | `Accessory`, `Controller`, `Cable`, `Memory` | Developer 1 | |
+| `model` | `Promotion`, `PercentageDiscount`, `CategoryDiscount`, `BulkPurchaseDiscount` | Developer 1 | |
+| `model` | `Return` | Developer 1 | |
+| `model` | `Warranty`, `BasicWarranty`, `ExtendedWarranty` | Developer 1 | |
+| `persistence` | `ProductRepository` | Developer 1 | The translation of `IOException` into `PersistenceException` is Developer 2's (Requirement 6) |
+| `persistence` | `PersonRepository` | Developer 2 | |
+| `persistence` | `SaleRepository` | Technical Lead | The translation of `IOException` is Developer 2's (Requirement 6) |
+| `persistence` | `AccessoryRepository`, `PromotionRepository`, `ReturnRepository`, `WarrantyRepository` | Developer 2 | |
+| `service` | `ProductService` | Developer 1 | `restoreStock` is the Technical Lead's (Requirement 3); the validator calls are Developer 2's (Requirement 6) |
+| `service` | `PersonService` | Developer 2 | |
+| `service` | `SaleService` | Technical Lead | The validator calls and the two `BusinessRuleException` are Developer 2's (Requirement 6) |
+| `service` | `AccessoryService`, `PromotionService`, `ReturnService`, `WarrantyService` | Developer 2 | `ReturnService` includes the monthly balance |
+| `ui` | `ConsoleMenu` | Technical Lead | Includes the extensions of every module and the differentiated handling of exceptions |
+
+**Result:** 43 of 43 classes audited by their responsible. The cross-references of Developer 2's report to the Technical Lead's findings ("see leader V-XX") are references, not second audits.
+
