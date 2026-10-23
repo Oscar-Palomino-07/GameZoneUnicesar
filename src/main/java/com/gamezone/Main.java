@@ -9,6 +9,7 @@ import com.gamezone.persistence.ReturnRepository;
 import com.gamezone.persistence.SaleRepository;
 import com.gamezone.persistence.WarrantyRepository;
 import com.gamezone.service.AccessoryService;
+import com.gamezone.service.InventoryService;
 import com.gamezone.service.MonthlyBalanceService;
 import com.gamezone.service.PersonService;
 import com.gamezone.service.ProductService;
@@ -86,12 +87,16 @@ public class Main {
         AccessoryService accessoryService = new AccessoryService(accessoryRepository);
         PromotionService promotionService = new PromotionService(promotionRepository);
 
+        // The inventory service lets the sales and the returns find items and change their stock
+        // without knowing which of the two inventories holds each item.
+        InventoryService inventoryService = new InventoryService(productService, accessoryService);
+
         // The warranty service resolves the stored sale and product references,
         // so the sale repository and the product service must exist first.
         WarrantyService warrantyService = new WarrantyService(warrantyRepository, saleRepository, productService);
 
         // The sale service assigns the warranties of every console it sells.
-        SaleService saleService = new SaleService(saleRepository, personService, productService, accessoryService,
+        SaleService saleService = new SaleService(saleRepository, personService, inventoryService,
                 warrantyService, promotionService);
         ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService,
                 accessoryService, warrantyService);
