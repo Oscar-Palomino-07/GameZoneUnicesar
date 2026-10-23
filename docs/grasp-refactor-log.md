@@ -127,6 +127,17 @@ One row for each change. The violation identifiers are those of the consolidated
 | `WarrantyService` | `findWarrantyByProduct` returns the warranty with the longest `getDurationInMonths()`, `cancelWarranties` keeps the first warranty of each `getTypeCode()` and refunds `getAdditionalCost()` of each one, and `save()` stores `getTypeCode()`; no `instanceof ExtendedWarranty` remains and `warranties.json` keeps the same content | V-16 (part) | Polymorphism | `a689212` | Developer 2 |
 | `ReturnRepository` | The private `ProductDeserializer` and `LocalDateAdapter` are removed and the shared classes of the persistence package are registered instead; `return.json` keeps the same content | V-08 (part) | Pure Fabrication | `94f2b12` | Developer 2 |
 | `PromotionRepository` | The private `LocalDateAdapter` is removed and the shared class is registered instead; `PromotionDeserializer` stays because it only concerns promotions | V-08 (part) | Pure Fabrication | `d20cfd5` | Developer 2 |
+| `MonthlyBalanceService` | The service is created in `com.gamezone.service` with `calculateMonthlySales`, `calculateMonthlyReturns` and `generateMonthlyBalance`, the same validation of the period and the same messages; it reads the sales from `SaleService` and the returns from `ReturnService` | V-14 (part) | High Cohesion | `0864668` | Developer 2 |
+| `ReturnService` | The monthly report and its two private helpers are removed after the reports menu started using `MonthlyBalanceService` (`d61f115`); the class now only registers and queries returns. The removal was split from the creation of the service so that the branch compiles after every commit | V-14 (part) | High Cohesion | `5df10dd` | Developer 2 |
+| `JsonFileStore` | The class is created in `com.gamezone.persistence` with `write(...)` and `read(...)`; it reports a failure to the repository with `IOException` or `JsonSyntaxException` and does not decide what to do with it | V-18 (part) | Pure Fabrication | `0446766` | Developer 2 |
+| `PersonRepository` | `writeList` and `readList` delegate to `JsonFileStore`; the repository still throws `PersistenceException` with the file and the operation | V-18 (part) | Pure Fabrication | `f868521` | Developer 2 |
+| `AccessoryRepository` | `writeList` and `readList` delegate to `JsonFileStore`; a failure is still printed to `System.err` and loading still continues with an empty list | V-18 (part) | Pure Fabrication | `1a0732e` | Developer 2 |
+| `PromotionRepository` | `writeList` and `readList` delegate to `JsonFileStore`, keeping the same error behavior | V-18 (part) | Pure Fabrication | `2f6532a` | Developer 2 |
+| `ReturnRepository` | `writeList` and `readList` delegate to `JsonFileStore`, keeping the same error behavior | V-18 (part) | Pure Fabrication | `6fb1899` | Developer 2 |
+| `WarrantyRepository` | `saveAll` and `loadAll` delegate to `JsonFileStore`, keeping the same error behavior | V-18 (part) | Pure Fabrication | `65b7031` | Developer 2 |
+| `AccessoryService` | `decreaseStock(String, int)` is added for the inventory mediator: it rejects a negative quantity, an unknown accessory and a resulting negative stock, calls `Product.decreaseStock` and saves; the message of a negative stock is the same one that `updateStock` shows | V-02 (part) | Indirection | `05ca0bc` | Developer 2 |
+| `ReturnService` | `registerReturn` asks `originalSale.countUnits(productId)` instead of counting the products of the sale with a stream, with the same messages | V-12 (part) | Information Expert | `c110f4b` | Developer 2 |
+| `ReturnService` | `registerReturn` cancels the warranties of the returned items that answer `supportsWarranty()` instead of checking for `Console` | V-03 (part) | Polymorphism | `b39bf01` | Developer 2 |
 
 ---
 
@@ -154,6 +165,8 @@ Every class, interface or abstraction that a correction creates is listed here, 
 | `ProductCategory` | `com.gamezone.model` | Developer 2 | V-17 |
 | `AccessoryValidator` | `com.gamezone.validation` | Developer 2 | V-19 |
 | `PromotionValidator` | `com.gamezone.validation` | Developer 2 | V-19 |
+| `MonthlyBalanceService` | `com.gamezone.service` | Developer 2 | V-14 |
+| `JsonFileStore` | `com.gamezone.persistence` | Developer 2 | V-18 |
 
 ---
 
