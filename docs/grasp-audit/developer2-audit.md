@@ -264,3 +264,32 @@ When a fragment breaks more than one pattern, it is registered once, under the p
 | **V-06** | **Protected Variations** | Promotions (Req. 2, adjustment A1) | `PromotionService` — constants `VIDEOGAME_CATEGORY`, `CONSOLE_CATEGORY`, `ACCESSORY_CATEGORY` (lines 28–30) and `normalizeCategory` (lines 209–216). The same values are returned by `getCategory()` in `VideoGame`, `Console` and `Accessory`. | The list of product categories is a point of variation, and it is defined twice: once in the product hierarchy and once in the promotion service. | Adding a category (as A1 already had to do for accessories) requires changing both sides, and a mismatch makes a category promotion silently give no discount. | Define the categories once, in a `ProductCategory` enum of the model used by `Product.getCategory()`, and make `normalizeCategory` validate against it. | **Yes.** `Product` and its subclasses belong to Developer 1. |
 | **V-07** | **Pure Fabrication** | Persistence of every module (Taller 1, Req. 1–4) | `writeList`/`readList` in `PersonRepository` (lines 90–124), `AccessoryRepository` (lines 85–119), `PromotionRepository` (lines 91–124), `ReturnRepository` (lines 87–120), and `saveAll`/`loadAll` in `WarrantyRepository` (lines 62–94). The same code is in `ProductRepository` and `SaleRepository`. | The technical task of writing a list to a JSON file and reading it back has no class of its own and is copied in seven repositories. | A change in the storage (encoding, directory, error handling) must be repeated in seven places, and the copies have already diverged: three repositories throw `PersistenceException` and four print to `System.err`. | Extract a `JsonFileStore` class in the persistence package with `write(...)` and `read(...)`, and make every repository delegate to it. Each repository keeps its current error behavior, so nothing changes for the user. | **Yes.** `ProductRepository` (Developer 1) and `SaleRepository` (Technical Lead) should use the same class. |
 | **V-08** | **Pure Fabrication** (also High Cohesion) | Accessories (Req. 1), Promotions (Req. 2), Exceptions and validations (Req. 6) | `AccessoryService` — `registerCable` (lines 86–91), `registerMemory` (lines 114–119), `validateCommonFields` (lines 246–256), `normalizeConnectionType` (lines 259–265). `PromotionService` — `registerBulkPurchase` (lines 107–109), `validateCommonFields` (lines 189–199), `validatePercentage` (lines 202–206), `normalizeCategory` (lines 209–216). | The data rules of these modules live inside the services, while the rest of the system keeps them in the validation layer. | The services mix business operations with validation, and the same kind of rule is written in two different styles in the same system. | Create `AccessoryValidator` and `PromotionValidator` in `com.gamezone.validation`, with static methods that keep the same `IllegalArgumentException` and the same messages, and call them from the services. | **No.** The new classes are created by Developer 2, the owner of the violation. |
+
+---
+
+## 13. Notes for the Consolidation
+
+### Boundary findings (code of more than one team member)
+* **V-01:** `Sale` (Technical Lead) and `ReturnService`, `WarrantyService` (Developer 2).
+* **V-02:** `ReturnService` (Developer 2) and `Main` (Technical Lead).
+* **V-03:** `ReturnService` and the new `MonthlyBalanceService` (Developer 2), `ConsoleMenu.monthlyBalance()` and `Main` (Technical Lead).
+* **V-04:** `Accessory`, `Controller`, `Cable`, `Memory` (Developer 1) and `AccessoryService` (Developer 2).
+* **V-05:** `Warranty`, `BasicWarranty`, `ExtendedWarranty` (Developer 1) and `WarrantyService` (Developer 2).
+* **V-06:** `Product` and its subclasses (Developer 1) and `PromotionService` (Developer 2).
+* **V-07:** the five repositories of Developer 2, `ProductRepository` (Developer 1) and `SaleRepository` (Technical Lead).
+
+### Findings of the Technical Lead that include Developer 2 code
+These are not registered again in this report. The part of the correction that belongs to Developer 2 is:
+* **leader V-01:** `AccessoryService.restoreStock` (line 241) must call the new stock method of `Product`.
+* **leader V-02:** `ReturnService.resolveItem` (lines 184–190) and `restoreStock` (lines 199–205) are replaced by the new `InventoryService`, and `ReturnService` loses its fields `productService` and `accessoryService`.
+* **leader V-03:** `WarrantyService.validateWarrantyRequest` (line 288) and `ReturnService.registerReturn` (line 162) use `supportsWarranty()` instead of `instanceof Console`.
+* **leader V-08:** `PromotionRepository` and `ReturnRepository` use the shared `LocalDateAdapter` and `ProductDeserializer`.
+
+### Relations with other findings
+* V-02 and leader V-02 both change the constructor of `ReturnService`, and V-03 moves code out of it. They should be applied by the same person in one sequence: V-03, then V-02, then the `ReturnService` part of leader V-02.
+* V-07 and leader V-08 touch the same repositories. Leader V-08 extracts the Gson adapters and V-07 extracts the file access; they can be done in either order, but not in parallel.
+
+### Functional defects noticed (outside the scope of this requirement)
+They are not corrected here, because correcting them changes what the user sees.
+* **Typed exceptions only in three modules:** `AccessoryService`, `PromotionService`, `ReturnService` and `WarrantyService` still throw `IllegalArgumentException` and `IllegalStateException`. `ConsoleMenu.runGuarded` (lines 864–878) prints those messages as they are, but it adds a prefix to the typed exceptions, so migrating them would change the messages that the user reads.
+* **I/O errors silenced in four repositories:** `AccessoryRepository` (lines 93–95 and 115–118), `PromotionRepository` (lines 98–100 and 120–123), `ReturnRepository` (lines 94–96 and 116–119) and `WarrantyRepository` (lines 69–71 and 90–93) print to `System.err` and continue with an empty list. A corrupt file of these modules is silently ignored and overwritten on the next save. Throwing `PersistenceException`, as the other three repositories do, would change the behavior at startup.
