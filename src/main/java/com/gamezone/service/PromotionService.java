@@ -4,6 +4,7 @@ import com.gamezone.model.BulkPurchaseDiscount;
 import com.gamezone.model.CategoryDiscount;
 import com.gamezone.model.PercentageDiscount;
 import com.gamezone.model.Product;
+import com.gamezone.model.ProductCategory;
 import com.gamezone.model.Promotion;
 import com.gamezone.persistence.PromotionRepository;
 
@@ -23,11 +24,6 @@ public class PromotionService {
 
     // Prefix of the promotion identifiers: PR-1, PR-2, PR-3...
     private static final String ID_PREFIX = "PR-";
-
-    // Allowed values for the target category of a category promotion.
-    private static final String VIDEOGAME_CATEGORY = "VIDEOGAME";
-    private static final String CONSOLE_CATEGORY = "CONSOLE";
-    private static final String ACCESSORY_CATEGORY = "ACCESSORY";
 
     private final PromotionRepository repository;
     // In-memory list of promotions, loaded once when the service is created.
@@ -70,7 +66,7 @@ public class PromotionService {
      *
      * @param name           the promotion name shown on the receipt
      * @param percentage     the discount percentage, between 0 and 100
-     * @param targetCategory VIDEOGAME, CONSOLE or ACCESSORY, case insensitive
+     * @param targetCategory the name of a {@link ProductCategory}, case insensitive
      * @param startDate      the first day the promotion is active
      * @param endDate        the last day the promotion is active
      * @return the registered promotion
@@ -205,11 +201,10 @@ public class PromotionService {
         }
     }
 
-    // Converts the category to upper case and checks it is VIDEOGAME, CONSOLE or ACCESSORY.
+    // Converts the category to upper case and checks it is one of the product categories.
     private String normalizeCategory(String category) {
         String value = category == null ? "" : category.trim().toUpperCase();
-        if (!value.equals(VIDEOGAME_CATEGORY) && !value.equals(CONSOLE_CATEGORY)
-                && !value.equals(ACCESSORY_CATEGORY)) {
+        if (!ProductCategory.isValid(value)) {
             throw new IllegalArgumentException("La categoría debe ser VIDEOGAME, CONSOLE o ACCESSORY.");
         }
         return value;
