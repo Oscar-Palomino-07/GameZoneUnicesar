@@ -242,3 +242,48 @@ del Taller 1 se conservan con su formato original.
 | Respuesta | Señaló que con la firma del enunciado, si se compran dos unidades de la misma consola y se devuelve una, eliminar "las garantías del producto en la venta" borraría también las de la unidad que el cliente conserva. Propuso que cada llamada elimine como máximo una garantía básica y una extendida, y llamarla una vez por unidad devuelta. Para `Return`, propuso un atributo `warrantyRefund` con getter y setter que se suma en `calculateRefundAmount` y se muestra en el recibo |
 | Decisión | Acepté anular por unidad y lo documenté en el JavaDoc y en los diagramas. La garantía básica devuelve 0 y la extendida su costo adicional. La anulación ocurre después de todas las validaciones, igual que la restauración de stock. Las devoluciones guardadas antes no tienen el campo y Gson lo carga en 0. El cálculo proporcional del reembolso de los ítems es de A5 (Dev 1); empecé la rama después de que A5 se fusionó y agregué `warrantyRefund` sobre su versión de `Return`, sumándolo completo al final de `calculateRefundAmount` porque el descuento de la venta nunca se aplicó a la garantía. Al fusionar `develop` en A4 también ajusté la llamada al constructor que agregó A5, que usaba `ventaOriginal`. Lo verifiqué con el programa de prueba: venta de 2500.00 con 15 % y extendida en la consola (total 2325.00); al devolver consola y accesorio se reembolsan 1700.00 + 255.00 + 200.00 de la garantía = 2155.00, quedan 0 garantías, el balance del mes es 170.00 y el valor se conserva al recargar |
 | Commit relacionado | `feat: add cancelWarranties to WarrantyService`; `feat: add the warranty refund to Return`; `feat: cancel the warranties of returned consoles`; `feat: print the return receipt after registering a return` |
+
+---
+
+# Requerimiento 6 — Validaciones y excepciones
+
+Bitácora del 20 al 22 de octubre de 2026, con los mismos ocho campos del Requerimiento 5.
+
+## Entrada R6-01 — 20-10-2026
+
+| Campo | Detalle |
+|---|---|
+| Fecha | 20-10-2026 |
+| Herramienta | Claude Code (aplicación de escritorio) |
+| Fase y rama | Preparación, antes de trabajar en `feature/exception-handling` |
+| Objetivo | Saber exactamente qué me tocaba como Dev 2 y en qué estado estaba la rama, porque Dev 1 todavía no había subido las excepciones ni los validadores |
+| Consulta | "Lee el PDF del Requerimiento 6, soy Dev 2" y el reparto del equipo (servicios y repositorios de producto, persona y venta) |
+| Respuesta | El primer PDF que adjunté era el texto del Requerimiento 5 con otro nombre; con el PDF correcto ubicó las firmas de las págs. 4-6. Listó los 18 `throw new IllegalArgumentException` de `ProductService`, `PersonService` y `SaleService` y los 6 bloques que manejan `IOException` en los tres repositorios. Señaló que `feature/exception-handling` todavía no tenía commits de Dev 1, que `ConsoleMenu` captura `IllegalArgumentException` y que los demás servicios (`ReturnService`, `WarrantyService`) dependen de que `findById` retorne `null` |
+| Decisión | Esperé las clases de Dev 1 antes de hacer cualquier commit, porque sin ellas mis cambios no compilan. Mantuve `findById` retornando `null` para no cambiar el comportamiento de devoluciones y garantías, que no son parte de mi asignación |
+| Commit relacionado | No aplica |
+
+## Entrada R6-02 — 20-10-2026
+
+| Campo | Detalle |
+|---|---|
+| Fecha | 20-10-2026 |
+| Herramienta | Claude Code (aplicación de escritorio) |
+| Fase y rama | Implementación, rama `feature/exception-handling` |
+| Objetivo | Refactorizar mis tres servicios y mis tres repositorios sobre las clases que subió Dev 1, sin cambiar el comportamiento externo |
+| Consulta | Que adaptara los servicios y repositorios a las clases reales de Dev 1 y me entregara un parche por commit para aplicarlo yo con `git apply` |
+| Respuesta | Usó los métodos extra que Dev 1 agregó además de los del PDF: `validateRequiredField`, `validateUniqueProduct` y `validateNonNegativeStock` en `ProductService`; `validatePersonData` con nombre y apellido separados y `validateUniquePerson` en `PersonService`; `validateProductIdsNotEmpty` como primer paso de `registerSale`, para conservar el orden del ajuste A3, seguido de `validatePersonExists`, `validateProductExists`, `validateStockAvailability` y `validateSaleData`. Las solicitudes inválidas de garantía extendida pasan a `BusinessRuleException`. En los repositorios, `IOException` y `JsonSyntaxException` (archivo corrupto) se relanzan como `PersistenceException(archivo, operación, causa)`. Verificó que cada commit compila en orden y comparó un mismo escenario con el código anterior y el nuevo: venta con consola, videojuego y accesorio con garantía extendida, devolución parcial y balance mensual dan exactamente los mismos valores; cada error que antes fallaba sigue fallando, ahora con su excepción tipada |
+| Decisión | Acepté el refactor. Reporté en el PR dos cambios que vienen de los validadores definidos en el enunciado: ahora se rechaza un precio de 0 y un correo sin `@` o sin `.`. También reporté que `ConsoleMenu` (del Líder Técnico) debe capturar las nuevas excepciones y que un archivo corrupto ahora lanza `PersistenceException` al construir los servicios en `Main`. No toqué los servicios de accesorios, promociones, devoluciones ni garantías |
+| Commit relacionado | `259663c`, `17f8950`, `93c1d07`, `c81fe5c`, `e6fd065`, `95c139b`, `6177eed`, `2f01da0` |
+
+## Entrada R6-03 — 22-10-2026
+
+| Campo | Detalle |
+|---|---|
+| Fecha | 22-10-2026 |
+| Herramienta | Claude Code (aplicación de escritorio) |
+| Fase y rama | Publicación, ramas `feature/exception-handling` y `develop` |
+| Objetivo | Aplicar los parches, subir los commits y abrir el Pull Request |
+| Consulta | Ayuda con los comandos de la terminal y con el error de `git checkout` por cambios locales en `ConsoleMenu.java` |
+| Respuesta | Los cambios locales eran un comando de Git pegado por error en la línea `import java.util.List;`, así que se descartaron con `git restore`. Antes de cada commit comprobó con `git apply --check` que el parche entraba sin errores. Al final compiló el proyecto completo y confirmó que los archivos quedaron idénticos a los verificados |
+| Decisión | Apliqué y subí los ocho commits yo misma. Mi primer intento de Pull Request (#43) lo abrí con las ramas invertidas (`develop` hacia `feature/exception-handling`); no tenía cambios de archivos y lo fusioné sin revisión. Mis commits entraron a `develop` con el PR #42, aprobado y fusionado por el Líder Técnico |
+| Commit relacionado | PR #42, PR #43 |
