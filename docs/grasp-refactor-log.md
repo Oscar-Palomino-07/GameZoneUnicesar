@@ -138,6 +138,8 @@ One row for each change. The violation identifiers are those of the consolidated
 | `AccessoryService` | `decreaseStock(String, int)` is added for the inventory mediator: it rejects a negative quantity, an unknown accessory and a resulting negative stock, calls `Product.decreaseStock` and saves; the message of a negative stock is the same one that `updateStock` shows | V-02 (part) | Indirection | `05ca0bc` | Developer 2 |
 | `ReturnService` | `registerReturn` asks `originalSale.countUnits(productId)` instead of counting the products of the sale with a stream, with the same messages | V-12 (part) | Information Expert | `c110f4b` | Developer 2 |
 | `ReturnService` | `registerReturn` cancels the warranties of the returned items that answer `supportsWarranty()` instead of checking for `Console` | V-03 (part) | Polymorphism | `b39bf01` | Developer 2 |
+| `ReturnService` | The unused `PersonService` field, constructor parameter and assignment are removed; `Main` is adjusted by the Technical Lead in the next commit | V-13 | Low Coupling | `247a839` | Developer 2 |
+| `ReturnService` | The fields `productService` and `accessoryService` are replaced by `InventoryService`: `registerReturn` finds each item with `findItem` and restores its stock with `restoreStock`, and the private `resolveItem` and `restoreStock` with their `instanceof Accessory` are removed; the messages do not change | V-02 (part) | Indirection | `f57a4eb` | Developer 2 |
 
 ---
 
