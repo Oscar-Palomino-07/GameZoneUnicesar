@@ -98,8 +98,8 @@ public class Main {
         // The sale service assigns the warranties of every console it sells.
         SaleService saleService = new SaleService(saleRepository, personService, inventoryService,
                 warrantyService, promotionService);
-        ReturnService returnService = new ReturnService(returnRepository, saleService, personService, productService,
-                accessoryService, warrantyService);
+        ReturnService returnService = new ReturnService(returnRepository, saleService, inventoryService,
+                warrantyService);
 
         // The menus share one reader of the input and one reporter of errors;
         // the order of the list is the order of the options of the main menu.
