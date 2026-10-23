@@ -93,3 +93,45 @@ Assign class B the responsibility of creating instances of class A when B contai
   * `createMenu()` (lines 58–86) creates the repositories, the services and the menu, because it is the composition root and owns the dependency order described in its JavaDoc.
 * **`ProductService.restoreStock(String, int)`:** `Not applicable`
   * The method creates no object.
+
+---
+
+## 4. Pattern 3: Controller
+
+### Principle
+Assign the responsibility of receiving and coordinating the system events to a non-UI class that represents the system or a use case. The user interface only captures input and shows output.
+
+### Audit by Class
+* **`ConsoleMenu`:** `Violation`
+  * Most operations only read input and delegate. For example `registerSale()` (lines 298–311) reads the data and calls `saleService.registerSale(...)` (line 307).
+  * `askExtendedWarranties(List<String>)` (lines 321–334) does not delegate: it resolves each item through `productService.findById(...)` (line 324) and decides with `item instanceof Console` (line 325) which items are offered an extended warranty. That is a business rule, and `SaleService.validateExtendedWarrantyRequest(...)` enforces the same rule at line 254. See **V-04**.
+* **`SaleService`:** `Correct`
+  * `registerSale(...)` (lines 147–184) is the use-case controller of the sale registration: it coordinates the validators, the item resolution, the promotion, the warranties, the stock update and the persistence in a fixed order documented in its JavaDoc (lines 103–120). The user interface does not contain any of those steps.
+* **`Sale`, `SaleRepository`:** `Not applicable`
+  * A domain entity and a file-storage class do not receive system events.
+* **`Main`:** `Not applicable`
+  * It starts the application and wires the objects. Its only error handling (lines 44–48) prints the persistence message when the data files cannot be loaded.
+* **`ProductService.restoreStock(String, int)`:** `Not applicable`
+  * It is a step that `ReturnService` invokes inside the return use case, not a point where the system events arrive.
+
+---
+
+## 5. Pattern 4: Low Coupling
+
+### Principle
+Assign responsibilities so that the dependencies between classes stay low, which reduces the impact of changes and increases reuse.
+
+### Audit by Class
+* **`ConsoleMenu`:** `Violation`
+  * It depends on the seven services of the system (fields in lines 42–48 and constructor in lines 62–64) and on nine classes of the model (imports in lines 7–15: `Accessory`, `Console`, `Customer`, `Product`, `Promotion`, `Return`, `Sale`, `Seller` and `Warranty`).
+  * A change in the API of any service, or in any of those entities, can force a change in this class. See **V-05**.
+* **`SaleService`:** `Violation`
+  * It receives six collaborators (fields in lines 41–46). `ProductService` and `AccessoryService` are used only to resolve an item (`resolveItem`, lines 297–303) and to change its stock (`discountStock`, lines 311–318), and the service is also tied to the concrete classes `Console` (lines 254 and 277) and `Accessory` (line 313). See **V-02** and **V-03**.
+* **`Sale`:** `Correct`
+  * It depends only on `Customer`, `Seller` and `Product` of the model and on standard Java types (imports in lines 3–6).
+* **`SaleRepository`:** `Correct`
+  * It knows only the model classes it serializes and Gson (imports in lines 3–33). It does not know the services or the user interface.
+* **`Main`:** `Correct`
+  * It depends on every class by design, because it is the composition root. No other class depends on `Main`.
+* **`ProductService.restoreStock(String, int)`:** `Correct`
+  * It depends on `ProductValidator` and on `Product`, as any method of its class does.
