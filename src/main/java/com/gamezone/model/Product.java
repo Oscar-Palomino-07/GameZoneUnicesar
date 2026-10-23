@@ -74,6 +74,24 @@ public abstract class Product {
     }
 
     /**
+     * Increases the available stock by the given quantity.
+     *
+     * @param quantity the number of units to add to the current stock
+     */
+    public void increaseStock(int quantity) {
+        this.stock += quantity;
+    }
+
+    /**
+     * Decreases the available stock by the given quantity.
+     *
+     * @param quantity the number of units to subtract from the current stock
+     */
+    public void decreaseStock(int quantity) {
+        this.stock -= quantity;
+    }
+
+    /**
      * Builds a complete textual description of the product, integrating the
      * attributes particular to the concrete product type.
      *
