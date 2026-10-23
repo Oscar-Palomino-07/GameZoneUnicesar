@@ -85,3 +85,89 @@ The verdict of the team for a pattern is `Violation` when at least one of the th
 | Protected Variations | Violation | Violation | Violation | **Violation** | V-03, V-05, V-11, V-17 (also V-02, V-15 and V-16) |
 
 When a fragment breaks more than one pattern, the violation is registered once, under the pattern that guides its correction, and the other patterns are named in the explanation. Creator is the only pattern that the three reports find correct.
+
+---
+
+## 5. Definitive List of Violations
+
+There are 19 violations. The identifiers V-01 to V-08 are those of the Technical Lead's report, V-09 to V-11 are those of Developer 1's report (V-01 to V-03 there), and V-12 to V-19 are those of Developer 2's report (V-01 to V-08 there). Each one lists the part of the correction that belongs to each team member. A class or abstraction that a correction creates is created by the responsible of the violation that originates it. Sections 6 and 7 give the order in which the parts must be applied.
+
+### V-01 — Information Expert
+* **Origin:** `leader-audit` V-01. Developer 2's report registers the `AccessoryService` line as a cross-reference.
+* **Evidence:** `ProductService.restoreStock` line 160, `product.updateStock(product.getStock() + quantity);`. `SaleService.discountStock` line 312, `int newStock = item.getStock() - 1;`. `AccessoryService.restoreStock` line 241, `accessory.updateStock(accessory.getStock() + quantity);`.
+* **Explanation:** The stock belongs to `Product`, but three services read it, do the arithmetic outside the entity and write it back.
+* **Consequence:** The rule of how the stock grows or shrinks is repeated in three places; any change (for example, reserved stock) has to be applied to each of them.
+* **Agreed solution:** Add `increaseStock(int)` and `decreaseStock(int)` to `Product`. The three callers delegate to them and keep the validation and the persistence they have today.
+* **Responsible for the correction:** Developer 1 (`Product`), Technical Lead (`ProductService.restoreStock`, `SaleService.discountStock`) and Developer 2 (`AccessoryService.restoreStock`). Developer 1 goes first.
+
+### V-02 — Indirection (also Polymorphism and Low Coupling)
+* **Origin:** `leader-audit` V-02. Developer 2's report registers its part as a cross-reference.
+* **Evidence:** `SaleService.resolveItem` lines 297–303 and `discountStock` lines 311–318 (`instanceof Accessory` at line 313). The same code in `ReturnService.resolveItem` lines 184–190 and `restoreStock` lines 199–205 (`instanceof Accessory` at line 200). Fields `productService` and `accessoryService` in `SaleService` (lines 43–44) and in `ReturnService` (lines 29–30).
+* **Explanation:** Nothing mediates between the use cases and the two inventories, so each use case looks the item up in both services and decides by type which one changes the stock.
+* **Consequence:** A new category of sellable items requires editing `SaleService` and `ReturnService`, and both stay coupled to two services and to the concrete class `Accessory`.
+* **Agreed solution:** Create `InventoryService` in the service layer with `findItem(String)`, `decreaseStock(String, int)` and `restoreStock(String, int)`. It finds the item in the product service first and in the accessory service afterwards, so it needs no type check, and it uses the stock methods of V-01. `SaleService` and `ReturnService` use only it, and `Main` wires it.
+* **Responsible for the correction:** Technical Lead creates `InventoryService` and changes `SaleService` and `Main`. Developer 2 changes `ReturnService` and, if the inventory needs it, `AccessoryService`.
+
+### V-03 — Polymorphism (also Protected Variations)
+* **Origin:** `leader-audit` V-03. Developer 2's report registers its part as a cross-reference.
+* **Evidence:** `SaleService.validateExtendedWarrantyRequest` line 254 and `assignWarranties` line 277 (`instanceof Console`). The same decision in `WarrantyService.validateWarrantyRequest` line 288 and in `ReturnService.registerReturn` line 162.
+* **Explanation:** Which items have a warranty is decided by asking for the concrete class instead of asking the item.
+* **Consequence:** A new product type with a warranty requires finding and editing four places, and forgetting one gives a wrong behavior without any error.
+* **Agreed solution:** Add `supportsWarranty()` to `Product` (returns `false`) and override it in `Console` (returns `true`). The four callers use it.
+* **Responsible for the correction:** Developer 1 (`Product`, `Console`), Technical Lead (`SaleService`) and Developer 2 (`WarrantyService`, `ReturnService`). Developer 1 goes first.
+
+### V-04 — Controller (also Polymorphism)
+* **Origin:** `leader-audit` V-04.
+* **Evidence:** `ConsoleMenu.askExtendedWarranties` lines 321–334: line 324 `productService.findById(itemId)` and line 325 `item instanceof Console`. The same rule is enforced by `SaleService.validateExtendedWarrantyRequest` (line 254).
+* **Explanation:** The user interface decides which items are offered an extended warranty, which is a business rule.
+* **Consequence:** The rule lives in two classes that can disagree, and the menu has to know the domain classes `Product` and `Console`.
+* **Agreed solution:** `SaleService` provides the identifiers of the items that can receive an extended warranty, using `supportsWarranty()` from V-03. `ConsoleMenu` only asks the user about each one, in the same order and with the same text as today.
+* **Responsible for the correction:** Technical Lead. It must be applied after V-03.
+
+### V-05 — High Cohesion (also Pure Fabrication, Low Coupling and Protected Variations)
+* **Origin:** `leader-audit` V-05.
+* **Evidence:** `ConsoleMenu`, the whole class: 923 lines and 48 methods; eight submenus (`productMenu` line 126 to `promotionMenu` line 717); input helpers (`readDate` line 842, `parseIds`, `readText`, `readInt` and `readDouble` lines 880–923); `runGuarded` (lines 864–878); four `print*` methods; seven services (lines 42–48); nine model imports (lines 7–15); the `switch` of `start()` in lines 91–121.
+* **Explanation:** One class holds the responsibilities of eight modules and of several technical tasks.
+* **Consequence:** Any change in any module edits this file, the three developers collide in it, adding a module requires editing `start()`, and no menu can be understood or tested apart.
+* **Agreed solution:** Extract `ConsoleInput` (reading and parsing the input) and `ConsoleErrorReporter` (the content of `runGuarded`). Create one menu class per module, each with only its own services, behind a common `Menu` interface; `ConsoleMenu` keeps only the main loop. Prompts, messages and order of the options stay identical.
+* **Responsible for the correction:** Technical Lead. It is applied last, because it moves the code that V-04, V-11 and V-14 change.
+
+### V-06 — Information Expert
+* **Origin:** `leader-audit` V-06.
+* **Evidence:** `ConsoleMenu.printSale` lines 388–390 repeat the condition `getAppliedPromotionName() != null && getDiscountAmount() > 0` that `Sale.generateReceipt` uses at line 184.
+* **Explanation:** `Sale` knows when it has a discount, but the menu repeats the rule instead of asking the sale.
+* **Consequence:** If the rule changes, the receipt and the list of sales can show different information.
+* **Agreed solution:** Add `hasDiscount()` to `Sale` and use it in `generateReceipt` and in `printSale`.
+* **Responsible for the correction:** Technical Lead.
+
+### V-07 — Information Expert
+* **Origin:** `leader-audit` V-07.
+* **Evidence:** `SaleService.applyBestPromotion` lines 226–231: line 229 takes `sale.getProducts()` and calls `promotion.calculateDiscount(...)`, and lines 228–229 write the result with `setAppliedPromotionName` and `setDiscountAmount`.
+* **Explanation:** The service takes data from the sale, computes with it and writes the result back in two calls, although the sale owns the products, the name and the discount.
+* **Consequence:** The two values can be left inconsistent, and the setters are public for any class.
+* **Agreed solution:** Add `applyPromotion(Promotion)` to `Sale`, which sets the name and the discount together. The two setters stop being used and are removed.
+* **Responsible for the correction:** Technical Lead.
+
+### V-08 — Pure Fabrication
+* **Origin:** `leader-audit` V-08. Developer 2's report registers its part as a cross-reference.
+* **Evidence:** `SaleRepository.ProductDeserializer` lines 139–160 and `LocalDateAdapter` lines 166–177, with copies in `ReturnRepository` (lines 128 and 155) and `LocalDateAdapter` in `PromotionRepository` (line 149).
+* **Explanation:** The technical task of converting dates and rebuilding products from JSON is repeated in three repositories.
+* **Consequence:** A change in the date format or a new product type has to be repeated in each copy.
+* **Agreed solution:** Extract package-private `LocalDateAdapter` and `ProductDeserializer` classes in the persistence package and use them from the three repositories. The files keep exactly the same content.
+* **Responsible for the correction:** Technical Lead creates the classes and changes `SaleRepository`. Developer 2 changes `ReturnRepository` and `PromotionRepository`. It must be applied before V-18.
+
+### V-09 — Polymorphism
+* **Origin:** `developer1-audit` V-01.
+* **Evidence:** `ProductService` lines 24–25 (`List<VideoGame> videoGames`, `List<Console> consoles`) and `listAllProducts()` lines 104–109.
+* **Explanation:** The inventory is kept in two concrete lists and merged on every call, instead of in one polymorphic `List<Product>`.
+* **Consequence:** A new product subtype adds another list and another change in `listAllProducts()`.
+* **Agreed solution:** `ProductService` keeps one `List<Product>`. `ProductRepository` gets `saveAllProducts(List<Product>)` and `loadAllProducts()`, which keep the two files (`videogames.json` and `consoles.json`) with the same content and order; separating the products by type is done inside the repository, which is the one place where the type must be chosen. **Behavior condition:** today the listing shows all the video games first and then all the consoles, even when they were registered interleaved. The listing must keep that order, and Developer 1 demonstrates it with the scenario `01-products` of the non-regression check. If the order cannot be kept without bringing back a type check in the service, the violation moves to the out-of-scope section with that justification.
+* **Responsible for the correction:** Developer 1.
+
+### V-10 — Polymorphism
+* **Origin:** `developer1-audit` V-02.
+* **Evidence:** `CategoryDiscount.belongsToTargetCategory` lines 76–81, `product instanceof Accessory` at line 77.
+* **Explanation:** The check asks for the concrete class even though `Accessory.getCategory()` already returns `"ACCESSORY"` (line 91).
+* **Consequence:** The class stays coupled to `Accessory` and the branch is redundant.
+* **Agreed solution:** Remove the `instanceof` branch and compare `targetCategory` with `product.getCategory()` for every product. The result is identical because of the value that `Accessory.getCategory()` returns.
+* **Responsible for the correction:** Developer 1.
