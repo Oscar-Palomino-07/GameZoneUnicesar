@@ -137,6 +137,28 @@ public class ProductService {
     }
 
     /**
+     * Decrements the stock of the product with the given identifier by the
+     * specified quantity and persists the change immediately.
+     *
+     * <p>This method is intended to be called when a sale is registered, so
+     * that the sold units are discounted from the available inventory.</p>
+     *
+     * @param productId the identifier of the product whose stock is decreased
+     * @param quantity  the number of units to subtract from the stock
+     * @throws InvalidDataException      when the quantity is negative or the
+     *         resulting stock would be negative
+     * @throws ResourceNotFoundException when no product matches the given id
+     */
+    public void decreaseStock(String productId, int quantity) {
+        ProductValidator.validateNonNegativeStock(quantity);
+        Product product = findById(productId);
+        ProductValidator.validateProductExists(product, productId);
+        ProductValidator.validateNonNegativeStock(product.getStock() - quantity);
+        product.decreaseStock(quantity);
+        saveAll();
+    }
+
+    /**
      * Increments the stock of the product with the given identifier by the
      * specified quantity and persists the change immediately.
      *
