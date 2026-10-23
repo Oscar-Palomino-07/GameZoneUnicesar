@@ -5,6 +5,7 @@ import com.gamezone.model.Cable;
 import com.gamezone.model.Controller;
 import com.gamezone.model.Memory;
 import com.gamezone.persistence.AccessoryRepository;
+import com.gamezone.validation.AccessoryValidator;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,16 +15,13 @@ import java.util.Collections;
  * Provides the business operations for the accessory module of GameZone
  * Unicesar. Accessory identifiers are generated automatically following the
  * A-N sequence, and every change is persisted immediately through the
- * {@link AccessoryRepository}.
+ * {@link AccessoryRepository}. The data of a new accessory is checked by
+ * {@link AccessoryValidator} before it is registered.
  */
 public class AccessoryService {
 
     // Prefix of the accessory identifiers: A-1, A-2, A-3...
     private static final String ID_PREFIX = "A-";
-
-    // Allowed values for the connection type of a controller.
-    private static final String WIRELESS = "WIRELESS";
-    private static final String WIRED = "WIRED";
 
     // Accessory types accepted by listAccessoriesByType.
     private static final String CONTROLLER_TYPE = "CONTROLLER";
@@ -57,8 +55,8 @@ public class AccessoryService {
      */
     public Controller registerController(String title, double price, int stock,
                                          String connectionType, List<String> compatibleConsoleIds) {
-        validateCommonFields(title, price, stock);
-        String connection = normalizeConnectionType(connectionType);
+        AccessoryValidator.validateCommonData(title, price, stock);
+        String connection = AccessoryValidator.normalizeConnectionType(connectionType);
 
         Controller controller = new Controller(nextAccessoryId(), title.trim(), price, stock,
                 cleanConsoleIds(compatibleConsoleIds), connection);
@@ -82,13 +80,8 @@ public class AccessoryService {
      */
     public Cable registerCable(String title, double price, int stock, double lengthInMeters,
                                String connectorType, List<String> compatibleConsoleIds) {
-        validateCommonFields(title, price, stock);
-        if (lengthInMeters <= 0) {
-            throw new IllegalArgumentException("La longitud del cable debe ser mayor que cero.");
-        }
-        if (isBlank(connectorType)) {
-            throw new IllegalArgumentException("El tipo de conector es obligatorio.");
-        }
+        AccessoryValidator.validateCommonData(title, price, stock);
+        AccessoryValidator.validateCableData(lengthInMeters, connectorType);
         Cable cable = new Cable(nextAccessoryId(), title.trim(), price, stock,
                 cleanConsoleIds(compatibleConsoleIds), lengthInMeters, connectorType.trim());
         accessories.add(cable);
@@ -110,13 +103,8 @@ public class AccessoryService {
      */
     public Memory registerMemory(String title, double price, int stock, int capacityInGb,
                                  String memoryType, List<String> compatibleConsoleIds) {
-        validateCommonFields(title, price, stock);
-        if (capacityInGb <= 0) {
-            throw new IllegalArgumentException("La capacidad de la memoria debe ser mayor que cero.");
-        }
-        if (isBlank(memoryType)) {
-            throw new IllegalArgumentException("El tipo de memoria es obligatorio.");
-        }
+        AccessoryValidator.validateCommonData(title, price, stock);
+        AccessoryValidator.validateMemoryData(capacityInGb, memoryType);
         Memory memory = new Memory(nextAccessoryId(), title.trim(), price, stock,
                 cleanConsoleIds(compatibleConsoleIds), capacityInGb, memoryType.trim());
         accessories.add(memory);
@@ -240,28 +228,6 @@ public class AccessoryService {
         }
         accessory.updateStock(accessory.getStock() + quantity);
         save();
-    }
-
-    // Validates the attributes shared by every accessory.
-    private void validateCommonFields(String title, double price, int stock) {
-        if (isBlank(title)) {
-            throw new IllegalArgumentException("El nombre del accesorio es obligatorio.");
-        }
-        if (price < 0) {
-            throw new IllegalArgumentException("El precio no puede ser negativo.");
-        }
-        if (stock < 0) {
-            throw new IllegalArgumentException("El stock no puede ser negativo.");
-        }
-    }
-
-    // Converts the connection type to upper case and checks it is WIRELESS or WIRED.
-    private String normalizeConnectionType(String connectionType) {
-        String value = connectionType == null ? "" : connectionType.trim().toUpperCase();
-        if (!value.equals(WIRELESS) && !value.equals(WIRED)) {
-            throw new IllegalArgumentException("El tipo de conexión debe ser WIRELESS o WIRED.");
-        }
-        return value;
     }
 
     // Tells whether an accessory belongs to the given type using its real class.
