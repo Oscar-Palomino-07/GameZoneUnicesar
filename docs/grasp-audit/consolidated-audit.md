@@ -31,7 +31,7 @@ The first version was returned to its author on 2026-10-22 for four reasons, and
 The corrected report was verified on `8b0be4b`: `ProductService` lines 24–25, 59–68, 90–99 and 104–109, and `CategoryDiscount` lines 76–81 match what the report quotes, and `Accessory.getCategory()` returns `"ACCESSORY"`, which the correction of its V-02 relies on.
 
 ### Developer 2 (`developer2-audit.md`): accepted without returning
-More than thirty references were checked on `8b0be4b`, among them `ReturnService` lines 28, 102–103, 124–126, 306, 357–358 and 374–376; `WarrantyService` lines 89–93, 168, 208, 288, 291–297 and 325–327; `AccessoryService` lines 29–31, 86–88, 149–153, 246–248 and 268–270; and `PromotionService` lines 28–30, 107–109 and 209–211. All of them match the code. The report also shows that `ReturnService.personService` (line 28) is assigned in the constructor (line 53) and is not used by any other method, which is the basis of its V-02.
+Twenty references to the four services of the report were checked on `8b0be4b`: `ReturnService` lines 28, 102–103, 124–126, 306, 357–358 and 374–376; `WarrantyService` lines 89–93, 168, 208, 288, 291–297 and 325–327; `AccessoryService` lines 29–31, 86–88, 149–153, 246–248 and 268–270; and `PromotionService` lines 28–30, 107–109 and 209–211. All of them match the code. The report also shows that `ReturnService.personService` (line 28) is assigned in the constructor (line 53) and is not used by any other method, which is the basis of its V-02.
 
 ### Classification
 No finding was reclassified. In two cases the agreed solution differs from the proposed one, because the proposed one would have changed the behavior of the system or introduced a new violation (V-09 and V-11, section 5).
