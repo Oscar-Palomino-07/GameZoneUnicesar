@@ -1,0 +1,114 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: Id de la venta: Id del producto: Certificado de garantia
+========================
+Identificador: W-2
+Tipo: Garantía Extendida
+Producto: Xbox Series X
+Precio: $2500000.0
+Venta: V-2
+Duracion: 12 meses
+Inicio: 2026-10-23
+Vencimiento: 2027-10-23
+Costo adicional: $250000.0
+Estado: Vigente
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: Id de la venta: Id del producto: No se encontró una garantía para el producto V-1 en la venta V-1.
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: Id de la venta: Id del producto: No se encontró una garantía para el producto 1 en la venta S-NOEXISTE.
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: W-1 | Garantía Básica | Producto: Xbox Series X (1) | Venta: V-2 | Inicio: 2026-10-23 | Vence: 2027-04-23 | Estado: Vigente
+W-2 | Garantía Extendida | Producto: Xbox Series X (1) | Venta: V-2 | Inicio: 2026-10-23 | Vence: 2027-10-23 | Estado: Vigente
+W-3 | Garantía Básica | Producto: Xbox Series X (1) | Venta: V-4 | Inicio: 2026-10-23 | Vence: 2027-04-23 | Estado: Vigente
+W-4 | Garantía Básica | Producto: Xbox Series X (1) | Venta: V-5 | Inicio: 2026-10-23 | Vence: 2027-04-23 | Estado: Vigente
+W-5 | Garantía Extendida | Producto: Xbox Series X (1) | Venta: V-5 | Inicio: 2026-10-23 | Vence: 2027-10-23 | Estado: Vigente
+W-6 | Garantía Básica | Producto: Xbox Series X (1) | Venta: V-5 | Inicio: 2026-10-23 | Vence: 2027-04-23 | Estado: Vigente
+W-7 | Garantía Extendida | Producto: Xbox Series X (1) | Venta: V-5 | Inicio: 2026-10-23 | Vence: 2027-10-23 | Estado: Vigente
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: W-1 | Garantía Básica | Producto: Xbox Series X (1) | Venta: V-2 | Inicio: 2026-10-23 | Vence: 2027-04-23 | Estado: Vigente
+W-2 | Garantía Extendida | Producto: Xbox Series X (1) | Venta: V-2 | Inicio: 2026-10-23 | Vence: 2027-10-23 | Estado: Vigente
+W-3 | Garantía Básica | Producto: Xbox Series X (1) | Venta: V-4 | Inicio: 2026-10-23 | Vence: 2027-04-23 | Estado: Vigente
+W-4 | Garantía Básica | Producto: Xbox Series X (1) | Venta: V-5 | Inicio: 2026-10-23 | Vence: 2027-04-23 | Estado: Vigente
+W-5 | Garantía Extendida | Producto: Xbox Series X (1) | Venta: V-5 | Inicio: 2026-10-23 | Vence: 2027-10-23 | Estado: Vigente
+W-6 | Garantía Básica | Producto: Xbox Series X (1) | Venta: V-5 | Inicio: 2026-10-23 | Vence: 2027-04-23 | Estado: Vigente
+W-7 | Garantía Extendida | Producto: Xbox Series X (1) | Venta: V-5 | Inicio: 2026-10-23 | Vence: 2027-10-23 | Estado: Vigente
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: ¿Cuántos días de anticipación? No hay garantías que venzan en los próximos 30 días.
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: ¿Cuántos días de anticipación? El número de días no puede ser negativo.
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: ¿Cuántos días de anticipación? Invalid number. Try again.
+¿Cuántos días de anticipación? No hay garantías que venzan en los próximos 10 días.
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: Opción inválida. Intente de nuevo.
+=== GESTIÓN DE GARANTÍAS ===
+1. Consultar la garantía de un producto en una venta
+2. Listar todas las garantías
+3. Listar garantías vigentes
+4. Listar garantías próximas a vencer
+0. Volver
+Seleccione una opción: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!

@@ -1,0 +1,83 @@
+=== GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: === PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: Customer id: First name: Last name: Phone: Email: Customer registered.
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: Customer id: First name: Last name: Phone: Email: Customer registered.
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: Customer id: First name: Last name: Phone: Email: No se puede completar la operación: Ya existe una persona registrada con el identificador P-1
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: Customer id: First name: Last name: Phone: Email: Los datos ingresados no son válidos: El campo 'phone' no es válido: el teléfono no puede estar vacío
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: Customer id: First name: Last name: Phone: Email: Los datos ingresados no son válidos: El campo 'email' no es válido: el correo electrónico debe contener '@' y '.'
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: Customer id: First name: Last name: Phone: Email: Los datos ingresados no son válidos: El campo 'id' no es válido: el identificador de la persona no puede estar vacío
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: P-1 | Ana Torres | 3001112233 | ana@mail.com
+P-2 | Luis Perez | 3004445566 | luis@mail.com
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: P-100 | Carlos Mendoza | 3001234567 | code: EMP001 | shift: MORNING
+P-101 | Laura Gomez | 3019876543 | code: EMP002 | shift: AFTERNOON
+P-102 | Andres Guerrero | 3026541234 | code: EMP003 | shift: NIGHT
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: Invalid option. Try again.
+=== PEOPLE ===
+1. Register customer
+2. List customers
+3. List sellers
+0. Back
+Choose an option: === GAMEZONE UNICESAR ===
+1. Products
+2. People
+3. Sales
+4. Returns
+5. Accessories
+6. Reports
+7. Gestión de garantías
+8. Gestión de promociones
+0. Exit
+Choose an option: Goodbye!

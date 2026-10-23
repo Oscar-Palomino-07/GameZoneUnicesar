@@ -1,0 +1,51 @@
+[
+  {
+    "type": "BASIC",
+    "id": "W-1",
+    "productId": "1",
+    "saleId": "V-2",
+    "startDate": "2026-10-23"
+  },
+  {
+    "type": "EXTENDED",
+    "id": "W-2",
+    "productId": "1",
+    "saleId": "V-2",
+    "startDate": "2026-10-23"
+  },
+  {
+    "type": "BASIC",
+    "id": "W-3",
+    "productId": "1",
+    "saleId": "V-4",
+    "startDate": "2026-10-23"
+  },
+  {
+    "type": "BASIC",
+    "id": "W-4",
+    "productId": "1",
+    "saleId": "V-5",
+    "startDate": "2026-10-23"
+  },
+  {
+    "type": "EXTENDED",
+    "id": "W-5",
+    "productId": "1",
+    "saleId": "V-5",
+    "startDate": "2026-10-23"
+  },
+  {
+    "type": "BASIC",
+    "id": "W-6",
+    "productId": "1",
+    "saleId": "V-5",
+    "startDate": "2026-10-23"
+  },
+  {
+    "type": "EXTENDED",
+    "id": "W-7",
+    "productId": "1",
+    "saleId": "V-5",
+    "startDate": "2026-10-23"
+  }
+]

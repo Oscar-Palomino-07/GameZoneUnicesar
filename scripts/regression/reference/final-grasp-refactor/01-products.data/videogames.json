@@ -1,0 +1,38 @@
+[
+  {
+    "platform": "Xbox",
+    "genre": "Shooter",
+    "ageRating": "T",
+    "id": "V-1",
+    "title": "Halo Infinite",
+    "price": 200000.0,
+    "stock": 10
+  },
+  {
+    "platform": "PS5",
+    "genre": "Sports",
+    "ageRating": "E",
+    "id": "V-2",
+    "title": "FIFA 25",
+    "price": 150000.0,
+    "stock": 2
+  },
+  {
+    "platform": "PC",
+    "genre": "Action",
+    "ageRating": "E",
+    "id": "V-6",
+    "title": "Typed Wrong Number",
+    "price": 50000.0,
+    "stock": 3
+  },
+  {
+    "platform": "Switch",
+    "genre": "Platformer",
+    "ageRating": "E",
+    "id": "V-7",
+    "title": "Late Game",
+    "price": 90000.0,
+    "stock": 4
+  }
+]

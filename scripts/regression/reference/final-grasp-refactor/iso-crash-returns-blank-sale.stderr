@@ -1,0 +1,6 @@
+Exception in thread "main" java.lang.IllegalArgumentException: El identificador de la venta es obligatorio.
+	at com.gamezone.service.ReturnService.viewReturnsBySale(ReturnService.java:242)
+	at com.gamezone.ui.ReturnMenu.viewReturnsBySale(ReturnMenu.java:111)
+	at com.gamezone.ui.ReturnMenu.run(ReturnMenu.java:59)
+	at com.gamezone.ui.ConsoleMenu.start(ConsoleMenu.java:46)
+	at com.gamezone.Main.main(Main.java:61)
