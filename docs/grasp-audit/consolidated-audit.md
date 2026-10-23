@@ -289,3 +289,16 @@ Two sequences inside the waves need to be respected by the person who does them:
 
 **Rule of the sequence:** a wave starts when the prerequisites of the previous waves are pushed to `feature/grasp-refactor`. Each commit mentions its violation identifier, and the commits of a boundary violation are made in the order of the table, so the project compiles after each one.
 
+---
+
+## 8. Out-of-Scope Functional Defects
+
+Correcting these would change what the user sees, so they are not corrected in Phase 2 and are left for a later requirement.
+
+1. **Blank identifier in the returns queries.** `ConsoleMenu.viewReturnsByCustomer` (lines 457–467) and `viewReturnsBySale` (lines 469–479) have no error handling, so an empty identifier ends the program with a stack trace. It already happened before Requirement 6, and the non-regression scenarios `iso-crash-returns-blank-customer` and `iso-crash-returns-blank-sale` record it. *(Technical Lead)*
+2. **A price of zero is rejected.** `ProductValidator.validateProductData` (line 38, `price <= 0`) rejects zero, while before Requirement 6 only negative prices were rejected. *(Developer 1's code, found by the Technical Lead)*
+3. **Memory and file out of sync on a write failure.** `SaleService.registerSale` adds the sale to the in-memory list (line 181) and then saves (line 182), and `ProductService.registerVideoGame` and `registerConsole` store the product (lines 66 and 97) before saving. If saving fails, the change stays in memory but not in the file, as the scenario `iso-write-failure` shows. *(Technical Lead)*
+4. **Typed exceptions only in three modules.** `AccessoryService`, `PromotionService`, `ReturnService` and `WarrantyService` still throw `IllegalArgumentException` and `IllegalStateException`. `ConsoleMenu.runGuarded` (lines 864–878) prints those messages without a prefix but adds a prefix to the typed ones, so migrating them would change the messages that the user reads. *(Developer 2)*
+5. **I/O errors silenced in four repositories.** `AccessoryRepository` (lines 93–95 and 115–118), `PromotionRepository` (lines 98–100 and 120–123), `ReturnRepository` (lines 94–96 and 116–119) and `WarrantyRepository` (lines 69–71 and 90–93) print to `System.err` and continue with an empty list, so a corrupt file of these modules is ignored and overwritten on the next save. Throwing `PersistenceException`, as the other three repositories do, would change the behavior at startup. *(Developer 2)*
+
+Developer 1's report registers no defect of this kind.
